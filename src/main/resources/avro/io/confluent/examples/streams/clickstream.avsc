@@ -1,9 +1,9 @@
-{"namespace": "io.confluent.examples.streams.avro",
+{"namespace": "ch.hsr.markovshield",
  "type": "record",
- "name": "PageView",
+ "name": "ClickStream",
  "fields": [
      {"name": "session", "type": "string"},
      {"name": "user", "type": "string"},
-     {"name": "url", "type":{"type": "array" , "items":"string"}}
+     {"name": "clicks", "type":{"type": "array" , "items":"ch.hsr.markovshield.Click"}}
  ]
 }

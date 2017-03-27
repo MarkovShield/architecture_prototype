@@ -30,24 +30,24 @@
                     </descriptorRefs>
                 </configuration>
             </plugin>
-           <!-- <plugin>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro-maven-plugin</artifactId>
-                <version>${avro.version}</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>schema</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirectory>src/main/resources/avro/io/confluent/examples/streams</sourceDirectory>
-                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-                            <stringType>String</stringType>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
+            <!--  <plugin>
+                  <groupId>org.apache.avro</groupId>
+                  <artifactId>avro-maven-plugin</artifactId>
+                  <version>${avro.version}</version>
+                  <executions>
+                      <execution>
+                          <phase>generate-sources</phase>
+                          <goals>
+                              <goal>schema</goal>
+                          </goals>
+                          <configuration>
+                              <sourceDirectory>src/main/resources/avro/io/confluent/examples/streams</sourceDirectory>
+                              <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                              <stringType>String</stringType>
+                          </configuration>
+                      </execution>
+                  </executions>
+              </plugin>-->
         </plugins>
     </build>
     <repositories>

@@ -13,14 +13,20 @@ package ch.hsr.markovshield; /**
  */
 
 import ch.hsr.markovshield.utils.GenericAvroSerde;
+import ch.hsr.markovshield.utils.SpecificAvroSerde;
+import ch.hsr.markovshield.utils.SpecificAvroSerializer;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.GenericRecordBuilder;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections.map.SingletonMap;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
@@ -29,9 +35,11 @@ import org.apache.kafka.streams.kstream.KTable;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+
+import static com.google.common.collect.Iterables.*;
 
 /**
  * Demonstrates how to perform a join between a KStream and a KTable, i.e. an example of a stateful
@@ -127,38 +135,57 @@ public class MarkovShieldClickstreams {
         final Serde<Long> longSerde = Serdes.Long();
 
         final KStreamBuilder builder = new KStreamBuilder();
+        SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
+
+        SpecificAvroSerde<Click> clickSerde = new SpecificAvroSerde<>(client, new SingletonMap("schema.registry.url","http://localhost:8081"));
+        SpecificAvroSerde<Session> sessionSerde = new SpecificAvroSerde<>(client,  new SingletonMap("schema.registry.url","http://localhost:8081"));
+        SpecificAvroSerde<ClickStream> clickStreamSerde = new SpecificAvroSerde<>(client,  new SingletonMap("schema.registry.url","http://localhost:8081"));
 
         // Create a stream of page view events from the PageViews topic, where the key of
         // a record is assumed to be null and the value an Avro GenericRecord
         // that represents the full details of the page view event. See `click.avsc` under
         // `src/main/avro/` for the corresponding Avro schema.
-        final KStream<String, GenericRecord> views = builder.stream("MarkovClicks");
-        KStream<String, Click> mappedViews = views.mapValues(
-                genericRecord -> new Click(genericRecord.get("session").toString(), genericRecord.get("url").toString())
+        final KStream<String, Click> views = builder.stream(stringSerde, clickSerde,"MarkovClicks");
+        /*
+        KStream<String, OwnClick> mappedViews = views.mapValues(
+                genericRecord -> new OwnClick(genericRecord.get("session").toString(), genericRecord.get("url").toString())
         );
-
-        mappedViews.foreach((key, value) -> {
+           */
+        views.foreach((key, value) -> {
             System.out.println("Click: " + key + " " + value.toString());
         });
         // Create a changelog stream for user profiles from the UserProfiles topic,
         // where the key of a record is assumed to be the user id (String) and its value
         // an Avro GenericRecord.  See `userprofile.avsc` under `src/main/avro/` for the
         // corresponding Avro schema.
-        final KTable<String, GenericRecord> sessions = builder.table("MarkovLogins", "MarkovLoginStore");
-        final KTable<String, Login> mappedSessions = sessions.mapValues(
-                genericRecord -> new Login(genericRecord.get("session").toString(), genericRecord.get("user").toString())
+        final KTable<String, Session> sessions = builder.table(stringSerde, sessionSerde, "MarkovLogins", "MarkovLoginStore");
+        /*
+        final KTable<String, OwnLogin> mappedSessions = sessions.mapValues(
+                genericRecord -> new OwnLogin(genericRecord.get("session").toString(), genericRecord.get("user").toString())
         );
-
-        mappedSessions.foreach((key, value) -> {
-            System.out.println("Login: " + key + " " + value.toString());
+*/
+        sessions.foreach((key, value) -> {
+            System.out.println("Session: " + key + " " + value.toString());
         });
 
-        KTable<String, Long> countclickstreams = mappedViews.leftJoin(mappedSessions,
+        KTable<String, ClickStream> clickstreams = views.leftJoin(sessions,
                 (view, session) -> {
-                    ClickStream clickStream = new ClickStream(session, view);
+                    ClickStream clickStream = new ClickStream();
+                    clickStream.setClicks(Collections.singletonList(view));
+                    clickStream.setUser(session.getUser());
+                    clickStream.setSession(session.getSession());
                     return clickStream;
                 }
-        ).groupByKey().count("GeoPageViewsStore");
+        ).groupByKey().reduce(
+                (clickStream, v1) -> {
+                    ClickStream aggregatedClickStream = new ClickStream();
+                    aggregatedClickStream.setSession(clickStream.getSession());
+                    aggregatedClickStream.setUser(clickStream.getUser());
+                    aggregatedClickStream.setClicks(Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())));
+                    return aggregatedClickStream;
+                }, "MarkovClickStreamAggregation"
+        );
+        /*
         final GenericRecordBuilder clickstreamBuilder =
                 new GenericRecordBuilder(loadSchema("clickstream.avsc"));
 
@@ -185,11 +212,11 @@ public class MarkovShieldClickstreams {
             clickstreamBuilder.set("url", strings);
             return clickstreamBuilder.build();
         }, "MarkovClickStreamAggregation");
-
+*/
         clickstreams.foreach((key, value) -> {
-            System.out.println("ClickStream: " + key + " " + value.toString());
+            System.out.println("OwnClickStream: " + key + " " + value.toString());
         });
-        clickstreams.to("MarkovClickStreams");
+        clickstreams.to(stringSerde, clickStreamSerde,"MarkovClickStreams");
 
 
         /*
@@ -201,7 +228,7 @@ public class MarkovShieldClickstreams {
       });
       unmappedClickstreams.to("MarkovClickStreams");
       */
-        countclickstreams.to(stringSerde, longSerde, "MarkovClickStreamCount");
+        //countclickstreams.to(stringSerde, longSerde, "MarkovClickStreamCount");
  /*
     // We must specify the Avro schemas for all intermediate (Avro) classes, if any.
     // In this example, we want to create an intermediate GenericRecord to hold the view region.

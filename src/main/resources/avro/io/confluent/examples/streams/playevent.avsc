@@ -1,8 +1,0 @@
-{"namespace": "io.confluent.examples.streams.avro",
- "type": "record",
- "name": "PlayEvent",
- "fields": [
-     {"name": "song_id",   "type": "long"},
-     {"name": "duration", "type": "long"}
- ]
-}

@@ -12,14 +12,17 @@ package ch.hsr.markovshield; /**
  * the License.
  */
 
+import ch.hsr.markovshield.utils.SpecificAvroSerializer;
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.io.IOException;
@@ -50,12 +53,12 @@ public class MarkovClickAndLoginGenerator {
     }
 
     private static void produceInputs() throws IOException {
-        final List<Login> logins = new LinkedList<>();
-        logins.add(new Login("1", "Kilian"));
-        logins.add(new Login("2", "Philip"));
-        logins.add(new Login("3", "Kilian"));
-        logins.add(new Login("4", "Matthias"));
-        logins.add(new Login("5", "Ivan"));
+        final List<Session> logins = new LinkedList<>();
+        logins.add(new Session("1", "Kilian"));
+        logins.add(new Session("2", "Philip"));
+        logins.add(new Session("3", "Kilian"));
+        logins.add(new Session("4", "Matthias"));
+        logins.add(new Session("5", "Ivan"));
         final List<Click> clicks = new LinkedList<>();
         clicks.add(new Click("1", "index.htlm"));
         clicks.add(new Click("1", "overview.html"));
@@ -82,36 +85,36 @@ public class MarkovClickAndLoginGenerator {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
-
         properties.put("schema.registry.url", "http://localhost:8081");
-        final KafkaProducer<String, GenericRecord> loginProducer = new KafkaProducer<String, GenericRecord>(properties);
-        final KafkaProducer<String, GenericRecord> clickProducer = new KafkaProducer<String, GenericRecord>(properties);
+
+
+        SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
+        Serializer<Session> sessionSer = new SpecificAvroSerializer<>(client);
+        Serializer<Click> clickSer = new SpecificAvroSerializer<>(client);
+
+        final KafkaProducer<String, Session> loginProducer = new KafkaProducer<String, Session>(properties, Serdes.String().serializer(), sessionSer);
+        final KafkaProducer<String, Click> clickProducer = new KafkaProducer<String, Click>(properties, Serdes.String().serializer(), clickSer);
 
         final GenericRecordBuilder clickBuilder =
                 new GenericRecordBuilder(loadSchema("click.avsc"));
         final GenericRecordBuilder loginBuilder =
-                new GenericRecordBuilder(loadSchema("usersessionmapping.avsc"));
+                new GenericRecordBuilder(loadSchema("session.avsc"));
 
 
         final String loginTopic = "MarkovLogins";
         final String clickTopic = "MarkovClicks";
 
-        for (Login login : logins) {
-            System.out.println("send login: " + login.getSessionId() + " " + login.getUserId());
-            loginBuilder.set("session", login.getSessionId());
-            loginBuilder.set("user", login.getUserId());
-            loginProducer.send(new ProducerRecord<>(loginTopic, login.getSessionId(), loginBuilder.build()));
-            loginProducer.flush();
-        }
 
         for (Click click : clicks) {
-            System.out.println("send click: " + click.getSessionId() + " " + click.getUrl());
-            clickBuilder.set("session", click.getSessionId());
-            clickBuilder.set("url", click.getUrl());
-            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionId(), clickBuilder.build()));
+
+            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSession().toString(), click));
             clickProducer.flush();
         }
 
+        for (Session login : logins) {
+            loginProducer.send(new ProducerRecord<String, Session>(loginTopic, login.getSession().toString(), login));
+            loginProducer.flush();
+        }
     }
 
     private static Schema loadSchema(final String name) throws IOException {

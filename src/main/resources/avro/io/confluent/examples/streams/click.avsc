@@ -1,6 +1,6 @@
-{"namespace": "io.confluent.examples.streams.avro",
+{"namespace": "ch.hsr.markovshield",
  "type": "record",
- "name": "PageView",
+ "name": "Click",
  "fields": [
      {"name": "session", "type": "string"},
      {"name": "url", "type": "string"}
