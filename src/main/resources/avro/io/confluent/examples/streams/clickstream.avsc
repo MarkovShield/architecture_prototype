@@ -4,6 +4,6 @@
  "fields": [
      {"name": "session", "type": "string"},
      {"name": "user", "type": "string"},
-     {"name": "url", "type": "string"}
+     {"name": "url", "type":{"type": "array" , "items":"string"}}
  ]
 }

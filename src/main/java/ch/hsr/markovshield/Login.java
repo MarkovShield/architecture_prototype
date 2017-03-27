@@ -1,8 +1,5 @@
 package ch.hsr.markovshield;
 
-import org.apache.avro.Schema;
-import org.apache.avro.specific.SpecificRecord;
-
 import java.util.Objects;
 
 /**
@@ -13,7 +10,7 @@ public class Login {
     private final String sessionId;
     private final String userId;
 
-    public Login(String sessionId, String userId){
+    public Login(String sessionId, String userId) {
 
         this.sessionId = sessionId;
         this.userId = userId;

@@ -1,7 +1,5 @@
 package ch.hsr.markovshield;
 
-import org.apache.avro.specific.SpecificRecord;
-
 import java.util.Objects;
 
 /**
@@ -12,7 +10,7 @@ public class Click {
     private final String sessionId;
     private final String url;
 
-    public Click(String sessionId, String url){
+    public Click(String sessionId, String url) {
         this.sessionId = sessionId;
         this.url = url;
     }

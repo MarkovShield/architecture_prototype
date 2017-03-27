@@ -12,6 +12,8 @@ package ch.hsr.markovshield; /**
  * the License.
  */
 
+import ch.hsr.markovshield.utils.GenericAvroSerde;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -24,14 +26,9 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
-import org.apache.kafka.streams.kstream.TimeWindows;
-import org.apache.kafka.streams.kstream.Windowed;
 
 import java.io.InputStream;
 import java.util.Properties;
-
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
-import ch.hsr.markovshield.utils.GenericAvroSerde;
 
 /**
  * Demonstrates how to perform a join between a KStream and a KTable, i.e. an example of a stateful
@@ -106,66 +103,66 @@ import ch.hsr.markovshield.utils.GenericAvroSerde;
  */
 public class PageViewRegion {
 
-  public static void main(final String[] args) throws Exception {
-    final Properties streamsConfiguration = new Properties();
-    // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
-    // against which the application is run.
-    streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "pageview-region-lambda-example");
-    // Where to find Kafka broker(s).
-    streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    // Where to find the Confluent schema registry instance(s)
-    streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
-    // Specify default (de)serializers for record keys and for record values.
-    streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-    streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, GenericAvroSerde.class);
-    streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-    // Records should be flushed every 10 seconds. This is less than the default
-    // in order to keep this example interactive.
-    streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
+    public static void main(final String[] args) throws Exception {
+        final Properties streamsConfiguration = new Properties();
+        // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
+        // against which the application is run.
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "pageview-region-lambda-example");
+        // Where to find Kafka broker(s).
+        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        // Where to find the Confluent schema registry instance(s)
+        streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        // Specify default (de)serializers for record keys and for record values.
+        streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, GenericAvroSerde.class);
+        streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        // Records should be flushed every 10 seconds. This is less than the default
+        // in order to keep this example interactive.
+        streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
 
-    final Serde<String> stringSerde = Serdes.String();
-    final Serde<Long> longSerde = Serdes.Long();
+        final Serde<String> stringSerde = Serdes.String();
+        final Serde<Long> longSerde = Serdes.Long();
 
-    final KStreamBuilder builder = new KStreamBuilder();
+        final KStreamBuilder builder = new KStreamBuilder();
 
-    // Create a stream of page view events from the PageViews topic, where the key of
-    // a record is assumed to be null and the value an Avro GenericRecord
-    // that represents the full details of the page view event. See `click.avsc` under
-    // `src/main/avro/` for the corresponding Avro schema.
-    final KStream<String, GenericRecord> views = builder.stream("PageViews");
+        // Create a stream of page view events from the PageViews topic, where the key of
+        // a record is assumed to be null and the value an Avro GenericRecord
+        // that represents the full details of the page view event. See `click.avsc` under
+        // `src/main/avro/` for the corresponding Avro schema.
+        final KStream<String, GenericRecord> views = builder.stream("PageViews");
 
-    // Create a keyed stream of page view events from the PageViews stream,
-    // by extracting the user id (String) from the Avro value
-    final KStream<String, GenericRecord> viewsByUser = views
-      .map((dummy, record) ->
-        new KeyValue<>(record.get("user").toString(), record));
+        // Create a keyed stream of page view events from the PageViews stream,
+        // by extracting the user id (String) from the Avro value
+        final KStream<String, GenericRecord> viewsByUser = views
+                .map((dummy, record) ->
+                        new KeyValue<>(record.get("user").toString(), record));
 
-    // Create a changelog stream for user profiles from the UserProfiles topic,
-    // where the key of a record is assumed to be the user id (String) and its value
-    // an Avro GenericRecord.  See `userprofile.avsc` under `src/main/avro/` for the
-    // corresponding Avro schema.
-    final KTable<String, GenericRecord> userProfiles = builder.table("UserProfiles", "UserProfilesStore");
+        // Create a changelog stream for user profiles from the UserProfiles topic,
+        // where the key of a record is assumed to be the user id (String) and its value
+        // an Avro GenericRecord.  See `userprofile.avsc` under `src/main/avro/` for the
+        // corresponding Avro schema.
+        final KTable<String, GenericRecord> userProfiles = builder.table("UserProfiles", "UserProfilesStore");
 
-    // Create a changelog stream as a projection of the value to the region attribute only
-    final KTable<String, String> userRegions = userProfiles.mapValues(record ->
-      record.get("region").toString());
+        // Create a changelog stream as a projection of the value to the region attribute only
+        final KTable<String, String> userRegions = userProfiles.mapValues(record ->
+                record.get("region").toString());
 
-    // We must specify the Avro schemas for all intermediate (Avro) classes, if any.
-    // In this example, we want to create an intermediate GenericRecord to hold the view region.
-    // See `pageviewregion.avsc` under `src/main/avro/`.
-    final InputStream
-      pageViewRegionSchema =
-      PageViewRegion.class.getClassLoader()
-        .getResourceAsStream("avro/io/confluent/examples/streams/pageviewregion.avsc");
-    final Schema schema = new Schema.Parser().parse(pageViewRegionSchema);
+        // We must specify the Avro schemas for all intermediate (Avro) classes, if any.
+        // In this example, we want to create an intermediate GenericRecord to hold the view region.
+        // See `pageviewregion.avsc` under `src/main/avro/`.
+        final InputStream
+                pageViewRegionSchema =
+                PageViewRegion.class.getClassLoader()
+                        .getResourceAsStream("avro/io/confluent/examples/streams/pageviewregion.avsc");
+        final Schema schema = new Schema.Parser().parse(pageViewRegionSchema);
 
-    viewsByUser.leftJoin(userRegions, (view, region) -> {
-      GenericRecord viewRegion = new GenericData.Record(schema);
-      viewRegion.put("user", view.get("user"));
-      viewRegion.put("page", view.get("page"));
-      viewRegion.put("region", region);
-      return (String)viewRegion.get("region");
-    }).to(stringSerde, stringSerde, "xx");
+        viewsByUser.leftJoin(userRegions, (view, region) -> {
+            GenericRecord viewRegion = new GenericData.Record(schema);
+            viewRegion.put("user", view.get("user"));
+            viewRegion.put("page", view.get("page"));
+            viewRegion.put("region", region);
+            return (String) viewRegion.get("region");
+        }).to(stringSerde, stringSerde, "xx");
 
 
  /*
@@ -194,22 +191,22 @@ public class PageViewRegion {
 
     viewsByRegionForConsole.to(stringSerde, longSerde, "PageViewsByRegion");
 */
-    final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);
-    // Always (and unconditionally) clean local state prior to starting the processing topology.
-    // We opt for this unconditional call here because this will make it easier for you to play around with the example
-    // when resetting the application for doing a re-run (via the Application Reset Tool,
-    // http://docs.confluent.io/current/streams/developer-guide.html#application-reset-tool).
-    //
-    // The drawback of cleaning up local state prior is that your app must rebuilt its local state from scratch, which
-    // will take time and will require reading all the state-relevant data from the Kafka cluster over the network.
-    // Thus in a production scenario you typically do not want to clean up always as we do here but rather only when it
-    // is truly needed, i.e., only under certain conditions (e.g., the presence of a command line flag for your app).
-    // See `ApplicationResetExample.java` for a production-like example.
-    streams.cleanUp();
-    streams.start();
+        final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);
+        // Always (and unconditionally) clean local state prior to starting the processing topology.
+        // We opt for this unconditional call here because this will make it easier for you to play around with the example
+        // when resetting the application for doing a re-run (via the Application Reset Tool,
+        // http://docs.confluent.io/current/streams/developer-guide.html#application-reset-tool).
+        //
+        // The drawback of cleaning up local state prior is that your app must rebuilt its local state from scratch, which
+        // will take time and will require reading all the state-relevant data from the Kafka cluster over the network.
+        // Thus in a production scenario you typically do not want to clean up always as we do here but rather only when it
+        // is truly needed, i.e., only under certain conditions (e.g., the presence of a command line flag for your app).
+        // See `ApplicationResetExample.java` for a production-like example.
+        streams.cleanUp();
+        streams.start();
 
-    // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-    Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-  }
+        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
 
 }
