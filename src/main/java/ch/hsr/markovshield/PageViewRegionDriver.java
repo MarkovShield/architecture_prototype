@@ -88,7 +88,15 @@ public class PageViewRegionDriver {
           pageViewBuilder.set("page", "index.html");
           return pageViewBuilder.build();
         }).forEach(
-        record -> producer.send(new ProducerRecord<>(pageViewsTopic, null, record))
+        record -> {
+          try {
+            System.in.read();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+          producer.send(new ProducerRecord<>(pageViewsTopic, null, record));
+          producer.flush();
+        }
       );
       producer.flush();
       System.out.println(user + " " + rangeEnd );

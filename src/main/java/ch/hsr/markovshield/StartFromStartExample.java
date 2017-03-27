@@ -12,6 +12,8 @@ package ch.hsr.markovshield; /**
  * the License.
  */
 
+import ch.hsr.markovshield.utils.GenericAvroSerde;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -21,17 +23,10 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.kstream.KTable;
-import org.apache.kafka.streams.kstream.TimeWindows;
-import org.apache.kafka.streams.kstream.Windowed;
+import org.apache.kafka.streams.kstream.*;
 
 import java.io.InputStream;
 import java.util.Properties;
-
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
-import ch.hsr.markovshield.utils.GenericAvroSerde;
 
 /**
  * Demonstrates how to perform a join between a KStream and a KTable, i.e. an example of a stateful
@@ -104,13 +99,13 @@ import ch.hsr.markovshield.utils.GenericAvroSerde;
  * also stop the Confluent Schema Registry ({@code Ctrl-C}), then stop the Kafka broker ({@code Ctrl-C}), and
  * only then stop the ZooKeeper instance ({@code Ctrl-C}).
  */
-public class PageViewRegion {
+public class StartFromStartExample {
 
   public static void main(final String[] args) throws Exception {
     final Properties streamsConfiguration = new Properties();
     // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
     // against which the application is run.
-    streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "pageview-region-lambda-example");
+    streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "StartFromStartExample");
     // Where to find Kafka broker(s).
     streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
     // Where to find the Confluent schema registry instance(s)
@@ -137,8 +132,11 @@ public class PageViewRegion {
     // Create a keyed stream of page view events from the PageViews stream,
     // by extracting the user id (String) from the Avro value
     final KStream<String, GenericRecord> viewsByUser = views
-      .map((dummy, record) ->
-        new KeyValue<>(record.get("user").toString(), record));
+      .map((dummy, record) -> {
+                //System.out.println(record.get("user").toString() + " " + record);
+                return new KeyValue<>(record.get("user").toString(), record);
+          }
+       );
 
     // Create a changelog stream for user profiles from the UserProfiles topic,
     // where the key of a record is assumed to be the user id (String) and its value
@@ -148,27 +146,25 @@ public class PageViewRegion {
 
     // Create a changelog stream as a projection of the value to the region attribute only
     final KTable<String, String> userRegions = userProfiles.mapValues(record ->
-      record.get("region").toString());
+            {
+              return record.get("region").toString();
 
+            }
+    );
+    userRegions.foreach( (x, y) -> {
+      System.out.println(x + " " + y);
+
+    } );
+ /*
     // We must specify the Avro schemas for all intermediate (Avro) classes, if any.
     // In this example, we want to create an intermediate GenericRecord to hold the view region.
     // See `pageviewregion.avsc` under `src/main/avro/`.
     final InputStream
       pageViewRegionSchema =
-      PageViewRegion.class.getClassLoader()
+      StartFromStartExample.class.getClassLoader()
         .getResourceAsStream("avro/io/confluent/examples/streams/pageviewregion.avsc");
     final Schema schema = new Schema.Parser().parse(pageViewRegionSchema);
 
-    viewsByUser.leftJoin(userRegions, (view, region) -> {
-      GenericRecord viewRegion = new GenericData.Record(schema);
-      viewRegion.put("user", view.get("user"));
-      viewRegion.put("page", view.get("page"));
-      viewRegion.put("region", region);
-      return (String)viewRegion.get("region");
-    }).to(stringSerde, stringSerde, "xx");
-
-
- /*
     final KTable<Windowed<String>, Long> viewsByRegion = viewsByUser
       .leftJoin(userRegions, (view, region) -> {
         GenericRecord viewRegion = new GenericData.Record(schema);
