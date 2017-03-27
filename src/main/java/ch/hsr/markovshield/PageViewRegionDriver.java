@@ -67,7 +67,7 @@ public class PageViewRegionDriver {
     final KafkaProducer<String, GenericRecord> producer = new KafkaProducer<>(props);
 
     final GenericRecordBuilder pageViewBuilder =
-      new GenericRecordBuilder(loadSchema("pageview.avsc"));
+      new GenericRecordBuilder(loadSchema("click.avsc"));
     final GenericRecordBuilder userProfileBuilder =
       new GenericRecordBuilder(loadSchema("userprofile.avsc"));
 

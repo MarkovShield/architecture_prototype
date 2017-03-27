@@ -1,0 +1,8 @@
+{"namespace": "io.confluent.examples.streams.avro",
+ "type": "record",
+ "name": "UserSessionMapping",
+ "fields": [
+     {"name": "session", "type": "string"},
+     {"name": "user", "type": "string"}
+ ]
+}

@@ -130,7 +130,7 @@ public class PageViewRegion {
 
     // Create a stream of page view events from the PageViews topic, where the key of
     // a record is assumed to be null and the value an Avro GenericRecord
-    // that represents the full details of the page view event. See `pageview.avsc` under
+    // that represents the full details of the page view event. See `click.avsc` under
     // `src/main/avro/` for the corresponding Avro schema.
     final KStream<String, GenericRecord> views = builder.stream("PageViews");
 
