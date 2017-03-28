@@ -27,9 +27,13 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
 
 /**
  * This is a sample driver for the {@link PageViewRegion}.
@@ -54,32 +58,31 @@ public class MarkovClickAndLoginGenerator {
 
     private static void produceInputs() throws IOException {
         final List<Session> logins = new LinkedList<>();
-        logins.add(new Session("1", "Kilian"));
-        logins.add(new Session("2", "Philip"));
-        logins.add(new Session("3", "Kilian"));
-        logins.add(new Session("4", "Matthias"));
-        logins.add(new Session("5", "Ivan"));
         final List<Click> clicks = new LinkedList<>();
-        clicks.add(new Click("1", "index.htlm"));
-        clicks.add(new Click("1", "overview.html"));
-        clicks.add(new Click("1", "logout.html"));
-        clicks.add(new Click("2", "index2.htlm"));
-        clicks.add(new Click("2", "overview2.html"));
-        clicks.add(new Click("2", "logout2.html"));
-        clicks.add(new Click("3", "index3.htlm"));
-        clicks.add(new Click("3", "overview3.html"));
-        clicks.add(new Click("3", "logout3.html"));
-        clicks.add(new Click("4", "index4.htlm"));
-        clicks.add(new Click("4", "overview4.html"));
-        clicks.add(new Click("4", "logout4.html"));
-        clicks.add(new Click("5", "index.htlm"));
-        clicks.add(new Click("5", "overview.html"));
-        clicks.add(new Click("5", "logout.html"));
-        clicks.add(new Click("5", "index.htlm"));
-        clicks.add(new Click("5", "overview.html"));
-        clicks.add(new Click("5", "logout.html"));
 
-        final Serde<String> stringSerde = Serdes.String();
+        final List<String> users = new LinkedList<String>();
+        users.add("Kilian");
+        users.add("Philip");
+        users.add("Matthias");
+        users.add("Ivan");
+        users.add("Kilian");
+        final List<String> urls = new ArrayList<>();
+        urls.add("index.html");
+        urls.add("logout.html");
+        urls.add("overview.html");
+        urls.add("news.html");
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        for (String user : users){
+            int sessionId = random.nextInt(1, 100000 + 1);
+            logins.add(new Session(String.valueOf(sessionId), user));
+
+            IntStream.range(0, random.nextInt(10)).forEach(
+                value -> {
+                    clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size()))));
+                }
+            );
+        }
+
 
         final Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");

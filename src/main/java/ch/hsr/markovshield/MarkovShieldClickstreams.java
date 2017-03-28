@@ -114,6 +114,8 @@ import static com.google.common.collect.Iterables.*;
  */
 public class MarkovShieldClickstreams {
 
+    public static final String USER_NOT_FOUND = "--------------------NOT FOUND---------------------------";
+
     public static void main(final String[] args) throws Exception {
         final Properties streamsConfiguration = new Properties();
 
@@ -127,12 +129,6 @@ public class MarkovShieldClickstreams {
 
         final KStreamBuilder builder = new KStreamBuilder();
 
-        final KStream<String, Click> views = builder.stream("MarkovClicks");
-
-        views.foreach((key, value) -> {
-            System.out.println("Click: " + key + " " + value.toString());
-        });
-
         final KTable<String, Session> sessions = builder.table( "MarkovLogins", "MarkovLoginStore");
 
 
@@ -140,20 +136,36 @@ public class MarkovShieldClickstreams {
             System.out.println("Session: " + key + " " + value.toString());
         });
 
+        final KStream<String, Click> views = builder.stream("MarkovClicks");
+
+        views.foreach((key, value) -> {
+            System.out.println("Click: " + key + " " + value.toString());
+        });
+
+
+
         KTable<String, ClickStream> clickstreams = views.leftJoin(sessions,
                 (view, session) -> {
                     ClickStream clickStream = new ClickStream();
-                    clickStream.setClicks(Collections.singletonList(view));
                     System.out.println(session);
-                    clickStream.setUser(session.getUser());
-                    clickStream.setSession(session.getSession());
+                    if(session != null){
+                        clickStream.setUser(session.getUser());
+                    }else{
+                        clickStream.setUser(USER_NOT_FOUND);
+                    }
+                    clickStream.setSession(view.getSession());
+                    clickStream.setClicks(Collections.singletonList(view));
                     return clickStream;
                 }
         ).groupByKey().reduce(
                 (clickStream, v1) -> {
                     ClickStream aggregatedClickStream = new ClickStream();
                     aggregatedClickStream.setSession(clickStream.getSession());
-                    aggregatedClickStream.setUser(clickStream.getUser());
+                    if(clickStream.getUser().equals(USER_NOT_FOUND)){
+                        aggregatedClickStream.setUser(v1.getUser());
+                    }else{
+                        aggregatedClickStream.setUser(clickStream.getUser());
+                    }
                     aggregatedClickStream.setClicks(Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())));
                     return aggregatedClickStream;
                 }, "MarkovClickStreamAggregation"
