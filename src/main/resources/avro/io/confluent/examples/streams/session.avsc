@@ -1,0 +1,8 @@
+{"namespace": "ch.hsr.markovshield",
+ "type": "record",
+ "name": "Session",
+ "fields": [
+     {"name": "session", "type": "string"},
+     {"name": "user", "type": "string"}
+ ]
+}
