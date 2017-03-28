@@ -116,54 +116,26 @@ public class MarkovShieldClickstreams {
 
     public static void main(final String[] args) throws Exception {
         final Properties streamsConfiguration = new Properties();
-        // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
-        // against which the application is run.
-        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "StartFromStartExample");
-        // Where to find Kafka broker(s).
+
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "MarkovShieldClickstreams");
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        // Where to find the Confluent schema registry instance(s)
         streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
-        // Specify default (de)serializers for record keys and for record values.
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, GenericAvroSerde.class);
+        streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        // Records should be flushed every 10 seconds. This is less than the default
-        // in order to keep this example interactive.
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
 
-        final Serde<String> stringSerde = Serdes.String();
-        final Serde<Long> longSerde = Serdes.Long();
-
         final KStreamBuilder builder = new KStreamBuilder();
-        SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
 
-        SpecificAvroSerde<Click> clickSerde = new SpecificAvroSerde<>(client, new SingletonMap("schema.registry.url","http://localhost:8081"));
-        SpecificAvroSerde<Session> sessionSerde = new SpecificAvroSerde<>(client,  new SingletonMap("schema.registry.url","http://localhost:8081"));
-        SpecificAvroSerde<ClickStream> clickStreamSerde = new SpecificAvroSerde<>(client,  new SingletonMap("schema.registry.url","http://localhost:8081"));
+        final KStream<String, Click> views = builder.stream("MarkovClicks");
 
-        // Create a stream of page view events from the PageViews topic, where the key of
-        // a record is assumed to be null and the value an Avro GenericRecord
-        // that represents the full details of the page view event. See `click.avsc` under
-        // `src/main/avro/` for the corresponding Avro schema.
-        final KStream<String, Click> views = builder.stream(stringSerde, clickSerde,"MarkovClicks");
-        /*
-        KStream<String, OwnClick> mappedViews = views.mapValues(
-                genericRecord -> new OwnClick(genericRecord.get("session").toString(), genericRecord.get("url").toString())
-        );
-           */
         views.foreach((key, value) -> {
             System.out.println("Click: " + key + " " + value.toString());
         });
-        // Create a changelog stream for user profiles from the UserProfiles topic,
-        // where the key of a record is assumed to be the user id (String) and its value
-        // an Avro GenericRecord.  See `userprofile.avsc` under `src/main/avro/` for the
-        // corresponding Avro schema.
-        final KTable<String, Session> sessions = builder.table(stringSerde, sessionSerde, "MarkovLogins", "MarkovLoginStore");
-        /*
-        final KTable<String, OwnLogin> mappedSessions = sessions.mapValues(
-                genericRecord -> new OwnLogin(genericRecord.get("session").toString(), genericRecord.get("user").toString())
-        );
-*/
+
+        final KTable<String, Session> sessions = builder.table( "MarkovLogins", "MarkovLoginStore");
+
+
         sessions.foreach((key, value) -> {
             System.out.println("Session: " + key + " " + value.toString());
         });
@@ -172,6 +144,7 @@ public class MarkovShieldClickstreams {
                 (view, session) -> {
                     ClickStream clickStream = new ClickStream();
                     clickStream.setClicks(Collections.singletonList(view));
+                    System.out.println(session);
                     clickStream.setUser(session.getUser());
                     clickStream.setSession(session.getSession());
                     return clickStream;
@@ -185,96 +158,16 @@ public class MarkovShieldClickstreams {
                     return aggregatedClickStream;
                 }, "MarkovClickStreamAggregation"
         );
-        /*
-        final GenericRecordBuilder clickstreamBuilder =
-                new GenericRecordBuilder(loadSchema("clickstream.avsc"));
 
-        KTable<String, GenericData.Record> clickstreams = mappedViews.leftJoin(mappedSessions,
-                (view, session) -> {
-                    clickstreamBuilder.set("user", session.getUserId());
-                    clickstreamBuilder.set("session", session.getSessionId());
-                    ArrayList<String> strings = new ArrayList<String>() {
 
-                    };
-                    strings.add(view.getUrl());
-                    clickstreamBuilder.set("url", strings);
-                    return clickstreamBuilder.build();
-                }
-
-        ).groupByKey().reduce((clickStream, clickstream2) -> {
-            clickstreamBuilder.set("user", clickStream.get("user"));
-            clickstreamBuilder.set("session", clickStream.get("session"));
-            ArrayList<String> strings = new ArrayList<String>() {
-
-            };
-            strings.addAll((Collection<String>) clickStream.get("url"));
-            strings.addAll((Collection<String>) clickstream2.get("url"));
-            clickstreamBuilder.set("url", strings);
-            return clickstreamBuilder.build();
-        }, "MarkovClickStreamAggregation");
-*/
         clickstreams.foreach((key, value) -> {
-            System.out.println("OwnClickStream: " + key + " " + value.toString());
+            System.out.println("ClickStream: " + key + " " + value.toString());
         });
-        clickstreams.to(stringSerde, clickStreamSerde,"MarkovClickStreams");
+        clickstreams.to("MarkovClickStreams");
 
 
-        /*
-      KStream<String, GenericData.Record> unmappedClickstreams = clickstreams.mapValues(clickStream -> {
-          clickstreamBuilder.set("session", clickStream.getLogin().getSessionId());
-          clickstreamBuilder.set("user", clickStream.getLogin().getUserId());
-          clickstreamBuilder.set("url", clickStream.getClicks().get(0).getUrl());
-          return clickstreamBuilder.build();
-      });
-      unmappedClickstreams.to("MarkovClickStreams");
-      */
-        //countclickstreams.to(stringSerde, longSerde, "MarkovClickStreamCount");
- /*
-    // We must specify the Avro schemas for all intermediate (Avro) classes, if any.
-    // In this example, we want to create an intermediate GenericRecord to hold the view region.
-    // See `pageviewregion.avsc` under `src/main/avro/`.
-    final InputStream
-      pageViewRegionSchema =
-      StartFromStartExample.class.getClassLoader()
-        .getResourceAsStream("avro/io/confluent/examples/streams/pageviewregion.avsc");
-    final Schema schema = new Schema.Parser().parse(pageViewRegionSchema);
-
-    final KTable<Windowed<String>, Long> viewsByRegion = viewsByUser
-      .leftJoin(userRegions, (view, region) -> {
-        GenericRecord viewRegion = new GenericData.Record(schema);
-        viewRegion.put("user", view.get("user"));
-        viewRegion.put("page", view.get("page"));
-        viewRegion.put("region", region);
-        return viewRegion;
-      })
-      .map((user, viewRegion) -> new KeyValue<>(viewRegion.get("region").toString(), viewRegion))
-      // count views by region, using hopping windows of size 5 minutes that advance every 1 minute
-      .groupByKey() // no need to specify explicit serdes because the resulting key and value types match our default serde settings
-      .count(TimeWindows.of(5 * 60 * 1000L).advanceBy(60 * 1000L), "GeoPageViewsStore");
-
-    // Note: The following operations would NOT be needed for the actual pageview-by-region
-    // computation, which would normally stop at `count` above.  We use the operations
-    // below only to "massage" the output data so it is easier to inspect on the console via
-    // kafka-console-consumer.
-    final KStream<String, Long> viewsByRegionForConsole = viewsByRegion
-      // get rid of windows (and the underlying KTable) by transforming the KTable to a KStream
-      // and by also converting the record key from type `Windowed<String>` (which
-      // kafka-console-consumer can't print to console out-of-the-box) to `String`
-      .toStream((windowedRegion, count) -> windowedRegion.toString());
-
-    viewsByRegionForConsole.to(stringSerde, longSerde, "PageViewsByRegion");
-*/
         final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);
-        // Always (and unconditionally) clean local state prior to starting the processing topology.
-        // We opt for this unconditional call here because this will make it easier for you to play around with the example
-        // when resetting the application for doing a re-run (via the Application Reset Tool,
-        // http://docs.confluent.io/current/streams/developer-guide.html#application-reset-tool).
-        //
-        // The drawback of cleaning up local state prior is that your app must rebuilt its local state from scratch, which
-        // will take time and will require reading all the state-relevant data from the Kafka cluster over the network.
-        // Thus in a production scenario you typically do not want to clean up always as we do here but rather only when it
-        // is truly needed, i.e., only under certain conditions (e.g., the presence of a command line flag for your app).
-        // See `ApplicationResetExample.java` for a production-like example.
+
         streams.cleanUp();
         streams.start();
 
@@ -282,12 +175,6 @@ public class MarkovShieldClickstreams {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
 
-    private static Schema loadSchema(final String name) throws IOException {
-        try (InputStream input = PageViewRegion.class.getClassLoader()
-                .getResourceAsStream("avro/io/confluent/examples/streams/" + name)) {
-            return new Schema.Parser().parse(input);
-        }
-    }
 }
 
 
