@@ -32,3 +32,30 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema_registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      
+  jobmanager:
+    image: flink
+    hostname: jobmanager
+    container_name: "jobmanager"
+    expose:
+      - "6123"
+    ports:
+      - "50100-50200:50100-50200"
+      - "6123:6123"
+      - "48081:8081"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  taskmanager:
+    image: flink
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - "jobmanager:jobmanager"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
