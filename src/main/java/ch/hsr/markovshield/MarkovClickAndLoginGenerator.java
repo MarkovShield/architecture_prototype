@@ -35,6 +35,8 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
+import static java.lang.Thread.sleep;
+
 /**
  * This is a sample driver for the {@link PageViewRegion}.
  * To run this driver please first refer to the instructions in {@link PageViewRegion}.
@@ -52,11 +54,11 @@ import java.util.stream.IntStream;
  */
 public class MarkovClickAndLoginGenerator {
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException, InterruptedException {
         produceInputs();
     }
 
-    private static void produceInputs() throws IOException {
+    private static void produceInputs() throws IOException, InterruptedException {
         final List<Session> logins = new LinkedList<>();
         final List<Click> clicks = new LinkedList<>();
 
@@ -103,12 +105,25 @@ public class MarkovClickAndLoginGenerator {
         final String loginTopic = "MarkovLogins";
         final String clickTopic = "MarkovClicks";
 
+        final List<Click> clicksBeforeLogin = new LinkedList<>();
+        clicksBeforeLogin.add(new Click(logins.get(0).getSession(), "start.html"));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSession(), "login.html"));
+        clicksBeforeLogin.add(new Click(logins.get(1).getSession(), "start.html"));
+        clicksBeforeLogin.add(new Click(logins.get(2).getSession(), "start.html"));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSession(), "xxx.html"));
 
+        for (Click click : clicksBeforeLogin) {
+
+            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSession().toString(), click));
+            clickProducer.flush();
+        }
+
+        sleep(1000);
         for (Session login : logins) {
             loginProducer.send(new ProducerRecord<String, Session>(loginTopic, login.getSession().toString(), login));
             loginProducer.flush();
         }
-
+        sleep(1000);
         for (Click click : clicks) {
 
             clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSession().toString(), click));

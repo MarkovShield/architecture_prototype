@@ -161,10 +161,9 @@ public class MarkovShieldClickstreams {
                 (clickStream, v1) -> {
                     ClickStream aggregatedClickStream = new ClickStream();
                     aggregatedClickStream.setSession(clickStream.getSession());
-                    if(clickStream.getUser().equals(USER_NOT_FOUND)){
+                    aggregatedClickStream.setUser(clickStream.getUser());
+                    if(clickStream.getUser().toString().equals(USER_NOT_FOUND) && !(clickStream.getUser().equals(v1.getUser()))){
                         aggregatedClickStream.setUser(v1.getUser());
-                    }else{
-                        aggregatedClickStream.setUser(clickStream.getUser());
                     }
                     aggregatedClickStream.setClicks(Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())));
                     return aggregatedClickStream;
