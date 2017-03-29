@@ -3,15 +3,13 @@
  *
  * DO NOT EDIT DIRECTLY
  */
-package ch.hsr.markovshield;
-
-import org.apache.avro.specific.SpecificData;
+package ch.hsr.markovshield.models;
 
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class Session extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
   private static final long serialVersionUID = 7412211821263870979L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Session\",\"namespace\":\"ch.hsr.markovshield\",\"fields\":[{\"name\":\"session\",\"type\":\"string\"},{\"name\":\"user\",\"type\":\"string\"}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Session\",\"namespace\":\"ch.hsr.markovshield.models\",\"fields\":[{\"name\":\"session\",\"type\":\"string\"},{\"name\":\"user\",\"type\":\"string\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
   @Deprecated public CharSequence session;
   @Deprecated public CharSequence user;

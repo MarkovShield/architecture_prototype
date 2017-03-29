@@ -1,4 +1,4 @@
-{"namespace": "ch.hsr.markovshield",
+{"namespace": "ch.hsr.markovshield.models",
  "type": "record",
  "name": "Session",
  "fields": [

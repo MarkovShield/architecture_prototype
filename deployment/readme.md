@@ -25,14 +25,14 @@ mvn clean compile assembly:single
 ### run
 #### Windows
 ```bash
-java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.MarkovClickAndLoginGenerator
-java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.MarkovShieldClickstreams
+java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
+java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
 ```
 
 #### macOS/Linux
 ```bash
-java -cp target/kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.MarkovClickAndLoginGenerator
-java -cp target/kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.MarkovShieldClickstreams
+java -cp target/kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
+java -cp target/kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
 ```
 
 #### build

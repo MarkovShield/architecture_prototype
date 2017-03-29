@@ -3,12 +3,12 @@
  * <p>
  * DO NOT EDIT DIRECTLY
  */
-package ch.hsr.markovshield;
+package ch.hsr.markovshield.models;
 
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class ClickStream extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-    public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ClickStream\",\"namespace\":\"ch.hsr.markovshield\",\"fields\":[{\"name\":\"session\",\"type\":\"string\"},{\"name\":\"user\",\"type\":\"string\"},{\"name\":\"clicks\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"Click\",\"fields\":[{\"name\":\"session\",\"type\":\"string\"},{\"name\":\"url\",\"type\":\"string\"}]}}}]}");
+    public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ClickStream\",\"namespace\":\"ch.hsr.markovshield.models\",\"fields\":[{\"name\":\"session\",\"type\":\"string\"},{\"name\":\"user\",\"type\":\"string\"},{\"name\":\"clicks\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"Click\",\"fields\":[{\"name\":\"session\",\"type\":\"string\"},{\"name\":\"url\",\"type\":\"string\"}]}}}]}");
     private static final long serialVersionUID = 397704532979096390L;
     private static final org.apache.avro.io.DatumWriter
             WRITER$ = new org.apache.avro.specific.SpecificDatumWriter(SCHEMA$);
