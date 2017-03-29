@@ -17,7 +17,7 @@ import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
 import java.util.Properties;
 
-import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Iterables.concat;
 
 public class MarkovShieldClickstreams {
 
