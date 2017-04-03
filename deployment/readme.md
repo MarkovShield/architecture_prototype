@@ -22,6 +22,10 @@ kafka-console-consumer --zookeeper zookeeper:2181 --topic PageViewsByRegion --fr
 ```bash
 mvn clean compile assembly:single
 ```
+### delete all docker images ONLY for breaking changes
+```bash
+FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
+```
 ### run
 #### Windows
 ```bash
