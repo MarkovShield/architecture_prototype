@@ -28,7 +28,9 @@ mvn clean compile assembly:single
 java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
 java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
 ```
-
+```bash
+bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\kafka_streaming_playground\target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar
+```
 #### macOS/Linux
 ```bash
 java -cp target/kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
