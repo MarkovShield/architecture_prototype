@@ -50,7 +50,7 @@ public class Click extends org.apache.avro.specific.SpecificRecordBase implement
     }
 
     /**
-     * Creates a new Click RecordBuilder by copying an existing Builder.
+     * Creates a new Click RecordBuilder by copying an existing SessionBuilder.
      * @param other The existing builder to copy.
      * @return A new Click RecordBuilder
      */
@@ -139,14 +139,14 @@ public class Click extends org.apache.avro.specific.SpecificRecordBase implement
         private java.lang.CharSequence session;
         private java.lang.CharSequence url;
 
-        /** Creates a new Builder */
+        /** Creates a new SessionBuilder */
         private Builder() {
             super(SCHEMA$);
         }
 
         /**
-         * Creates a Builder by copying an existing Builder.
-         * @param other The existing Builder to copy.
+         * Creates a SessionBuilder by copying an existing SessionBuilder.
+         * @param other The existing SessionBuilder to copy.
          */
         private Builder(Click.Builder other) {
             super(other);
@@ -161,7 +161,7 @@ public class Click extends org.apache.avro.specific.SpecificRecordBase implement
         }
 
         /**
-         * Creates a Builder by copying an existing Click instance
+         * Creates a SessionBuilder by copying an existing Click instance
          * @param other The existing instance to copy.
          */
         private Builder(Click other) {

@@ -54,7 +54,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
     }
 
     /**
-     * Creates a new ClickStream RecordBuilder by copying an existing Builder.
+     * Creates a new ClickStream RecordBuilder by copying an existing SessionBuilder.
      * @param other The existing builder to copy.
      * @return A new ClickStream RecordBuilder
      */
@@ -165,14 +165,14 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
         private java.lang.CharSequence user;
         private java.util.List<Click> clicks;
 
-        /** Creates a new Builder */
+        /** Creates a new SessionBuilder */
         private Builder() {
             super(SCHEMA$);
         }
 
         /**
-         * Creates a Builder by copying an existing Builder.
-         * @param other The existing Builder to copy.
+         * Creates a SessionBuilder by copying an existing SessionBuilder.
+         * @param other The existing SessionBuilder to copy.
          */
         private Builder(ClickStream.Builder other) {
             super(other);
@@ -191,7 +191,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
         }
 
         /**
-         * Creates a Builder by copying an existing ClickStream instance
+         * Creates a SessionBuilder by copying an existing ClickStream instance
          * @param other The existing instance to copy.
          */
         private Builder(ClickStream other) {

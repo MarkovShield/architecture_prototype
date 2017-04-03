@@ -22,7 +22,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams</mainClass>
+                            <mainClass>ch.hsr.markovshield.flink.MarkovShieldAnalyser</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

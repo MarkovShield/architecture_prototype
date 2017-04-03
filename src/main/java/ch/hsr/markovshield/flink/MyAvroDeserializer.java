@@ -19,7 +19,6 @@ import java.util.Map;
 public class MyAvroDeserializer<T> implements KeyedDeserializationSchema<T> {
 
     private final Class<T> avroType;
-//    private KafkaAvroDecoder decoder;
     private KafkaAvroDeserializer inner;
 
     public MyAvroDeserializer(Class<T> avroType) {
@@ -30,12 +29,9 @@ public class MyAvroDeserializer<T> implements KeyedDeserializationSchema<T> {
         System.out.println("deserialize: " + new String(message));
         if(inner == null){
             inner = new KafkaAvroDeserializer(new CachedSchemaRegistryClient("http://schema_registry:8081", 100));
-/*
-            SchemaRegistryClient schemaRegistry = new CachedSchemaRegistryClient("http://schema_registry:8081",100);
-            this.decoder = new KafkaAvroDecoder(schemaRegistry);*/
         }
         System.out.println("deserializer: " + inner + " " + message);
-        return (T) this.inner.deserialize("MarkovLogins",message);
+        return (T) this.inner.deserialize("xx",message);
     }
 
     @Override
@@ -46,14 +42,15 @@ public class MyAvroDeserializer<T> implements KeyedDeserializationSchema<T> {
             settings.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG,true);
             settings.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://schema_registry:8081");
             inner = new KafkaAvroDeserializer(new CachedSchemaRegistryClient("http://schema_registry:8081", 100), settings);
-/*
-            SchemaRegistryClient schemaRegistry = new CachedSchemaRegistryClient("http://schema_registry:8081",100);
-            this.decoder = new KafkaAvroDecoder(schemaRegistry);*/
+
         }
         System.out.println("deserializer: " + inner + " s: "  + s +  " bytes" + bytes );
         System.out.println("key: " + new String(bytes));
-        System.out.println((T) this.inner.deserialize(s,bytes1));
-        return (T) this.inner.deserialize(s,bytes1);
+        T x = (T) this.inner.deserialize(s, bytes1);
+
+        System.out.println(x);
+        System.out.println("FINISHED deserialisation");
+        return x;
     }
 
     public boolean isEndOfStream(T nextElement) {
