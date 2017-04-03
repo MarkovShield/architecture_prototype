@@ -5,7 +5,6 @@ import ch.hsr.markovshield.models.ClickStreamValidation;
 import ch.hsr.markovshield.models.MarkovRating;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -43,7 +42,6 @@ public class MarkovShieldAnalyser {
                     @Override
                     public ClickStream deserialize(byte[] bytes, byte[] bytes1, String s, int i, long l) throws IOException {
                         ObjectMapper mapper = new ObjectMapper();
-                        mapper.registerModule(new JSR310Module());
                         return mapper.readValue(bytes1, ClickStream.class);
                     }
 
@@ -74,7 +72,6 @@ public class MarkovShieldAnalyser {
                 public byte[] serializeValue(ClickStreamValidation validation) {
                     try {
                         ObjectMapper mapper = new ObjectMapper();
-                        mapper.registerModule(new JSR310Module());
                         return mapper.writeValueAsBytes(validation);
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();

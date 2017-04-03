@@ -12,6 +12,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -41,8 +42,8 @@ public class MarkovModelGenerator {
             int transisitionModelRating = random.nextInt(1, 100);
             int frequencyModelRating = random.nextInt(1, 100);
             UserModel userModel = new UserModel(user,
-                new TransitionModel(transisitionModelRating),
-                new FrequencyModel(frequencyModelRating));
+                new TransitionModel(transisitionModelRating, Instant.now()),
+                new FrequencyModel(frequencyModelRating, Instant.now()));
             userModels.add(userModel);
         }
 

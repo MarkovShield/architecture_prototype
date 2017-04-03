@@ -37,10 +37,10 @@ public class UserModel {
     }
 
     public Instant timeCreated() {
-        if (this.frequencyModel.timeCreated().isBefore(this.transitionModel.timeCreated())) {
-            return this.frequencyModel.timeCreated();
+        if (this.frequencyModel.getTimeCreated().isBefore(this.transitionModel.getTimeCreated())) {
+            return this.frequencyModel.getTimeCreated();
         }
-        return this.transitionModel.timeCreated();
+        return this.transitionModel.getTimeCreated();
     }
 
     @Override
