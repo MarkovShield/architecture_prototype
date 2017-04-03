@@ -3,9 +3,9 @@ package ch.hsr.markovshield.kafkastream;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.utils.SpecificAvroSerde;
 import com.google.common.collect.Lists;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import org.apache.hadoop.mapreduce.tools.CLI;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -30,20 +30,21 @@ public class MarkovShieldClickstreams {
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG,Serdes.String().getClass().getName());
+
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
 
         final KStreamBuilder builder = new KStreamBuilder();
 
-        final KTable<String, Session> sessions = builder.table( "MarkovLogins", "MarkovLoginStore");
+        final KTable<String, Session> sessions = builder.table( Serdes.String(), new JsonPOJOSerde<>(Session.class),"MarkovLogins", "MarkovLoginStore");
 
 
         sessions.foreach((key, value) -> {
             System.out.println("Session: " + key + " " + value.toString());
         });
 
-        final KStream<String, Click> views = builder.stream("MarkovClicks");
+        final KStream<String, Click> views = builder.stream(Serdes.String(), new JsonPOJOSerde<>(Click.class),"MarkovClicks");
 
         views.foreach((key, value) -> {
             System.out.println("Click: " + key + " " + value.toString());
@@ -63,8 +64,8 @@ public class MarkovShieldClickstreams {
                     clickStream.setSession(view.getSession());
                     clickStream.setClicks(Collections.singletonList(view));
                     return clickStream;
-                }
-        ).groupByKey().reduce(
+                }, Serdes.String(), new JsonPOJOSerde<>(Click.class)
+        ).groupByKey( Serdes.String(), new JsonPOJOSerde<>(ClickStream.class)).reduce(
                 (clickStream, v1) -> {
                     ClickStream aggregatedClickStream = new ClickStream();
                     aggregatedClickStream.setSession(clickStream.getSession());
@@ -81,7 +82,7 @@ public class MarkovShieldClickstreams {
         clickstreams.foreach((key, value) -> {
             System.out.println("ClickStream: " + key + " " + value.toString());
         });
-        clickstreams.to("MarkovClickStreams");
+        clickstreams.to(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class),"MarkovClickStreams");
 
 
         final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);

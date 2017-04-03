@@ -2,7 +2,6 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.utils.SpecificAvroSerializer;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -59,18 +58,16 @@ public class MarkovClickAndLoginGenerator {
         final Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, SpecificAvroSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerde.class);
 
         properties.put("schema.registry.url", "http://localhost:8081");
 
 
         SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
 
-        Serializer<Session> sessionSer = new SpecificAvroSerializer<>(client);
-        Serializer<Click> clickSer = new SpecificAvroSerializer<>(client);
 
-        final KafkaProducer<String, Session> loginProducer = new KafkaProducer<String, Session>(properties, Serdes.String().serializer(), sessionSer);
-        final KafkaProducer<String, Click> clickProducer = new KafkaProducer<String, Click>(properties, Serdes.String().serializer(), clickSer);
+        final KafkaProducer<String, Session> loginProducer = new KafkaProducer<String, Session>(properties, Serdes.String().serializer(), new JsonPOJOSerde<Session>(Session.class).serializer());
+        final KafkaProducer<String, Click> clickProducer = new KafkaProducer<String, Click>(properties, Serdes.String().serializer(), new JsonPOJOSerde<Click>(Click.class).serializer());
 
         final String loginTopic = "MarkovLogins";
         final String clickTopic = "MarkovClicks";

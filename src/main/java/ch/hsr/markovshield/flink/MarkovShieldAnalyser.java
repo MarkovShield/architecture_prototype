@@ -1,12 +1,14 @@
 package ch.hsr.markovshield.flink;
 
 import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.models.xx;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
+import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserializationSchema;
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 
 import java.util.Properties;
@@ -22,8 +24,8 @@ public class MarkovShieldAnalyser {
         properties.setProperty("bootstrap.servers", "broker:9092");
         properties.setProperty("zookeeper.connect", "zookeeper:2181");
         properties.setProperty("group.id", "test");
-        DataStream<xx> stream = env
-                .addSource(new FlinkKafkaConsumer010<xx>("xx", new MyAvroDeserializer<>(xx.class), properties));
+        DataStreamSource<ObjectNode> stream = env
+                .addSource(new FlinkKafkaConsumer010<>("MarkovLogins", new JSONKeyValueDeserializationSchema(false), properties));
 
         SingleOutputStreamOperator<String> sessionStream = stream.map(session -> session.toString());
         FlinkKafkaProducer010<String> producer = new FlinkKafkaProducer010<String>("broker:9092", "xxx",new SimpleStringSchema());
