@@ -1,49 +1,38 @@
 package ch.hsr.markovshield.models;
 
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
-/**
- * Created by maede on 03.04.2017.
- */
+
 public class ClickStream {
-    private String user;
-    private String session;
-    private List<Click> clicks;
-    private UserModel userModel;
 
-    public ClickStream() {
-    }
+    private final String userName;
+    private final String sessionId;
+    private final List<Click> clicks;
+    private final UserModel userModel;
 
-    public ClickStream(String user, String session, List<Click> clicks, UserModel userModel) {
-        this.user = user;
-        this.session = session;
+    @JsonCreator
+    public ClickStream(@JsonProperty ("userName") String userName,
+                       @JsonProperty ("sessionId") String sessionId,
+                       @JsonProperty ("clicks") List<Click> clicks,
+                       @JsonProperty ("userModel") UserModel userModel) {
+        this.userName = userName;
+        this.sessionId = sessionId;
         this.clicks = clicks;
         this.userModel = userModel;
     }
 
-    public String getUser() {
-        return user;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getSession() {
-        return session;
-    }
-
-    public void setSession(String session) {
-        this.session = session;
+    public String getSessionId() {
+        return sessionId;
     }
 
     public List<Click> getClicks() {
         return clicks;
-    }
-
-    public void setClicks(List<Click> clicks) {
-        this.clicks = clicks;
     }
 
     public UserModel getUserModel() {
@@ -53,14 +42,10 @@ public class ClickStream {
     @Override
     public String toString() {
         return "ClickStream{" +
-                "user='" + user + '\'' +
-                ", session='" + session + '\'' +
-                ", clicks=" + clicks +
-                ", userModel=" + userModel +
-                '}';
-    }
-
-    public void setUserModel(UserModel userModel) {
-        this.userModel = userModel;
+            "userName='" + userName + '\'' +
+            ", sessionId='" + sessionId + '\'' +
+            ", clicks=" + clicks +
+            ", userModel=" + userModel +
+            '}';
     }
 }

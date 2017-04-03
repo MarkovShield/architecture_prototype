@@ -1,6 +1,8 @@
 package ch.hsr.markovshield.kafkastream;
 
-import ch.hsr.markovshield.models.*;
+import ch.hsr.markovshield.models.FrequencyModel;
+import ch.hsr.markovshield.models.TransitionModel;
+import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
@@ -9,14 +11,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
 
 import static java.lang.Thread.sleep;
 
@@ -41,7 +40,9 @@ public class MarkovModelGenerator {
         for (String user : users) {
             int transisitionModelRating = random.nextInt(1, 100);
             int frequencyModelRating = random.nextInt(1, 100);
-            UserModel userModel = new UserModel(user, new TransitionModel(transisitionModelRating), new FrequencyModel(frequencyModelRating));
+            UserModel userModel = new UserModel(user,
+                new TransitionModel(transisitionModelRating),
+                new FrequencyModel(frequencyModelRating));
             userModels.add(userModel);
         }
 
@@ -56,18 +57,20 @@ public class MarkovModelGenerator {
 
         SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
 
-        final KafkaProducer<String, UserModel> modelProducer = new KafkaProducer<String, UserModel>(properties, Serdes.String().serializer(), new JsonPOJOSerde<UserModel>(UserModel.class).serializer());
+        final KafkaProducer<String, UserModel> modelProducer = new KafkaProducer<String, UserModel>(properties,
+            Serdes.String().serializer(),
+            new JsonPOJOSerde<UserModel>(UserModel.class).serializer());
 
         final String modelTopic = "MarkovUserModels";
 
         sleep(1000);
         for (UserModel userModel : userModels) {
-            modelProducer.send(new ProducerRecord<String, UserModel>(modelTopic, userModel.getUser().toString(), userModel));
+            modelProducer.send(new ProducerRecord<String, UserModel>(modelTopic,
+                userModel.getUser().toString(),
+                userModel));
             modelProducer.flush();
         }
 
-
     }
-
 
 }

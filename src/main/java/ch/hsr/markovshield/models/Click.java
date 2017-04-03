@@ -1,41 +1,34 @@
 package ch.hsr.markovshield.models;
 
-/**
- * Created by maede on 03.04.2017.
- */
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Click {
-    private String session;
-    private String url;
 
-    public Click() {
-    }
+    private final String sessionId;
+    private final String url;
 
-    public Click(String session, String url) {
-        this.session = session;
+    @JsonCreator
+    public Click(@JsonProperty ("sessionId") String sessionId,
+                 @JsonProperty ("url") String url) {
+        this.sessionId = sessionId;
         this.url = url;
     }
 
-    public String getSession() {
-        return session;
-    }
-
-    public void setSession(String session) {
-        this.session = session;
+    public String getSessionId() {
+        return sessionId;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
     @Override
     public String toString() {
         return "Click{" +
-                "session='" + session + '\'' +
-                ", url='" + url + '\'' +
-                '}';
+            "sessionId='" + sessionId + '\'' +
+            ", url='" + url + '\'' +
+            '}';
     }
 }

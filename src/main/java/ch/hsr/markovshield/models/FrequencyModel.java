@@ -1,28 +1,26 @@
 package ch.hsr.markovshield.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Random;
 
-/**
- * Created by maede on 03.04.2017.
- */
+
 public class FrequencyModel {
-    private int frequencyValue;
+
+    private final int frequencyValue;
 
     public FrequencyModel() {
         frequencyValue = new Random().nextInt(100);
     }
 
-    public FrequencyModel(int frequencyValue) {
+    @JsonCreator
+    public FrequencyModel(@JsonProperty ("frequencyValue") int frequencyValue) {
         this.frequencyValue = frequencyValue;
     }
 
     public int getFrequencyValue() {
         return frequencyValue;
-    }
-
-    public void setFrequencyValue(int frequencyValue) {
-        this.frequencyValue = frequencyValue;
     }
 
     public Instant timeCreated() {
@@ -32,7 +30,7 @@ public class FrequencyModel {
     @Override
     public String toString() {
         return "FrequencyModel{" +
-                "frequencyValue=" + frequencyValue +
-                '}';
+            "frequencyValue=" + frequencyValue +
+            '}';
     }
 }

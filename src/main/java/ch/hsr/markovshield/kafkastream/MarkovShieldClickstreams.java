@@ -7,8 +7,6 @@ import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import com.google.common.collect.Lists;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
-import org.apache.flink.api.java.tuple.Tuple12;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -16,7 +14,6 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
-
 import java.util.Collections;
 import java.util.Properties;
 
@@ -40,8 +37,14 @@ public class MarkovShieldClickstreams {
 
         final KStreamBuilder builder = new KStreamBuilder();
 
-        final KTable<String, Session> sessions = builder.table(Serdes.String(), new JsonPOJOSerde<>(Session.class), "MarkovLogins", "MarkovLoginStore");
-        final KTable<String, UserModel> userModels = builder.table(Serdes.String(), new JsonPOJOSerde<>(UserModel.class), "MarkovUserModels", "MarkovUserModelStore");
+        final KTable<String, Session> sessions = builder.table(Serdes.String(),
+            new JsonPOJOSerde<>(Session.class),
+            "MarkovLogins",
+            "MarkovLoginStore");
+        final KTable<String, UserModel> userModels = builder.table(Serdes.String(),
+            new JsonPOJOSerde<>(UserModel.class),
+            "MarkovUserModels",
+            "MarkovUserModelStore");
 
         userModels.foreach((key, value) -> {
             System.out.println("UserModel: " + key + " " + value.toString());
@@ -51,7 +54,9 @@ public class MarkovShieldClickstreams {
             System.out.println("Session: " + key + " " + value.toString());
         });
 
-        final KStream<String, Click> views = builder.stream(Serdes.String(), new JsonPOJOSerde<>(Click.class), "MarkovClicks");
+        final KStream<String, Click> views = builder.stream(Serdes.String(),
+            new JsonPOJOSerde<>(Click.class),
+            "MarkovClicks");
 
         views.foreach((key, value) -> {
             System.out.println("Click: " + key + " " + value.toString());
@@ -59,35 +64,36 @@ public class MarkovShieldClickstreams {
 
 
         KTable<String, ClickStream> clickstreams = views.leftJoin(sessions,
-                (view, session) -> {
-                    ClickStream clickStream = new ClickStream();
-                    System.out.println(session);
-                    if (session != null) {
-                        clickStream.setUser(session.getUser());
-                    } else {
-                        clickStream.setUser(USER_NOT_FOUND);
-                    }
-                    clickStream.setSession(view.getSession());
-                    clickStream.setClicks(Collections.singletonList(view));
-                    return clickStream;
-                }, Serdes.String(), new JsonPOJOSerde<>(Click.class)
+            (view, session) -> {
+                String newUserName;
+                if (session != null) {
+                    newUserName = session.getUserName();
+                } else {
+                    newUserName = USER_NOT_FOUND;
+                }
+                return new ClickStream(newUserName, view.getSessionId(), Collections.singletonList(view), null);
+            }, Serdes.String(), new JsonPOJOSerde<>(Click.class)
         ).groupByKey(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class)).reduce(
-                (clickStream, v1) -> {
-                    ClickStream aggregatedClickStream = new ClickStream();
-                    aggregatedClickStream.setSession(clickStream.getSession());
-                    aggregatedClickStream.setUser(clickStream.getUser());
-                    if (clickStream.getUser().toString().equals(USER_NOT_FOUND) && !(clickStream.getUser().equals(v1.getUser()))) {
-                        aggregatedClickStream.setUser(v1.getUser());
-                    }
-                    aggregatedClickStream.setClicks(Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())));
-                    return aggregatedClickStream;
-                }, "MarkovClickStreamAggregation"
+            (clickStream, v1) -> {
+                String userName = clickStream.getUserName();
+                if (clickStream.getUserName().toString().equals(USER_NOT_FOUND) && !(clickStream.getUserName()
+                    .equals(v1.getUserName()))) {
+                    userName = v1.getUserName();
+                }
+                return new ClickStream(userName,
+                    clickStream.getSessionId(),
+                    Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())),
+                    null);
+            }, "MarkovClickStreamAggregation"
         );
-        KStream<String, ClickStream> userClickStreams = clickstreams.toStream((s, clickStream) -> clickStream.getUser());
-        KStream<String, ClickStream> clickStreamsWithModel = userClickStreams.leftJoin(userModels, (clickStream, userModel) -> {
-            clickStream.setUserModel(userModel);
-            return clickStream;
-        }, Serdes.String(), new JsonPOJOSerde<>(ClickStream.class));
+        KStream<String, ClickStream> userClickStreams = clickstreams.toStream((s, clickStream) -> clickStream.getUserName());
+        KStream<String, ClickStream> clickStreamsWithModel = userClickStreams.leftJoin(userModels,
+            (clickStream, userModel) -> new ClickStream(clickStream.getUserName(),
+                clickStream.getSessionId(),
+                clickStream.getClicks(),
+                userModel),
+            Serdes.String(),
+            new JsonPOJOSerde<>(ClickStream.class));
 
         clickstreams.foreach((key, value) -> {
             System.out.println("ClickStream: " + key + " " + value.toString());

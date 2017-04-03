@@ -10,7 +10,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -48,9 +47,9 @@ public class MarkovClickAndLoginGenerator {
             logins.add(new Session(String.valueOf(sessionId), user));
 
             IntStream.range(0, random.nextInt(10)).forEach(
-                    value -> {
-                        clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size()))));
-                    }
+                value -> {
+                    clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size()))));
+                }
             );
         }
 
@@ -66,38 +65,41 @@ public class MarkovClickAndLoginGenerator {
         SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
 
 
-        final KafkaProducer<String, Session> loginProducer = new KafkaProducer<String, Session>(properties, Serdes.String().serializer(), new JsonPOJOSerde<Session>(Session.class).serializer());
-        final KafkaProducer<String, Click> clickProducer = new KafkaProducer<String, Click>(properties, Serdes.String().serializer(), new JsonPOJOSerde<Click>(Click.class).serializer());
+        final KafkaProducer<String, Session> loginProducer = new KafkaProducer<String, Session>(properties,
+            Serdes.String().serializer(),
+            new JsonPOJOSerde<Session>(Session.class).serializer());
+        final KafkaProducer<String, Click> clickProducer = new KafkaProducer<String, Click>(properties,
+            Serdes.String().serializer(),
+            new JsonPOJOSerde<Click>(Click.class).serializer());
 
         final String loginTopic = "MarkovLogins";
         final String clickTopic = "MarkovClicks";
 
         final List<Click> clicksBeforeLogin = new LinkedList<>();
-        clicksBeforeLogin.add(new Click(logins.get(0).getSession(), "start.html"));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSession(), "login.html"));
-        clicksBeforeLogin.add(new Click(logins.get(1).getSession(), "start.html"));
-        clicksBeforeLogin.add(new Click(logins.get(2).getSession(), "start.html"));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSession(), "xxx.html"));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "start.html"));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "login.html"));
+        clicksBeforeLogin.add(new Click(logins.get(1).getSessionId(), "start.html"));
+        clicksBeforeLogin.add(new Click(logins.get(2).getSessionId(), "start.html"));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "xxx.html"));
 
         for (Click click : clicksBeforeLogin) {
 
-            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSession().toString(), click));
+            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSessionId().toString(), click));
             clickProducer.flush();
         }
 
         sleep(1000);
         for (Session login : logins) {
-            loginProducer.send(new ProducerRecord<String, Session>(loginTopic, login.getSession().toString(), login));
+            loginProducer.send(new ProducerRecord<String, Session>(loginTopic, login.getSessionId().toString(), login));
             loginProducer.flush();
         }
         sleep(1000);
         for (Click click : clicks) {
 
-            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSession().toString(), click));
+            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSessionId().toString(), click));
             clickProducer.flush();
         }
 
     }
-
 
 }

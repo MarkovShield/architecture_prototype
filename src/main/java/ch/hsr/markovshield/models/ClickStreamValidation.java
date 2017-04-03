@@ -1,45 +1,34 @@
 package ch.hsr.markovshield.models;
 
-/**
- * Created by maede on 03.04.2017.
- */
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ClickStreamValidation {
-    private String session;
-    private int validationScore;
-    private MarkovRatings rating;
 
-    public ClickStreamValidation() {
-    }
+    private final String sessionId;
+    private final int validationScore;
+    private final MarkovRating rating;
 
-    public ClickStreamValidation(String session, int validationScore, MarkovRatings rating) {
-        this.session = session;
+    @JsonCreator
+    public ClickStreamValidation(@JsonProperty ("sessionId") String sessionId,
+                                 @JsonProperty ("validationScore") int validationScore,
+                                 @JsonProperty ("rating") MarkovRating rating) {
+        this.sessionId = sessionId;
         this.validationScore = validationScore;
         this.rating = rating;
     }
 
-    public MarkovRatings getRating() {
+    public MarkovRating getRating() {
         return rating;
     }
 
-    public void setRating(MarkovRatings rating) {
-        this.rating = rating;
-    }
-
-    public String getSession() {
-        return session;
-    }
-
-    public void setSession(String session) {
-        this.session = session;
+    public String getSessionId() {
+        return sessionId;
     }
 
     public int getValidationScore() {
         return validationScore;
     }
-
-    public void setValidationScore(int validationScore) {
-        this.validationScore = validationScore;
-    }
-
 
 }
