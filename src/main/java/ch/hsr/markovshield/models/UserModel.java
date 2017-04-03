@@ -7,23 +7,23 @@ import java.time.Instant;
 
 public class UserModel {
 
-    private final String user;
+    private final String userId;
     private final TransitionModel transitionModel;
     private final FrequencyModel frequencyModel;
 
     @JsonCreator
     public UserModel(
-        @JsonProperty ("user") String user,
+        @JsonProperty ("userId") String userId,
         @JsonProperty ("transitionModel") TransitionModel transitionModel,
         @JsonProperty ("frequencyModel") FrequencyModel frequencyModel) {
-        this.user = user;
+        this.userId = userId;
         this.transitionModel = transitionModel;
         this.frequencyModel = frequencyModel;
     }
 
 
-    public String getUser() {
-        return user;
+    public String getUserId() {
+        return userId;
     }
 
 
@@ -46,7 +46,7 @@ public class UserModel {
     @Override
     public String toString() {
         return "UserModel{" +
-            "user='" + user + '\'' +
+            "userId='" + userId + '\'' +
             ", transitionModel=" + transitionModel +
             ", frequencyModel=" + frequencyModel +
             '}';

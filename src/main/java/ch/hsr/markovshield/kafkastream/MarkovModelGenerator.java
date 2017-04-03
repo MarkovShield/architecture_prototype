@@ -66,7 +66,7 @@ public class MarkovModelGenerator {
         sleep(1000);
         for (UserModel userModel : userModels) {
             modelProducer.send(new ProducerRecord<String, UserModel>(modelTopic,
-                userModel.getUser().toString(),
+                userModel.getUserId().toString(),
                 userModel));
             modelProducer.flush();
         }
