@@ -10,13 +10,11 @@ docker exec -u 0 -it deployment_broker_1 /bin/bash
 ```
 ### create topics
 ```bash
-kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic PageViews
-kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic PageViewsPerRegion
-kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic PageViewsByUser
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic YourTopicName
 ```
 ### consumer
 ```bash
-kafka-console-consumer --zookeeper zookeeper:2181 --topic PageViewsByRegion --from-beginning --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
+kafka-console-consumer --zookeeper zookeeper:2181 --topic YourTopicName --from-beginning --property print.key=true
 ```
 ### build jar
 ```bash
@@ -29,16 +27,16 @@ FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
 ### run
 #### Windows
 ```bash
-java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
-java -cp target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
+java -cp target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
+java -cp target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
 ```
 ```bash
-bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\kafka_streaming_playground\target\kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar
+bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 #### macOS/Linux
 ```bash
-java -cp target/kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
-java -cp target/kafka_streaming_playground-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
+java -cp target/architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
+java -cp target/architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
 ```
 
 #### build
