@@ -10,14 +10,16 @@ public class ClickStream {
     private String user;
     private String session;
     private List<Click> clicks;
+    private UserModel userModel;
 
     public ClickStream() {
     }
 
-    public ClickStream(String user, String session, List<Click> clicks) {
+    public ClickStream(String user, String session, List<Click> clicks, UserModel userModel) {
         this.user = user;
         this.session = session;
         this.clicks = clicks;
+        this.userModel = userModel;
     }
 
     public String getUser() {
@@ -44,12 +46,21 @@ public class ClickStream {
         this.clicks = clicks;
     }
 
+    public UserModel getUserModel() {
+        return userModel;
+    }
+
     @Override
     public String toString() {
         return "ClickStream{" +
                 "user='" + user + '\'' +
                 ", session='" + session + '\'' +
                 ", clicks=" + clicks +
+                ", userModel=" + userModel +
                 '}';
+    }
+
+    public void setUserModel(UserModel userModel) {
+        this.userModel = userModel;
     }
 }
