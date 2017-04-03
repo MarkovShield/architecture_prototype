@@ -19,12 +19,12 @@ public class Session {
         return session;
     }
 
-    public String getUser() {
-        return user;
-    }
-
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public String getUser() {
+        return user;
     }
 
     public void setUser(String user) {

@@ -19,12 +19,12 @@ public class Click {
         return session;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public void setUrl(String url) {

@@ -12,7 +12,8 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
-import org.apache.flink.streaming.util.serialization.*;
+import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserializationSchema;
+import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
 
 import java.util.List;
 import java.util.Properties;
@@ -73,12 +74,12 @@ public class MarkovShieldAnalyser {
     private static ClickStreamValidation validateSession(ClickStream clickStream) {
         int score = calculateMarkovScore(clickStream.getClicks());
         MarkovRatings rating = calculateMarkovFraudLevel(score);
-        return new ClickStreamValidation(clickStream.getSession(),score, rating );
+        return new ClickStreamValidation(clickStream.getSession(), score, rating);
     }
 
     private static MarkovRatings calculateMarkovFraudLevel(int rating) {
-        if(rating < 20) return MarkovRatings.VALID;
-        if(rating < 50) return MarkovRatings.SUSPICIOUS;
+        if (rating < 20) return MarkovRatings.VALID;
+        if (rating < 50) return MarkovRatings.SUSPICIOUS;
         return MarkovRatings.FRAUD;
     }
 

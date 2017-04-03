@@ -2,13 +2,13 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.Session;
+import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.io.IOException;
@@ -43,14 +43,14 @@ public class MarkovClickAndLoginGenerator {
         urls.add("overview.html");
         urls.add("news.html");
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        for (String user : users){
+        for (String user : users) {
             int sessionId = random.nextInt(1, 100000 + 1);
             logins.add(new Session(String.valueOf(sessionId), user));
 
             IntStream.range(0, random.nextInt(10)).forEach(
-                value -> {
-                    clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size()))));
-                }
+                    value -> {
+                        clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size()))));
+                    }
             );
         }
 
