@@ -1,10 +1,12 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.models.Session;
+import ch.hsr.markovshield.models.Click;
+import ch.hsr.markovshield.models.ClickStream;
+import ch.hsr.markovshield.models.ClickStreamValidation;
+import ch.hsr.markovshield.models.MarkovRatings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -12,9 +14,9 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.streaming.util.serialization.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 
 public class MarkovShieldAnalyser {
@@ -28,24 +30,25 @@ public class MarkovShieldAnalyser {
         properties.setProperty("zookeeper.connect", "zookeeper:2181");
         properties.setProperty("group.id", "test");
         DataStreamSource<ObjectNode> stream = env
-                .addSource(new FlinkKafkaConsumer010<>("MarkovLogins", new JSONKeyValueDeserializationSchema(false), properties));
+                .addSource(new FlinkKafkaConsumer010<>("MarkovClickStreams", new JSONKeyValueDeserializationSchema(false), properties));
         ObjectMapper mapper = new ObjectMapper();
 
-        SingleOutputStreamOperator<Session> sessionStream = stream.map(jsonNodes -> mapper.treeToValue(jsonNodes.get("value"), Session.class));
+        SingleOutputStreamOperator<ClickStream> sessionStream = stream.map(jsonNodes -> mapper.treeToValue(jsonNodes.get("value"), ClickStream.class));
+
+        SingleOutputStreamOperator<ClickStreamValidation> validationStream = sessionStream.map(clickStream -> validateSession(clickStream));
 
 
-
-        FlinkKafkaProducer010<Session> producer = new FlinkKafkaProducer010<Session>("broker:9092", "xxx", new KeyedSerializationSchema<Session>() {
+        FlinkKafkaProducer010<ClickStreamValidation> producer = new FlinkKafkaProducer010<ClickStreamValidation>("broker:9092", "MarkovClickStreamValidations", new KeyedSerializationSchema<ClickStreamValidation>() {
 
             @Override
-            public byte[] serializeKey(Session session) {
-                return session.getSession().getBytes();
+            public byte[] serializeKey(ClickStreamValidation validation) {
+                return validation.getSession().getBytes();
             }
 
             @Override
-            public byte[] serializeValue(Session session) {
+            public byte[] serializeValue(ClickStreamValidation validation) {
                 try {
-                    return mapper.writeValueAsBytes(session);
+                    return mapper.writeValueAsBytes(validation);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
@@ -53,18 +56,34 @@ public class MarkovShieldAnalyser {
             }
 
             @Override
-            public String getTargetTopic(Session session) {
-                return "xxx";
+            public String getTargetTopic(ClickStreamValidation validation) {
+                return "MarkovClickStreamValidations";
             }
         });
-        sessionStream.addSink(producer);
+        validationStream.addSink(producer);
 
-        sessionStream.print();
         stream.print();
-
+        sessionStream.print();
+        validationStream.print();
 
 
         env.execute("Read from kafka and deserialize");
+    }
+
+    private static ClickStreamValidation validateSession(ClickStream clickStream) {
+        int score = calculateMarkovScore(clickStream.getClicks());
+        MarkovRatings rating = calculateMarkovFraudLevel(score);
+        return new ClickStreamValidation(clickStream.getSession(),score, rating );
+    }
+
+    private static MarkovRatings calculateMarkovFraudLevel(int rating) {
+        if(rating < 20) return MarkovRatings.VALID;
+        if(rating < 50) return MarkovRatings.SUSPICIOUS;
+        return MarkovRatings.FRAUD;
+    }
+
+    private static int calculateMarkovScore(List<Click> clicks) {
+        return new Random().nextInt(100);
     }
 
 }
