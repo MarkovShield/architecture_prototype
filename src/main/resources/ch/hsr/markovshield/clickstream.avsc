@@ -1,9 +1,0 @@
-{"namespace": "ch.hsr.markovshield.models",
- "type": "record",
- "name": "ClickStream",
- "fields": [
-     {"name": "session", "type": "string"},
-     {"name": "user", "type": "string"},
-     {"name": "clicks", "type":{"type": "array" , "items":"ch.hsr.markovshield.models.Click"}}
- ]
-}

@@ -1,8 +1,0 @@
-{"namespace": "ch.hsr.markovshield.models",
- "type": "record",
- "name": "Click",
- "fields": [
-     {"name": "session", "type": "string"},
-     {"name": "url", "type": "string"}
- ]
-}
