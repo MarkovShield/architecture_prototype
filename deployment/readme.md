@@ -10,11 +10,16 @@ docker exec -u 0 -it deployment_broker_1 /bin/bash
 ```
 ### create topics
 ```bash
-kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic YourTopicName
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovLogins
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClicks
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovUserModels
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreams
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreamValidations
+
 ```
 ### consumer
 ```bash
-kafka-console-consumer --zookeeper zookeeper:2181 --topic YourTopicName --from-beginning --property print.key=true
+kafka-console-consumer --zookeeper zookeeper:2181 --topic MarkovClickStreamValidations --from-beginning --property print.key=true
 ```
 ### build jar
 ```bash
@@ -27,6 +32,7 @@ FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
 ### run
 #### Windows
 ```bash
+java -cp target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovModelGenerator
 java -cp target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
 java -cp target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
 ```
