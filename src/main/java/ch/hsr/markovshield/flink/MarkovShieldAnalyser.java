@@ -5,7 +5,6 @@ import ch.hsr.markovshield.models.ClickStreamValidation;
 import ch.hsr.markovshield.models.MarkovRating;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -43,7 +42,6 @@ public class MarkovShieldAnalyser {
                     @Override
                     public ClickStream deserialize(byte[] bytes, byte[] bytes1, String s, int i, long l) throws IOException {
                         ObjectMapper mapper = new ObjectMapper();
-                        mapper.registerModule(new JSR310Module());
                         return mapper.readValue(bytes1, ClickStream.class);
                     }
 
@@ -56,8 +54,7 @@ public class MarkovShieldAnalyser {
                 properties));
 
 
-        SingleOutputStreamOperator<ClickStreamValidation> validationStream = stream.map(clickStream -> validateSession(
-            clickStream));
+        SingleOutputStreamOperator<ClickStreamValidation> validationStream = stream.map(MarkovShieldAnalyser::validateSession);
 
 
         FlinkKafkaProducer010<ClickStreamValidation> producer = new FlinkKafkaProducer010<ClickStreamValidation>(
@@ -74,7 +71,6 @@ public class MarkovShieldAnalyser {
                 public byte[] serializeValue(ClickStreamValidation validation) {
                     try {
                         ObjectMapper mapper = new ObjectMapper();
-                        mapper.registerModule(new JSR310Module());
                         return mapper.writeValueAsBytes(validation);
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
@@ -104,7 +100,7 @@ public class MarkovShieldAnalyser {
                 .getTransitionValue();
         }
         MarkovRating rating = calculateMarkovFraudLevel(score);
-        return new ClickStreamValidation(clickStream.getSessionId(), score, rating);
+        return new ClickStreamValidation(clickStream.getUserName(), clickStream.getSessionId(), score, rating);
     }
 
     private static MarkovRating calculateMarkovFraudLevel(int rating) {

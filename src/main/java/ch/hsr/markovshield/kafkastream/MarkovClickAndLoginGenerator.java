@@ -11,6 +11,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
 import java.io.IOException;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +50,8 @@ public class MarkovClickAndLoginGenerator {
 
             IntStream.range(0, random.nextInt(10)).forEach(
                 value -> {
-                    clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size()))));
+                    clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size())), Date.from(
+                        Instant.now())));
                 }
             );
         }
@@ -76,11 +79,16 @@ public class MarkovClickAndLoginGenerator {
         final String clickTopic = "MarkovClicks";
 
         final List<Click> clicksBeforeLogin = new LinkedList<>();
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "start.html"));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "login.html"));
-        clicksBeforeLogin.add(new Click(logins.get(1).getSessionId(), "start.html"));
-        clicksBeforeLogin.add(new Click(logins.get(2).getSessionId(), "start.html"));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "xxx.html"));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "start.html", Date.from(
+            Instant.now())));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "login.html", Date.from(
+            Instant.now())));
+        clicksBeforeLogin.add(new Click(logins.get(1).getSessionId(), "start.html", Date.from(
+            Instant.now())));
+        clicksBeforeLogin.add(new Click(logins.get(2).getSessionId(), "start.html", Date.from(
+            Instant.now())));
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "xxx.html", Date.from(
+            Instant.now())));
 
         for (Click click : clicksBeforeLogin) {
 
