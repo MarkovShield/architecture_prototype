@@ -63,8 +63,8 @@ public class MarkovShieldModelUpdate {
                 properties));
         WindowedStream<ClickStream, String, TimeWindow> windowedStream = stream
             .keyBy(ClickStream::getUserName)
-            .timeWindow(Time.minutes(100), Time.seconds(30));
-        stream.keyBy(ClickStream::getUserName).timeWindow(Time.minutes(100), Time.seconds(30)).apply(MarkovShieldModelUpdate::xx).print();
+            .timeWindow(Time.minutes(100), Time.minutes(5));
+
         SingleOutputStreamOperator<UserModel> userModelStream = windowedStream.apply(MarkovShieldModelUpdate::recreateUserModel);
 
         FlinkKafkaProducer010<UserModel> producer = new FlinkKafkaProducer010<UserModel>(
@@ -96,37 +96,20 @@ public class MarkovShieldModelUpdate {
         userModelStream.print();
         userModelStream.addSink(producer);
 
-
-
         env.execute("UpdateUserModels");
-    }
-
-    private static void xx(String x, TimeWindow xx, Iterable<ClickStream> iterable, Collector<ClickCount> collector) {
-        ClickCount clickCount = new ClickCount(x, 0);
-        for (ClickStream clickStream : iterable) {
-            if(!x.equals(clickStream.getUserName())){
-                clickCount.setMultipleUsers(true);
-            }
-            clickCount.addClickStream(clickStream);
-            clickCount.setClicks(clickCount.getClicks() + 1);
-        }
-        collector.collect(clickCount);
     }
 
     private static void recreateUserModel(String key, TimeWindow timeWindow, Iterable<ClickStream> iterable, Collector<UserModel> collector) {
         UserModel model = null;
-        int count = 0;
         for (ClickStream clickStream : iterable) {
             if (model == null) {
-                model = new UserModel(clickStream.getUserName(), new TransitionModel(), new FrequencyModel());
+                model = new UserModel(key, new TransitionModel(), new FrequencyModel());
             }else{
                 if(!model.getUserId().equals(clickStream.getUserName())){
                     throw new RuntimeException("UserName not the same");
                 }
             }
-            count += 1;
         }
-        System.out.println(model.getUserId() + " " + count);
         collector.collect(model);
 
     }
