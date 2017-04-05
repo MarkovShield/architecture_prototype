@@ -41,7 +41,7 @@ public class ClickStream {
         return userModel;
     }
 
-    public Date getTimeStampOfLastClick() {
+    public Date timeStampOfLastClick() {
         return Collections.max(clicks, (Click o1, Click o2) -> {
             if (o1.getTimeStamp().equals(o2.getTimeStamp())) {
                 return 0;

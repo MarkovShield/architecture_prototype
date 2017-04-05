@@ -8,12 +8,14 @@ import java.util.Date;
 
 public class ClickStreamValidation {
 
+    private final String userName;
     private final String sessionId;
     private final int validationScore;
     private final MarkovRating rating;
     private final Date timeCreated;
 
-    public ClickStreamValidation(String sessionId, int validationScore, MarkovRating rating) {
+    public ClickStreamValidation(String userName, String sessionId, int validationScore, MarkovRating rating) {
+        this.userName = userName;
         this.sessionId = sessionId;
         this.validationScore = validationScore;
         this.rating = rating;
@@ -21,10 +23,12 @@ public class ClickStreamValidation {
     }
 
     @JsonCreator
-    public ClickStreamValidation(@JsonProperty ("sessionId") String sessionId,
+    public ClickStreamValidation(@JsonProperty ("userName") String userName,
+                                 @JsonProperty ("sessionId") String sessionId,
                                  @JsonProperty ("validationScore") int validationScore,
                                  @JsonProperty ("rating") MarkovRating rating,
                                  @JsonProperty ("timeCreated") Date timeCreated) {
+        this.userName = userName;
         this.sessionId = sessionId;
         this.validationScore = validationScore;
         this.rating = rating;
@@ -47,4 +51,7 @@ public class ClickStreamValidation {
         return validationScore;
     }
 
+    public String getUserName() {
+        return userName;
+    }
 }
