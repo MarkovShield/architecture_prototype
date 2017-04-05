@@ -3,6 +3,7 @@ package ch.hsr.markovshield.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
+import java.util.Date;
 
 
 public class UserModel {
@@ -36,8 +37,8 @@ public class UserModel {
         return frequencyModel;
     }
 
-    public Instant timeCreated() {
-        if (this.frequencyModel.getTimeCreated().isBefore(this.transitionModel.getTimeCreated())) {
+    public Date timeCreated() {
+        if (this.frequencyModel.getTimeCreated().before(this.transitionModel.getTimeCreated())) {
             return this.frequencyModel.getTimeCreated();
         }
         return this.transitionModel.getTimeCreated();

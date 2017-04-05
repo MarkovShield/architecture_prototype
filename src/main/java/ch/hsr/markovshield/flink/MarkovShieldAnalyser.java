@@ -54,8 +54,7 @@ public class MarkovShieldAnalyser {
                 properties));
 
 
-        SingleOutputStreamOperator<ClickStreamValidation> validationStream = stream.map(clickStream -> validateSession(
-            clickStream));
+        SingleOutputStreamOperator<ClickStreamValidation> validationStream = stream.map(MarkovShieldAnalyser::validateSession);
 
 
         FlinkKafkaProducer010<ClickStreamValidation> producer = new FlinkKafkaProducer010<ClickStreamValidation>(
