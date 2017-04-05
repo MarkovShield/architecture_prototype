@@ -1,6 +1,5 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.models.ClickCount;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.FrequencyModel;
 import ch.hsr.markovshield.models.TransitionModel;
@@ -10,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.api.TimeCharacteristic;
-import org.apache.flink.streaming.api.datastream.AllWindowedStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.datastream.WindowedStream;
@@ -28,6 +26,15 @@ import java.util.Properties;
 
 public class MarkovShieldModelUpdate {
 
+    public static final int REEVALUATION_INTERVAL_MINUTES = 5;
+    public static final int SLIDING_TIME_MINUTES = 100;
+    public static final String MARKOV_CLICK_STREAM_TOPIC = "MarkovClickStreams";
+    public static final String MARKOV_USER_MODELS_TOPIC = "MarkovUserModels";
+    public static final String FLINK_JOB_NAME = "UpdateUserModels";
+    public static final String BROKER = "broker:9092";
+    public static final String ZOOKEEPER = "zookeeper:2181";
+    public static final String KAFKA_JOB_NAME = "MarkovShieldModelUpdate";
+
     public static void main(final String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -35,13 +42,13 @@ public class MarkovShieldModelUpdate {
 
 
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", "broker:9092");
-        properties.setProperty("zookeeper.connect", "zookeeper:2181");
-        properties.setProperty("group.id", "MarkovShieldModelUpdate");
+        properties.setProperty("bootstrap.servers", BROKER);
+        properties.setProperty("zookeeper.connect", ZOOKEEPER);
+        properties.setProperty("group.id", KAFKA_JOB_NAME);
 
 
         DataStreamSource<ClickStream> stream = env
-            .addSource(new FlinkKafkaConsumer010<ClickStream>("MarkovClickStreams",
+            .addSource(new FlinkKafkaConsumer010<ClickStream>(MARKOV_CLICK_STREAM_TOPIC,
                 new KeyedDeserializationSchema<ClickStream>() {
                     @Override
                     public TypeInformation<ClickStream> getProducedType() {
@@ -63,13 +70,13 @@ public class MarkovShieldModelUpdate {
                 properties));
         WindowedStream<ClickStream, String, TimeWindow> windowedStream = stream
             .keyBy(ClickStream::getUserName)
-            .timeWindow(Time.minutes(100), Time.minutes(5));
+            .timeWindow(Time.minutes(SLIDING_TIME_MINUTES), Time.minutes(REEVALUATION_INTERVAL_MINUTES));
 
         SingleOutputStreamOperator<UserModel> userModelStream = windowedStream.apply(MarkovShieldModelUpdate::recreateUserModel);
 
         FlinkKafkaProducer010<UserModel> producer = new FlinkKafkaProducer010<UserModel>(
-            "broker:9092",
-            "MarkovUserModels",
+            BROKER,
+            MARKOV_USER_MODELS_TOPIC,
             new KeyedSerializationSchema<UserModel>() {
 
                 @Override
@@ -90,13 +97,13 @@ public class MarkovShieldModelUpdate {
 
                 @Override
                 public String getTargetTopic(UserModel validation) {
-                    return "MarkovUserModels";
+                    return MARKOV_USER_MODELS_TOPIC;
                 }
             });
         userModelStream.print();
         userModelStream.addSink(producer);
 
-        env.execute("UpdateUserModels");
+        env.execute(FLINK_JOB_NAME);
     }
 
     private static void recreateUserModel(String key, TimeWindow timeWindow, Iterable<ClickStream> iterable, Collector<UserModel> collector) {
