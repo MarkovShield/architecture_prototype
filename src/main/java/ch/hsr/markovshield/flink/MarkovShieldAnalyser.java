@@ -85,9 +85,6 @@ public class MarkovShieldAnalyser {
             });
         validationStream.addSink(producer);
 
-        stream.print();
-        validationStream.print();
-
 
         env.execute("Read from kafka and deserialize");
     }
