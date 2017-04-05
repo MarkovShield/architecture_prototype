@@ -3,25 +3,24 @@ package ch.hsr.markovshield.ml;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import javafx.util.Pair;
-import org.apache.commons.collections.map.HashedMap;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class MarkovChain {
-
-    HashMap<String, HashMap<String, Integer>> clickCountMatrix;
-    HashMap<String, HashMap<String, Double>> clickProbabilityMatrix;
+    int[][] clickCountArray;
+    Double[][] clickProbabilityArray;
+    HashMap<String, Integer> urlMapping;
 
     private MarkovChain(int i) {
-        clickCountMatrix = new HashMap<>();
-        clickProbabilityMatrix = new HashMap<>();
+        clickCountArray = new int[i+1][i+1];
+        clickProbabilityArray = new Double[i+1][i+1];
+        urlMapping = new HashMap<>();
+        urlMapping.put("index.html", 0);
+        urlMapping.put("news.html", 1);
+        urlMapping.put("logout.html", 2);
+        urlMapping.put("endOfClickStream", 3);
+
     }
 
     public static MarkovChain create(int i) {
@@ -43,35 +42,27 @@ public class MarkovChain {
     }
 
     private void calculateProbilities() {
-        clickProbabilityMatrix.clear();
-        clickCountMatrix.forEach((s, stringIntegerHashMap) -> {
-            HashMap<String, Double> targetMap = new HashMap<>();
-            clickProbabilityMatrix.put(s, targetMap);
-            Double sum = Double.valueOf(stringIntegerHashMap.values().stream().mapToInt(Integer::intValue).sum());
-            stringIntegerHashMap.forEach((s1, integer) -> {
-                targetMap.put(s1, Double.valueOf(integer) / sum);
-            });
-        });
+        for(int i = 0; i < clickCountArray.length; i++){
+            Double sum = Double.valueOf(IntStream.of(clickCountArray[i]).sum());
+            for(int y = 0; y < clickCountArray[i].length; y ++){
+                clickProbabilityArray[i][y] = Double.valueOf( clickCountArray[i][y])/sum;
+            }
+
+        }
     }
 
     private void updateClickCount(String sourceUrl, String targetUrl) {
-        if(!clickCountMatrix.containsKey(sourceUrl)){
-            HashMap<String, Integer> targetMap = new HashMap<>();
-            targetMap.put(targetUrl,1);
-            clickCountMatrix.put(sourceUrl,targetMap);
-        }else{
-            HashMap<String, Integer> sourceMap = clickCountMatrix.get(sourceUrl);
-            if(sourceMap.containsKey(targetUrl)){
-                sourceMap.put(targetUrl, sourceMap.get(targetUrl) + 1);
-            }else{
-                sourceMap.put(targetUrl, 1);
-            }
-        }
+        clickCountArray[getUrlId(sourceUrl)][getUrlId(targetUrl)] += 1;
+
+    }
+
+    private Integer getUrlId(String targetUrl) {
+        return urlMapping.get(targetUrl);
     }
 
 
     public double getProbabilityForClick(Click currentClick, Click newClick) {
-        return clickProbabilityMatrix.get(currentClick.getUrl()).get(newClick.getUrl());
+        return clickProbabilityArray[getUrlId(currentClick.getUrl())][getUrlId(newClick.getUrl())];
     }
 
 
