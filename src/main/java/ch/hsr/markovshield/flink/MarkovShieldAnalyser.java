@@ -20,19 +20,26 @@ import java.util.Properties;
 
 public class MarkovShieldAnalyser {
 
+    public static final String BROKER = "broker:9092";
+    public static final String ZOOKEEPER = "zookeeper:2181";
+    public static final String KAFKA_JOB_NAME = "MarkovShieldAnalyser";
+    public static final String MARKOV_CLICK_STREAM_TOPIC = "MarkovClickStreams";
+    public static final String MARKOV_CLICK_STREAM_VALIDATION_TOPIC = "MarkovClickStreamValidations";
+    public static final String FLINK_JOB_NAME = "Read from kafka and deserialize";
+
     public static void main(final String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", "broker:9092");
-        properties.setProperty("zookeeper.connect", "zookeeper:2181");
-        properties.setProperty("group.id", "test");
+        properties.setProperty("bootstrap.servers", BROKER);
+        properties.setProperty("zookeeper.connect", ZOOKEEPER);
+        properties.setProperty("group.id", KAFKA_JOB_NAME);
 
 
         DataStreamSource<ClickStream> stream = env
-            .addSource(new FlinkKafkaConsumer010<ClickStream>("MarkovClickStreams",
+            .addSource(new FlinkKafkaConsumer010<ClickStream>(MARKOV_CLICK_STREAM_TOPIC,
                 new KeyedDeserializationSchema<ClickStream>() {
                     @Override
                     public TypeInformation<ClickStream> getProducedType() {
@@ -59,7 +66,7 @@ public class MarkovShieldAnalyser {
 
         FlinkKafkaProducer010<ClickStreamValidation> producer = new FlinkKafkaProducer010<ClickStreamValidation>(
             "broker:9092",
-            "MarkovClickStreamValidations",
+            MARKOV_CLICK_STREAM_VALIDATION_TOPIC,
             new KeyedSerializationSchema<ClickStreamValidation>() {
 
                 @Override
@@ -80,13 +87,13 @@ public class MarkovShieldAnalyser {
 
                 @Override
                 public String getTargetTopic(ClickStreamValidation validation) {
-                    return "MarkovClickStreamValidations";
+                    return MARKOV_CLICK_STREAM_VALIDATION_TOPIC;
                 }
             });
         validationStream.addSink(producer);
 
 
-        env.execute("Read from kafka and deserialize");
+        env.execute(FLINK_JOB_NAME);
     }
 
     private static ClickStreamValidation validateSession(ClickStream clickStream) {

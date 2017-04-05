@@ -22,13 +22,20 @@ import static com.google.common.collect.Iterables.concat;
 public class MarkovShieldClickstreams {
 
     public static final String USER_NOT_FOUND = "--------------------NOT FOUND---------------------------";
+    public static final String KAFKA_JOB_NAME = "MarkovShieldClickstreams";
+    public static final String BROKER = "localhost:9092";
+    public static final String SCHEMA_REGISTRY = "http://localhost:8081";
+    public static final String MARKOV_LOGIN_TOPIC = "MarkovLogins";
+    public static final String MARKOV_USER_MODEL_TOPIC = "MarkovUserModels";
+    public static final String MARKOV_CLICK_TOPIC = "MarkovClicks";
+    public static final String MARKOV_CLICK_STREAM_TOPIC = "MarkovClickStreams";
 
     public static void main(final String[] args) throws Exception {
         final Properties streamsConfiguration = new Properties();
 
-        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "MarkovShieldClickstreams");
-        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, KAFKA_JOB_NAME);
+        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BROKER);
+        streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY);
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
 
@@ -39,11 +46,11 @@ public class MarkovShieldClickstreams {
 
         final KTable<String, Session> sessions = builder.table(Serdes.String(),
             new JsonPOJOSerde<>(Session.class),
-            "MarkovLogins",
+            MARKOV_LOGIN_TOPIC,
             "MarkovLoginStore");
         final KTable<String, UserModel> userModels = builder.table(Serdes.String(),
             new JsonPOJOSerde<>(UserModel.class),
-            "MarkovUserModels",
+            MARKOV_USER_MODEL_TOPIC,
             "MarkovUserModelStore");
 
         userModels.foreach((key, value) -> {
@@ -56,7 +63,7 @@ public class MarkovShieldClickstreams {
 
         final KStream<String, Click> views = builder.stream(Serdes.String(),
             new JsonPOJOSerde<>(Click.class),
-            "MarkovClicks");
+            MARKOV_CLICK_TOPIC);
 
         views.foreach((key, value) -> {
             System.out.println("Click: " + key + " " + value.toString());
@@ -99,7 +106,7 @@ public class MarkovShieldClickstreams {
             System.out.println("ClickStream: " + key + " " + value.toString());
         });
         clickStreamsWithModel.print();
-        clickStreamsWithModel.to(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class), "MarkovClickStreams");
+        clickStreamsWithModel.to(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class), MARKOV_CLICK_STREAM_TOPIC);
 
 
         final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);
