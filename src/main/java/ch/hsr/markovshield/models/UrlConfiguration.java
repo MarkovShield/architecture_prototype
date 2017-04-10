@@ -10,11 +10,14 @@ public class UrlConfiguration {
 
     private final String url;
     private final UrlRating rating;
+    private final UrlId id;
 
     public UrlConfiguration(@JsonProperty ("url") String url,
-                            @JsonProperty ("rating") UrlRating rating) {
+                            @JsonProperty ("rating") UrlRating rating,
+                            @JsonProperty ("id") UrlId id) {
         this.url = url;
         this.rating = rating;
+        this.id = id;
     }
 
     public String getUrl() {
@@ -23,14 +26,6 @@ public class UrlConfiguration {
 
     public UrlRating getRating() {
         return rating;
-    }
-
-    @Override
-    public String toString() {
-        return "UrlConfiguration{" +
-            "url='" + url + '\'' +
-            ", rating=" + rating +
-            '}';
     }
 
     @Override
@@ -43,11 +38,25 @@ public class UrlConfiguration {
         }
         UrlConfiguration that = (UrlConfiguration) o;
         return Objects.equals(url, that.url) &&
-            Objects.equals(rating, that.rating);
+            Objects.equals(rating, that.rating) &&
+            Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(url, rating);
+    }
+
+    @Override
+    public String toString() {
+        return "UrlConfiguration{" +
+            "url='" + url + '\'' +
+            ", rating=" + rating +
+            ", id=" + id +
+            '}';
+    }
+
+    public UrlId getId() {
+        return id;
     }
 }
