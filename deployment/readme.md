@@ -38,6 +38,8 @@ java -cp target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch
 ```
 ```bash
 bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar
+bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdate --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar
+
 ```
 #### macOS/Linux
 ```bash

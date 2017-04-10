@@ -111,8 +111,8 @@ public class MarkovShieldModelUpdate {
         for (ClickStream clickStream : iterable) {
             if (model == null) {
                 model = new UserModel(key, new TransitionModel(), new FrequencyModel());
-            }else{
-                if(!model.getUserId().equals(clickStream.getUserName())){
+            } else {
+                if (!model.getUserId().equals(clickStream.getUserName())) {
                     throw new RuntimeException("UserName not the same");
                 }
             }
