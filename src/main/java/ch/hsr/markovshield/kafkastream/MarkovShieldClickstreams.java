@@ -2,10 +2,10 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.UrlConfiguration;
 import ch.hsr.markovshield.models.UserModel;
+import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import com.google.common.collect.Lists;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
@@ -19,6 +19,7 @@ import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import static com.google.common.collect.Iterables.concat;
@@ -44,9 +45,10 @@ public class MarkovShieldClickstreams {
         streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY);
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
+
+
         final Map<String, UrlConfiguration> configMap = new HashMap<>();
         final KStreamBuilder builder = new KStreamBuilder();
         final KTable<String, UrlConfiguration> config = builder.table(Serdes.String(),
@@ -97,9 +99,18 @@ public class MarkovShieldClickstreams {
             }, "MarkovClickStreamAggregation"
         );
 
-        KStream<String, ValidationClickStream> userClickStreams = clickstreams.mapValues(clickStream -> new ValidationClickStream(clickStream.getUserName(), clickStream.getSessionId(), clickStream.getClicks(), null,
-            configMap)).toStream((s, clickStream) -> clickStream.getUserName());
-        KStream<String, ValidationClickStream> clickStreamsWithModel = userClickStreams.leftJoin(userModels,
+        KStream<String, ValidationClickStream> stringValidationClickStreamKStream = clickstreams
+            .toStream((s, clickStream) -> clickStream.getUserName()).filter((s, validationClickStream) -> {
+                Optional<Boolean> overThreshold = validationClickStream.lastClick()
+                    .map(click -> isUrlOverThreshold(configMap, click));
+                return overThreshold.orElse(false);
+            }).mapValues(
+                clickStream -> ValidationClickStream.fromClickstream(clickStream, configMap));
+
+        stringValidationClickStreamKStream.print();
+
+        KStream<String, ValidationClickStream> clickStreamsWithModel = stringValidationClickStreamKStream.leftJoin(
+            userModels,
             (clickStream, userModel) -> new ValidationClickStream(clickStream.getUserName(),
                 clickStream.getSessionId(),
                 clickStream.getClicks(),
@@ -108,10 +119,12 @@ public class MarkovShieldClickstreams {
             Serdes.String(),
             new JsonPOJOSerde<>(ValidationClickStream.class));
 
-        clickstreams.to(Serdes.String(),  new JsonPOJOSerde<>(ClickStream.class), MARKOV_CLICK_STREAM_TOPIC);
+        clickstreams.to(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class), MARKOV_CLICK_STREAM_TOPIC);
 
         clickStreamsWithModel.print();
-        clickStreamsWithModel.to(Serdes.String(), new JsonPOJOSerde<>(ValidationClickStream.class), MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
+        clickStreamsWithModel.to(Serdes.String(),
+            new JsonPOJOSerde<>(ValidationClickStream.class),
+            MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
 
 
         final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);
@@ -121,6 +134,16 @@ public class MarkovShieldClickstreams {
 
         // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
+
+    private static Boolean isUrlOverThreshold(Map<String, UrlConfiguration> configMap, Click click) {
+        if (configMap != null) {
+            UrlConfiguration urlConfiguration = configMap.get(click.getUrl());
+            if (urlConfiguration != null) {
+                return urlConfiguration.getRating().getValue() > 2;
+            }
+        }
+        return null;
     }
 
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 public class ClickStream {
@@ -46,6 +47,14 @@ public class ClickStream {
                 return 1;
             }
         }).getTimeStamp();
+    }
+
+    public Optional<Click> lastClick() {
+        if (clicks.size() == 0) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(clicks.get(clicks.size() - 1));
+        }
     }
 
     @Override
