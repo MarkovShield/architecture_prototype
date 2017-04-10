@@ -2,17 +2,18 @@ package ch.hsr.markovshield.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Created by maede on 10.04.2017.
- */
-public class UrlId {
-    private final int id;
+public class UrlId extends IntegerValue {
 
-    public UrlId(@JsonProperty ("id") int id) {
-        this.id = id;
+
+    private UrlId(@JsonProperty ("rating") int rating) {
+        super(rating);
     }
 
-    public int getId() {
-        return id;
+    public static UrlId fromInt(int value) {
+        return new UrlId(value);
+    }
+
+    public static UrlId empty() {
+        return new UrlId(-1);
     }
 }

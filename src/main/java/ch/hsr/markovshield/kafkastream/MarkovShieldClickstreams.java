@@ -2,7 +2,9 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
+import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.models.Session;
+import ch.hsr.markovshield.models.UrlConfiguration;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import com.google.common.collect.Lists;
@@ -15,6 +17,8 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import static com.google.common.collect.Iterables.concat;
@@ -29,6 +33,8 @@ public class MarkovShieldClickstreams {
     public static final String MARKOV_USER_MODEL_TOPIC = "MarkovUserModels";
     public static final String MARKOV_CLICK_TOPIC = "MarkovClicks";
     public static final String MARKOV_CLICK_STREAM_TOPIC = "MarkovClickStreams";
+    private static final String MARKOV_CONFIG_TOPIC = "MarkovUrlConfig";
+    private static final String MARKOV_CLICK_STREAM_ANALYSIS_TOPIC = "MarkovClickStreamAnalysis";
 
     public static void main(final String[] args) throws Exception {
         final Properties streamsConfiguration = new Properties();
@@ -41,9 +47,13 @@ public class MarkovShieldClickstreams {
 
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
-
+        final Map<String, UrlConfiguration> configMap = new HashMap<>();
         final KStreamBuilder builder = new KStreamBuilder();
-
+        final KTable<String, UrlConfiguration> config = builder.table(Serdes.String(),
+            new JsonPOJOSerde<>(UrlConfiguration.class),
+            MARKOV_CONFIG_TOPIC,
+            "MarkovConfigStore");
+        config.foreach((s, urlConfiguration) -> configMap.put(s, urlConfiguration));
         final KTable<String, Session> sessions = builder.table(Serdes.String(),
             new JsonPOJOSerde<>(Session.class),
             MARKOV_LOGIN_TOPIC,
@@ -53,21 +63,15 @@ public class MarkovShieldClickstreams {
             MARKOV_USER_MODEL_TOPIC,
             "MarkovUserModelStore");
 
-        userModels.foreach((key, value) -> {
-            System.out.println("UserModel: " + key + " " + value.toString());
-        });
+        userModels.foreach((key, value) -> System.out.println("UserModel: " + key + " " + value.toString()));
 
-        sessions.foreach((key, value) -> {
-            System.out.println("Session: " + key + " " + value.toString());
-        });
+        sessions.foreach((key, value) -> System.out.println("Session: " + key + " " + value.toString()));
 
         final KStream<String, Click> views = builder.stream(Serdes.String(),
             new JsonPOJOSerde<>(Click.class),
             MARKOV_CLICK_TOPIC);
 
-        views.foreach((key, value) -> {
-            System.out.println("Click: " + key + " " + value.toString());
-        });
+        views.foreach((key, value) -> System.out.println("Click: " + key + " " + value.toString()));
 
 
         KTable<String, ClickStream> clickstreams = views.leftJoin(sessions,
@@ -78,7 +82,7 @@ public class MarkovShieldClickstreams {
                 } else {
                     newUserName = USER_NOT_FOUND;
                 }
-                return new ClickStream(newUserName, view.getSessionId(), Collections.singletonList(view), null);
+                return new ClickStream(newUserName, view.getSessionId(), Collections.singletonList(view));
             }, Serdes.String(), new JsonPOJOSerde<>(Click.class)
         ).groupByKey(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class)).reduce(
             (clickStream, v1) -> {
@@ -89,24 +93,25 @@ public class MarkovShieldClickstreams {
                 }
                 return new ClickStream(userName,
                     clickStream.getSessionId(),
-                    Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())),
-                    null);
+                    Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())));
             }, "MarkovClickStreamAggregation"
         );
-        KStream<String, ClickStream> userClickStreams = clickstreams.toStream((s, clickStream) -> clickStream.getUserName());
-        KStream<String, ClickStream> clickStreamsWithModel = userClickStreams.leftJoin(userModels,
-            (clickStream, userModel) -> new ClickStream(clickStream.getUserName(),
+
+        KStream<String, ValidationClickStream> userClickStreams = clickstreams.mapValues(clickStream -> new ValidationClickStream(clickStream.getUserName(), clickStream.getSessionId(), clickStream.getClicks(), null,
+            configMap)).toStream((s, clickStream) -> clickStream.getUserName());
+        KStream<String, ValidationClickStream> clickStreamsWithModel = userClickStreams.leftJoin(userModels,
+            (clickStream, userModel) -> new ValidationClickStream(clickStream.getUserName(),
                 clickStream.getSessionId(),
                 clickStream.getClicks(),
-                userModel),
+                userModel,
+                configMap),
             Serdes.String(),
-            new JsonPOJOSerde<>(ClickStream.class));
+            new JsonPOJOSerde<>(ValidationClickStream.class));
 
-        clickstreams.foreach((key, value) -> {
-            System.out.println("ClickStream: " + key + " " + value.toString());
-        });
+        clickstreams.to(Serdes.String(),  new JsonPOJOSerde<>(ClickStream.class), MARKOV_CLICK_STREAM_TOPIC);
+
         clickStreamsWithModel.print();
-        clickStreamsWithModel.to(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class), MARKOV_CLICK_STREAM_TOPIC);
+        clickStreamsWithModel.to(Serdes.String(), new JsonPOJOSerde<>(ValidationClickStream.class), MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
 
 
         final KafkaStreams streams = new KafkaStreams(builder, streamsConfiguration);

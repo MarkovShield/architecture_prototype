@@ -10,7 +10,7 @@ public class ClickCount {
 
     String userName;
     int clicks;
-    List<ClickStream> clickStreamList;
+    List<ValidationClickStream> clickStreamList;
     boolean multipleUsers;
     public ClickCount(String userName, int clicks) {
         this.userName = userName;
@@ -37,7 +37,7 @@ public class ClickCount {
         this.clicks = clicks;
     }
 
-    public void addClickStream(ClickStream clickStream){
+    public void addClickStream(ValidationClickStream clickStream){
         this.clickStreamList.add(clickStream);
     }
 

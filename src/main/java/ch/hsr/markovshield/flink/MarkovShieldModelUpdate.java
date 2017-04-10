@@ -1,6 +1,6 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.models.ClickStream;
+import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.models.FrequencyModel;
 import ch.hsr.markovshield.models.TransitionModel;
 import ch.hsr.markovshield.models.UserModel;
@@ -47,29 +47,29 @@ public class MarkovShieldModelUpdate {
         properties.setProperty("group.id", KAFKA_JOB_NAME);
 
 
-        DataStreamSource<ClickStream> stream = env
-            .addSource(new FlinkKafkaConsumer010<ClickStream>(MARKOV_CLICK_STREAM_TOPIC,
-                new KeyedDeserializationSchema<ClickStream>() {
+        DataStreamSource<ValidationClickStream> stream = env
+            .addSource(new FlinkKafkaConsumer010<ValidationClickStream>(MARKOV_CLICK_STREAM_TOPIC,
+                new KeyedDeserializationSchema<ValidationClickStream>() {
                     @Override
-                    public TypeInformation<ClickStream> getProducedType() {
-                        return TypeExtractor.getForClass(ClickStream.class);
+                    public TypeInformation<ValidationClickStream> getProducedType() {
+                        return TypeExtractor.getForClass(ValidationClickStream.class);
                     }
 
                     @Override
-                    public ClickStream deserialize(byte[] bytes, byte[] bytes1, String s, int i, long l) throws IOException {
+                    public ValidationClickStream deserialize(byte[] bytes, byte[] bytes1, String s, int i, long l) throws IOException {
                         ObjectMapper mapper = new ObjectMapper();
-                        return mapper.readValue(bytes1, ClickStream.class);
+                        return mapper.readValue(bytes1, ValidationClickStream.class);
                     }
 
                     @Override
-                    public boolean isEndOfStream(ClickStream o) {
+                    public boolean isEndOfStream(ValidationClickStream o) {
 
                         return false;
                     }
                 },
                 properties));
-        WindowedStream<ClickStream, String, TimeWindow> windowedStream = stream
-            .keyBy(ClickStream::getUserName)
+        WindowedStream<ValidationClickStream, String, TimeWindow> windowedStream = stream
+            .keyBy(ValidationClickStream::getUserName)
             .timeWindow(Time.minutes(SLIDING_TIME_MINUTES), Time.minutes(REEVALUATION_INTERVAL_MINUTES));
 
         SingleOutputStreamOperator<UserModel> userModelStream = windowedStream.apply(MarkovShieldModelUpdate::recreateUserModel);
@@ -106,9 +106,9 @@ public class MarkovShieldModelUpdate {
         env.execute(FLINK_JOB_NAME);
     }
 
-    private static void recreateUserModel(String key, TimeWindow timeWindow, Iterable<ClickStream> iterable, Collector<UserModel> collector) {
+    private static void recreateUserModel(String key, TimeWindow timeWindow, Iterable<ValidationClickStream> iterable, Collector<UserModel> collector) {
         UserModel model = null;
-        for (ClickStream clickStream : iterable) {
+        for (ValidationClickStream clickStream : iterable) {
             if (model == null) {
                 model = new UserModel(key, new TransitionModel(), new FrequencyModel());
             } else {
