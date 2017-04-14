@@ -1,8 +1,9 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.ClickStreamValidation;
 import ch.hsr.markovshield.models.MarkovRating;
+import ch.hsr.markovshield.models.UrlConfiguration;
+import ch.hsr.markovshield.models.ValidationClickStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -23,7 +24,7 @@ public class MarkovShieldAnalyser {
     public static final String BROKER = "broker:9092";
     public static final String ZOOKEEPER = "zookeeper:2181";
     public static final String KAFKA_JOB_NAME = "MarkovShieldAnalyser";
-    public static final String MARKOV_CLICK_STREAM_TOPIC = "MarkovClickStreams";
+    public static final String MARKOV_CLICK_STREAM_ANALYSIS_TOPIC = "MarkovClickStreamAnalysis";
     public static final String MARKOV_CLICK_STREAM_VALIDATION_TOPIC = "MarkovClickStreamValidations";
     public static final String FLINK_JOB_NAME = "Read from kafka and deserialize";
 
@@ -38,22 +39,22 @@ public class MarkovShieldAnalyser {
         properties.setProperty("group.id", KAFKA_JOB_NAME);
 
 
-        DataStreamSource<ClickStream> stream = env
-            .addSource(new FlinkKafkaConsumer010<ClickStream>(MARKOV_CLICK_STREAM_TOPIC,
-                new KeyedDeserializationSchema<ClickStream>() {
+        DataStreamSource<ValidationClickStream> stream = env
+            .addSource(new FlinkKafkaConsumer010<>(MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
+                new KeyedDeserializationSchema<ValidationClickStream>() {
                     @Override
-                    public TypeInformation<ClickStream> getProducedType() {
-                        return TypeExtractor.getForClass(ClickStream.class);
+                    public TypeInformation<ValidationClickStream> getProducedType() {
+                        return TypeExtractor.getForClass(ValidationClickStream.class);
                     }
 
                     @Override
-                    public ClickStream deserialize(byte[] bytes, byte[] bytes1, String s, int i, long l) throws IOException {
+                    public ValidationClickStream deserialize(byte[] bytes, byte[] bytes1, String s, int i, long l) throws IOException {
                         ObjectMapper mapper = new ObjectMapper();
-                        return mapper.readValue(bytes1, ClickStream.class);
+                        return mapper.readValue(bytes1, ValidationClickStream.class);
                     }
 
                     @Override
-                    public boolean isEndOfStream(ClickStream o) {
+                    public boolean isEndOfStream(ValidationClickStream o) {
 
                         return false;
                     }
@@ -64,7 +65,7 @@ public class MarkovShieldAnalyser {
         SingleOutputStreamOperator<ClickStreamValidation> validationStream = stream.map(MarkovShieldAnalyser::validateSession);
 
 
-        FlinkKafkaProducer010<ClickStreamValidation> producer = new FlinkKafkaProducer010<ClickStreamValidation>(
+        FlinkKafkaProducer010<ClickStreamValidation> producer = new FlinkKafkaProducer010<>(
             "broker:9092",
             MARKOV_CLICK_STREAM_VALIDATION_TOPIC,
             new KeyedSerializationSchema<ClickStreamValidation>() {
@@ -96,12 +97,28 @@ public class MarkovShieldAnalyser {
         env.execute(FLINK_JOB_NAME);
     }
 
-    private static ClickStreamValidation validateSession(ClickStream clickStream) {
+    private static ClickStreamValidation validateSession(ValidationClickStream clickStream) {
+        int weightingScore;
+        if (clickStream.getUrlConfigurations() != null) {
+            UrlConfiguration urlConfiguration = clickStream.getUrlConfigurations()
+                .get(clickStream.getClicks().get(0).getUrl());
+            if (urlConfiguration == null) {
+                weightingScore = 100;
+            } else {
+                weightingScore = urlConfiguration
+                    .getRating().getValue();
+            }
+        } else {
+            weightingScore = 1000;
+        }
         int score = 0;
         if (clickStream.getUserModel() != null) {
-            score = clickStream.getUserModel().getFrequencyModel().getFrequencyValue() + clickStream.getUserModel()
+            int frequencyValue = clickStream.getUserModel().getFrequencyModel().getFrequencyValue();
+            int transitionValue = clickStream.getUserModel()
                 .getTransitionModel()
                 .getTransitionValue();
+            score = (frequencyValue + transitionValue) * weightingScore;
+
         }
         MarkovRating rating = calculateMarkovFraudLevel(score);
         return new ClickStreamValidation(clickStream.getUserName(), clickStream.getSessionId(), score, rating);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 public class ClickStream {
@@ -12,17 +13,14 @@ public class ClickStream {
     private final String userName;
     private final String sessionId;
     private final List<Click> clicks;
-    private final UserModel userModel;
 
     @JsonCreator
     public ClickStream(@JsonProperty ("userName") String userName,
                        @JsonProperty ("sessionId") String sessionId,
-                       @JsonProperty ("clicks") List<Click> clicks,
-                       @JsonProperty ("userModel") UserModel userModel) {
+                       @JsonProperty ("clicks") List<Click> clicks) {
         this.userName = userName;
         this.sessionId = sessionId;
         this.clicks = clicks;
-        this.userModel = userModel;
     }
 
     public String getUserName() {
@@ -37,9 +35,6 @@ public class ClickStream {
         return clicks;
     }
 
-    public UserModel getUserModel() {
-        return userModel;
-    }
 
     public Date timeStampOfLastClick() {
         return Collections.max(clicks, (Click o1, Click o2) -> {
@@ -54,13 +49,20 @@ public class ClickStream {
         }).getTimeStamp();
     }
 
+    public Optional<Click> lastClick() {
+        if (clicks.size() == 0) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(clicks.get(clicks.size() - 1));
+        }
+    }
+
     @Override
     public String toString() {
-        return "ClickStream{" +
+        return "ValidationClickStream{" +
             "userName='" + userName + '\'' +
             ", sessionId='" + sessionId + '\'' +
             ", clicks=" + clicks +
-            ", userModel=" + userModel +
             '}';
     }
 }

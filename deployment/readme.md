@@ -10,10 +10,12 @@ docker exec -u 0 -it deployment_broker_1 /bin/bash
 ```
 ### create topics
 ```bash
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovURLConfig
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovLogins
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClicks
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovUserModels
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreams
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreamAnalysis
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreamValidations
 
 ```
@@ -38,6 +40,8 @@ java -cp target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar ch
 ```
 ```bash
 bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar
+bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdate --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\target\architecture_prototype-1.0-SNAPSHOT-jar-with-dependencies.jar
+
 ```
 #### macOS/Linux
 ```bash

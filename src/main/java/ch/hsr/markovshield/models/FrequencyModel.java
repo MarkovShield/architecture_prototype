@@ -18,7 +18,8 @@ public class FrequencyModel {
     }
 
     @JsonCreator
-    public FrequencyModel(@JsonProperty ("frequencyValue") int frequencyValue, @JsonProperty ("timeCreated") Date timeCreated) {
+    public FrequencyModel(@JsonProperty ("frequencyValue") int frequencyValue,
+                          @JsonProperty ("timeCreated") Date timeCreated) {
         this.frequencyValue = frequencyValue;
         this.timeCreated = timeCreated;
     }

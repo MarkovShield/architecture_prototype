@@ -2,9 +2,13 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.Session;
+import ch.hsr.markovshield.models.UrlConfiguration;
+import ch.hsr.markovshield.models.UrlId;
+import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import org.apache.hadoop.hdfs.server.common.JspHelper;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -49,31 +53,23 @@ public class MarkovClickAndLoginGenerator {
             logins.add(new Session(String.valueOf(sessionId), user));
 
             IntStream.range(0, random.nextInt(10)).forEach(
-                value -> {
-                    clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size())), Date.from(
-                        Instant.now())));
-                }
+                value -> clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size())), Date.from(
+                    Instant.now())))
             );
         }
-
 
         final Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerde.class);
 
-        properties.put("schema.registry.url", "http://localhost:8081");
-
-
-        SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
-
-
-        final KafkaProducer<String, Session> loginProducer = new KafkaProducer<String, Session>(properties,
+        final KafkaProducer<String, Session> loginProducer;
+        loginProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<Session>(Session.class).serializer());
-        final KafkaProducer<String, Click> clickProducer = new KafkaProducer<String, Click>(properties,
+            new JsonPOJOSerde<>(Session.class).serializer());
+        final KafkaProducer<String, Click> clickProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<Click>(Click.class).serializer());
+            new JsonPOJOSerde<>(Click.class).serializer());
 
         final String loginTopic = "MarkovLogins";
         final String clickTopic = "MarkovClicks";
@@ -90,21 +86,22 @@ public class MarkovClickAndLoginGenerator {
         clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "xxx.html", Date.from(
             Instant.now())));
 
+
         for (Click click : clicksBeforeLogin) {
 
-            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSessionId().toString(), click));
+            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionId().toString(), click));
             clickProducer.flush();
         }
 
         sleep(1000);
         for (Session login : logins) {
-            loginProducer.send(new ProducerRecord<String, Session>(loginTopic, login.getSessionId().toString(), login));
+            loginProducer.send(new ProducerRecord<>(loginTopic, login.getSessionId().toString(), login));
             loginProducer.flush();
         }
         sleep(1000);
         for (Click click : clicks) {
 
-            clickProducer.send(new ProducerRecord<String, Click>(clickTopic, click.getSessionId().toString(), click));
+            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionId().toString(), click));
             clickProducer.flush();
         }
 
