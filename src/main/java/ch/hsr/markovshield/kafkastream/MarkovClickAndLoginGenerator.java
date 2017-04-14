@@ -2,13 +2,8 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.models.UrlConfiguration;
-import ch.hsr.markovshield.models.UrlId;
 import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
-import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import org.apache.hadoop.hdfs.server.common.JspHelper;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -18,8 +13,10 @@ import java.io.IOException;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
@@ -47,14 +44,26 @@ public class MarkovClickAndLoginGenerator {
         urls.add("logout.html");
         urls.add("overview.html");
         urls.add("news.html");
+        final Map<String, Integer> urlRatings = new HashMap<>();
+        urlRatings.put("index.html", UrlRating.RISK_LEVEL_LOW);
+        urlRatings.put("logout.html", UrlRating.RISK_LEVEL_MEDIUM);
+        urlRatings.put("overview.html", UrlRating.RISK_LEVEL_HIGH);
+        urlRatings.put("news.html", UrlRating.RISK_LEVEL_LOW);
         ThreadLocalRandom random = ThreadLocalRandom.current();
         for (String user : users) {
             int sessionId = random.nextInt(1, 100000 + 1);
             logins.add(new Session(String.valueOf(sessionId), user));
 
             IntStream.range(0, random.nextInt(10)).forEach(
-                value -> clicks.add(new Click(String.valueOf(sessionId), urls.get(random.nextInt(urls.size())), Date.from(
-                    Instant.now())))
+                value -> {
+                    String s = urls.get(random.nextInt(urls.size()));
+                    clicks.add(new Click(String.valueOf(sessionId),
+                        String.valueOf(random.nextInt()),
+                        s,
+                        urlRatings.get(s),
+                        Date.from(
+                            Instant.now())));
+                }
             );
         }
 
@@ -75,21 +84,21 @@ public class MarkovClickAndLoginGenerator {
         final String clickTopic = "MarkovClicks";
 
         final List<Click> clicksBeforeLogin = new LinkedList<>();
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "start.html", Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "login.html", Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), String.valueOf(random.nextInt()), "login.html", UrlRating.RISK_LEVEL_MEDIUM, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(1).getSessionId(), "start.html", Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(1).getSessionId(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(2).getSessionId(), "start.html", Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(2).getSessionId(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), "xxx.html", Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), String.valueOf(random.nextInt()), "xxx.html", UrlRating.RISK_LEVEL_HIGH, Date.from(
             Instant.now())));
 
 
         for (Click click : clicksBeforeLogin) {
 
-            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionId().toString(), click));
+            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), click));
             clickProducer.flush();
         }
 
@@ -101,7 +110,7 @@ public class MarkovClickAndLoginGenerator {
         sleep(1000);
         for (Click click : clicks) {
 
-            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionId().toString(), click));
+            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), click));
             clickProducer.flush();
         }
 

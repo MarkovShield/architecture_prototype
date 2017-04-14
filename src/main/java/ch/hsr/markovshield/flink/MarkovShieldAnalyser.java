@@ -1,8 +1,8 @@
 package ch.hsr.markovshield.flink;
 
+import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStreamValidation;
 import ch.hsr.markovshield.models.MarkovRating;
-import ch.hsr.markovshield.models.UrlConfiguration;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,17 +99,16 @@ public class MarkovShieldAnalyser {
 
     private static ClickStreamValidation validateSession(ValidationClickStream clickStream) {
         int weightingScore;
-        if (clickStream.getUrlConfigurations() != null) {
-            UrlConfiguration urlConfiguration = clickStream.getUrlConfigurations()
-                .get(clickStream.getClicks().get(0).getUrl());
-            if (urlConfiguration == null) {
-                weightingScore = 100;
+        if (clickStream.getClicks() != null) {
+            Click lastClick = clickStream.getClicks().get(clickStream.getClicks().size() - 1);
+            if (lastClick != null) {
+                weightingScore = lastClick.getUrlRating();
             } else {
-                weightingScore = urlConfiguration
-                    .getRating().getValue();
+                weightingScore = 1000;
             }
         } else {
             weightingScore = 1000;
+
         }
         int score = 0;
         if (clickStream.getUserModel() != null) {

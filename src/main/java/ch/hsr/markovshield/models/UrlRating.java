@@ -1,19 +1,7 @@
 package ch.hsr.markovshield.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class UrlRating extends IntegerValue {
-
-
-    private UrlRating(@JsonProperty ("rating") int rating) {
-        super(rating);
-    }
-
-    public static UrlRating fromInt(int value) {
-        return new UrlRating(value);
-    }
-
-    public static UrlRating empty() {
-        return new UrlRating(-1);
-    }
+public class UrlRating{
+    public final static int RISK_LEVEL_LOW = 0;
+    public final static int RISK_LEVEL_MEDIUM = 1;
+    public final static int RISK_LEVEL_HIGH = 2;
 }

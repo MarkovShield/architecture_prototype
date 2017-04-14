@@ -7,21 +7,27 @@ import java.util.Date;
 
 public class Click {
 
-    private final String sessionId;
+    private final String sessionUUID;
+    private final String clickUUID;
+    private final int urlRating;
     private final String url;
     private final Date timeStamp;
 
     @JsonCreator
-    public Click(@JsonProperty ("sessionId") String sessionId,
+    public Click(@JsonProperty ("sessionUUID") String sessionUUID,
+                 @JsonProperty ("clickUUID") String clickUUID,
                  @JsonProperty ("url") String url,
+                 @JsonProperty ("urlRating") int urlRating,
                  @JsonProperty ("timeStamp") Date timeStamp) {
-        this.sessionId = sessionId;
+        this.sessionUUID = sessionUUID;
+        this.clickUUID = clickUUID;
         this.url = url;
+        this.urlRating = urlRating;
         this.timeStamp = timeStamp;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getSessionUUID() {
+        return sessionUUID;
     }
 
     public String getUrl() {
@@ -35,9 +41,17 @@ public class Click {
     @Override
     public String toString() {
         return "Click{" +
-            "sessionId='" + sessionId + '\'' +
+            "sessionUUID='" + sessionUUID + '\'' +
             ", url='" + url + '\'' +
             ", timeStamp=" + timeStamp +
             '}';
+    }
+
+    public String getClickUUID() {
+        return clickUUID;
+    }
+
+    public int getUrlRating() {
+        return urlRating;
     }
 }

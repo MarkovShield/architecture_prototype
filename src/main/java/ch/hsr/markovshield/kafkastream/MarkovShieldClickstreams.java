@@ -3,7 +3,7 @@ package ch.hsr.markovshield.kafkastream;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.models.UrlConfiguration;
+import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
@@ -17,8 +17,6 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -49,13 +47,8 @@ public class MarkovShieldClickstreams {
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
 
 
-        final Map<String, UrlConfiguration> configMap = new HashMap<>();
         final KStreamBuilder builder = new KStreamBuilder();
-        final KTable<String, UrlConfiguration> config = builder.table(Serdes.String(),
-            new JsonPOJOSerde<>(UrlConfiguration.class),
-            MARKOV_CONFIG_TOPIC,
-            "MarkovConfigStore");
-        config.foreach((s, urlConfiguration) -> configMap.put(s, urlConfiguration));
+
         final KTable<String, Session> sessions = builder.table(Serdes.String(),
             new JsonPOJOSerde<>(Session.class),
             MARKOV_LOGIN_TOPIC,
@@ -84,12 +77,12 @@ public class MarkovShieldClickstreams {
                 } else {
                     newUserName = USER_NOT_FOUND;
                 }
-                return new ClickStream(newUserName, view.getSessionId(), Collections.singletonList(view));
+                return new ClickStream(newUserName, view.getSessionUUID(), Collections.singletonList(view));
             }, Serdes.String(), new JsonPOJOSerde<>(Click.class)
         ).groupByKey(Serdes.String(), new JsonPOJOSerde<>(ClickStream.class)).reduce(
             (clickStream, v1) -> {
                 String userName = clickStream.getUserName();
-                if (clickStream.getUserName().toString().equals(USER_NOT_FOUND) && !(clickStream.getUserName()
+                if (clickStream.getUserName().equals(USER_NOT_FOUND) && !(clickStream.getUserName()
                     .equals(v1.getUserName()))) {
                     userName = v1.getUserName();
                 }
@@ -99,23 +92,22 @@ public class MarkovShieldClickstreams {
             }, "MarkovClickStreamAggregation"
         );
 
-        KStream<String, ValidationClickStream> stringValidationClickStreamKStream = clickstreams
+        KStream<String, ClickStream> stringValidationClickStreamKStream = clickstreams
             .toStream((s, clickStream) -> clickStream.getUserName()).filter((s, validationClickStream) -> {
                 Optional<Boolean> overThreshold = validationClickStream.lastClick()
-                    .map(click -> isUrlOverThreshold(configMap, click));
+                    .map(MarkovShieldClickstreams::isUrlOverThreshold);
                 return overThreshold.orElse(false);
-            }).mapValues(
-                clickStream -> ValidationClickStream.fromClickstream(clickStream, configMap));
+            });
 
         stringValidationClickStreamKStream.print();
 
-        KStream<String, ValidationClickStream> clickStreamsWithModel = stringValidationClickStreamKStream.leftJoin(
+        KStream<String, ValidationClickStream> clickStreamsWithModel = stringValidationClickStreamKStream.mapValues(
+            ValidationClickStream::fromClickStream).leftJoin(
             userModels,
-            (clickStream, userModel) -> new ValidationClickStream(clickStream.getUserName(),
-                clickStream.getSessionId(),
-                clickStream.getClicks(),
-                userModel,
-                configMap),
+            (ValidationClickStream clickStream, UserModel userModel) -> {
+                clickStream.setUserModel(userModel);
+                return clickStream;
+            },
             Serdes.String(),
             new JsonPOJOSerde<>(ValidationClickStream.class));
 
@@ -136,14 +128,8 @@ public class MarkovShieldClickstreams {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
 
-    private static Boolean isUrlOverThreshold(Map<String, UrlConfiguration> configMap, Click click) {
-        if (configMap != null) {
-            UrlConfiguration urlConfiguration = configMap.get(click.getUrl());
-            if (urlConfiguration != null) {
-                return urlConfiguration.getRating().getValue() > 2;
-            }
-        }
-        return null;
+    private static Boolean isUrlOverThreshold(Click click) {
+        return click.getUrlRating() == UrlRating.RISK_LEVEL_MEDIUM || click.getUrlRating() == UrlRating.RISK_LEVEL_HIGH;
     }
 
 }
