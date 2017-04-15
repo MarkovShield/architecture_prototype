@@ -62,19 +62,7 @@ public class MarkovChainTest extends TestCase {
         clicks3.add(new Click("97574", "logout.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
         trainingSet.add(new ClickStream("Kilian", "97574",clicks3, null));
     }
-
-    @Test
-    public void testMarkovChainWithHashMaps(){
-        MarkovChainWithHashMaps markovChain = MarkovChainWithHashMaps.create();
-        markovChain.train(trainingSet.stream());
-        double p = markovChain.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double x = markovChain.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double c = markovChain.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xa = markovChain.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-
-        assertEquals(0.5d, p, 1e-3);
-        assertEquals(true, true);
-    }
+    
     @Test
     public void testMarkovChainWithMatrix(){
         TransitionModel train = MarkovChainWithMatrix.train(trainingSet);
@@ -113,34 +101,5 @@ public class MarkovChainTest extends TestCase {
         long l3 = System.nanoTime();
         System.out.println("Matrixtraining: " +  (l2 - l));
         System.out.println("Matrixquery: " + (l3 - l2));
-    }
-
-    @Test
-    public void testSpeedWithHashMaps(){
-        long l = System.nanoTime();
-        MarkovChainWithHashMaps markovChain = MarkovChainWithHashMaps.create();
-        markovChain.train(trainingSet.stream());
-        long l2 = System.nanoTime();
-        double p = markovChain.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double x = markovChain.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double c = markovChain.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xa = markovChain.getProbabilityForClick(new Click("1", "index2.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xb = markovChain.getProbabilityForClick(new Click("1", "index3.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xc = markovChain.getProbabilityForClick(new Click("1", "index4.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xd = markovChain.getProbabilityForClick(new Click("1", "index5.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xe = markovChain.getProbabilityForClick(new Click("1", "index6.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xf = markovChain.getProbabilityForClick(new Click("1", "index10.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xg = markovChain.getProbabilityForClick(new Click("1", "index12.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xh = markovChain.getProbabilityForClick(new Click("1", "index13.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xj = markovChain.getProbabilityForClick(new Click("1", "index14.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xk = markovChain.getProbabilityForClick(new Click("1", "index17.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xl = markovChain.getProbabilityForClick(new Click("1", "index20.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xm = markovChain.getProbabilityForClick(new Click("1", "index21.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xn = markovChain.getProbabilityForClick(new Click("1", "index22.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xo = markovChain.getProbabilityForClick(new Click("1", "index23.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xp = markovChain.getProbabilityForClick(new Click("1", "index24.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        long l3 = System.nanoTime();
-        System.out.println("HashMaptraining: " +  (l2 - l));
-        System.out.println("HashMapquery: " + (l3 - l2));
     }
 }
