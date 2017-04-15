@@ -88,4 +88,13 @@ public class DoubleMatrix {
     public int hashCode() {
         return Objects.hash(data, rows, columns);
     }
+
+    @Override
+    public String toString() {
+        return "DoubleMatrix{" +
+            "data=" + Arrays.toString(data) +
+            ", rows=" + rows +
+            ", columns=" + columns +
+            '}';
+    }
 }

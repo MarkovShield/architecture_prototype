@@ -76,4 +76,13 @@ public class TransitionModel {
     public int hashCode() {
         return Objects.hash(transitionMatrix, urlStore, timeCreated);
     }
+
+    @Override
+    public String toString() {
+        return "TransitionModel{" +
+            "transitionMatrix=" + transitionMatrix +
+            ", urlStore=" + urlStore +
+            ", timeCreated=" + timeCreated +
+            '}';
+    }
 }

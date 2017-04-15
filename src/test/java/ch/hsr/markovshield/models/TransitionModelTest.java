@@ -1,13 +1,11 @@
 package ch.hsr.markovshield.models;
 
 
-import ch.hsr.markovshield.ml.DoubleMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
-import ch.hsr.markovshield.ml.TransitionMatrix;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
-
 import java.io.IOException;
 import java.util.Collections;
 
@@ -17,24 +15,28 @@ import static org.junit.Assert.assertThat;
 
 public class TransitionModelTest {
 
+    private ObjectMapper mapper;
+
+    @Before
+    public void setUp() throws Exception {
+        mapper = new ObjectMapper();
+    }
+
     @Test
     public void testSerialization() throws JsonProcessingException {
-        TransitionModel matrix = MarkovChainWithMatrix.train(Collections.emptyList());
-        ObjectMapper mapper = new ObjectMapper();
-        String s = mapper.writeValueAsString(matrix);
-        assertThat(s, containsString("timeCreated"));
-        assertThat(s, containsString("urlStore"));
-        assertThat(s, containsString("transitionMatrix"));
+        TransitionModel model = MarkovChainWithMatrix.train(Collections.emptyList());
+        String json = mapper.writeValueAsString(model);
+        assertThat(json, containsString("timeCreated"));
+        assertThat(json, containsString("urlStore"));
+        assertThat(json, containsString("transitionMatrix"));
     }
 
     @Test
     public void testSerializationAndDeserialization() throws IOException {
-        TransitionModel matrix = MarkovChainWithMatrix.train(Collections.emptyList());
-        ObjectMapper mapper = new ObjectMapper();
-        String s = mapper.writeValueAsString(matrix);
-
-        TransitionModel transitionModel = mapper.readValue(s, TransitionModel.class);
-        assertThat(transitionModel, equalTo(matrix));
+        TransitionModel model = MarkovChainWithMatrix.train(Collections.emptyList());
+        String json = mapper.writeValueAsString(model);
+        TransitionModel deserializedModel = mapper.readValue(json, TransitionModel.class);
+        assertThat(deserializedModel, equalTo(model));
 
     }
 }

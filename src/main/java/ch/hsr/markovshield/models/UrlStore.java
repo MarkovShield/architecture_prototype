@@ -43,4 +43,11 @@ public class UrlStore {
     public int hashCode() {
         return Objects.hash(urlMapping);
     }
+
+    @Override
+    public String toString() {
+        return "UrlStore{" +
+            "urlMapping=" + urlMapping +
+            '}';
+    }
 }
