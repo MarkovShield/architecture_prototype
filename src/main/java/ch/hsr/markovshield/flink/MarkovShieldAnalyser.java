@@ -99,9 +99,7 @@ public class MarkovShieldAnalyser {
     private static ClickStreamValidation validateSession(ClickStream clickStream) {
         int score = 0;
         if (clickStream.getUserModel() != null) {
-            score = clickStream.getUserModel().getFrequencyModel().getFrequencyValue() + clickStream.getUserModel()
-                .getTransitionModel()
-                .getTransitionValue();
+            score = clickStream.getUserModel().getFrequencyModel().getFrequencyValue();
         }
         MarkovRating rating = calculateMarkovFraudLevel(score);
         return new ClickStreamValidation(clickStream.getUserName(), clickStream.getSessionId(), score, rating);

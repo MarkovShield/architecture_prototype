@@ -1,41 +1,50 @@
 package ch.hsr.markovshield.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import ch.hsr.markovshield.ml.TransistionMatrix;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Random;
+import java.util.Optional;
 
 
 public class TransitionModel {
 
-    private final int transitionValue;
+    private final TransistionMatrix transistionMatrix;
+    private final UrlStore urlStore;
     private final Date timeCreated;
 
-    public TransitionModel() {
-        transitionValue = new Random().nextInt(100);
+    public TransitionModel(TransistionMatrix transistionMatrix, UrlStore urlStore) {
+        this.transistionMatrix = transistionMatrix;
+        this.urlStore = urlStore;
         timeCreated = Date.from(Instant.now());
+
     }
 
-    @JsonCreator
-    public TransitionModel(@JsonProperty ("transitionValue") int transitionValue, @JsonProperty ("timeCreated") Date timeCreated) {
-        this.transitionValue = transitionValue;
+    public TransitionModel(@JsonProperty ("transitionMatrix") TransistionMatrix transistionMatrix,
+                           @JsonProperty ("urlStore") UrlStore urlStore,
+                           @JsonProperty ("timeCreated") Date timeCreated) {
+        this.transistionMatrix = transistionMatrix;
+        this.urlStore = urlStore;
         this.timeCreated = timeCreated;
-    }
-
-    public int getTransitionValue() {
-        return transitionValue;
     }
 
     public Date getTimeCreated() {
         return timeCreated;
     }
 
-    @Override
-    public String toString() {
-        return "TransitionModel{" +
-            "transitionValue=" + transitionValue +
-            ", timeCreated=" + timeCreated +
-            '}';
+    private Optional<Integer> getIndexByUrl(String url) {
+        return this.urlStore.get(url);
+    }
+
+    public double getProbabilityForClick(Click currentClick, Click newClick) {
+        Optional<Integer> sourceIndex = getIndexByUrl(currentClick.getUrl());
+        Optional<Integer> targetIndex = getIndexByUrl(newClick.getUrl());
+        double transistionProbability;
+        if (sourceIndex.isPresent() && targetIndex.isPresent()) {
+            transistionProbability = transistionMatrix.get(sourceIndex.get(), targetIndex.get());
+        } else {
+            transistionProbability = 0;
+        }
+        return transistionProbability;
     }
 }

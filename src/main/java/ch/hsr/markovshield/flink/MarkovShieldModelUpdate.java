@@ -1,8 +1,8 @@
 package ch.hsr.markovshield.flink;
 
+import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.FrequencyModel;
-import ch.hsr.markovshield.models.TransitionModel;
 import ch.hsr.markovshield.models.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,9 +110,9 @@ public class MarkovShieldModelUpdate {
         UserModel model = null;
         for (ClickStream clickStream : iterable) {
             if (model == null) {
-                model = new UserModel(key, new TransitionModel(), new FrequencyModel());
-            }else{
-                if(!model.getUserId().equals(clickStream.getUserName())){
+                model = new UserModel(key, MarkovChainWithMatrix.train(iterable), new FrequencyModel());
+            } else {
+                if (!model.getUserId().equals(clickStream.getUserName())) {
                     throw new RuntimeException("UserName not the same");
                 }
             }

@@ -4,13 +4,14 @@ package ch.hsr.markovshield.ml;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.MarkovRating;
+import ch.hsr.markovshield.models.TransitionModel;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
-public class MarkovChainWithHashMaps implements MarkovChain {
+public class MarkovChainWithHashMaps {
 
-    HashMap<String, HashMap<String, Integer>> clickCountMatrix;
-    HashMap<String, HashMap<String, Double>> clickProbabilityMatrix;
+    private HashMap<String, HashMap<String, Integer>> clickCountMatrix;
+    private HashMap<String, HashMap<String, Double>> clickProbabilityMatrix;
 
     private MarkovChainWithHashMaps() {
         clickCountMatrix = new HashMap<>();
@@ -21,7 +22,7 @@ public class MarkovChainWithHashMaps implements MarkovChain {
         return new MarkovChainWithHashMaps();
     }
 
-    public void train(Stream<ClickStream> stream) {
+    public TransitionModel train(Stream<ClickStream> stream) {
         stream.forEach(clickStream -> {
             Click[] clicks = clickStream.getClicks().toArray(new Click[]{});
             for (int i = 0; i <= clicks.length-1; i++) {
@@ -33,6 +34,7 @@ public class MarkovChainWithHashMaps implements MarkovChain {
             }
         });
         calculateProbilities();
+        return null;
     }
 
     private void calculateProbilities() {

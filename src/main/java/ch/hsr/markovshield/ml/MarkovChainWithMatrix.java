@@ -3,67 +3,64 @@ package ch.hsr.markovshield.ml;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
+import ch.hsr.markovshield.models.TransitionModel;
+import ch.hsr.markovshield.models.UrlStore;
 import java.util.HashMap;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.Map;
 
-public class MarkovChainWithMatrix implements MarkovChain {
-    HashMap<String, Integer> urlMapping;
-    HashMap<String, HashMap<String, Integer>> clickCountMatrix;
-    TransistionMatrix clickProbabilityMatrix;
+public class MarkovChainWithMatrix {
 
-    public MarkovChainWithMatrix() {
-        this.urlMapping = new HashMap<>();
-        this.clickCountMatrix = new HashMap<>();
-    }
 
-    public void train(Stream<ClickStream> stream) {
+    public static TransitionModel train(Iterable<ClickStream> stream) {
+
+        HashMap<String, HashMap<String, Integer>> clickCountMatrix = new HashMap<>();
+
         stream.forEach(clickStream -> {
             Click[] clicks = clickStream.getClicks().toArray(new Click[]{});
             for (int i = 0; i <= clicks.length - 1; i++) {
                 if (i == clicks.length - 1) {
-                    updateClickCount(clicks[i].getUrl(), "endOfClickStream");
+                    updateClickCount(clickCountMatrix, clicks[i].getUrl(), "endOfClickStream");
                 } else {
-                    updateClickCount(clicks[i].getUrl(), clicks[i + 1].getUrl());
+                    updateClickCount(clickCountMatrix, clicks[i].getUrl(), clicks[i + 1].getUrl());
                 }
             }
         });
-        addMappings();
-        calculateProbilities();
+        Map<String, Integer> urlMap = getMappings(clickCountMatrix);
+        TransistionMatrix clickProbabilityMatrix = calculateProbilities(clickCountMatrix, urlMap);
+        return new TransitionModel(clickProbabilityMatrix, new UrlStore(urlMap));
     }
 
-    private void addMappings() {
+    private static Map<String, Integer> getMappings(HashMap<String, HashMap<String, Integer>> clickCountMatrix) {
+        HashMap<String, Integer> urlMapping = new HashMap<>();
         int urlCount = 0;
         for (String url : clickCountMatrix.keySet()) {
             urlMapping.put(url, urlCount++);
         }
         urlMapping.put("endOfClickStream", urlCount);
+        return urlMapping;
     }
 
-    private void calculateProbilities() {
+    private static TransistionMatrix calculateProbilities(HashMap<String, HashMap<String, Integer>> clickCountMatrix, Map<String, Integer> urlMap) {
+        TransistionMatrix clickProbabilityMatrix = new TransistionMatrix(urlMap.size());
         clickCountMatrix.forEach((s, stringIntegerHashMap) -> {
-            Double sum = Double.valueOf(stringIntegerHashMap.values().stream().mapToInt(Integer::intValue).sum());
-            stringIntegerHashMap.forEach((s1, integer) -> {
-                addToProbabilityMatrix(s,s1,  Double.valueOf(integer) / sum);
-            });
+            Double sum = (double) stringIntegerHashMap.values().stream().mapToInt(Integer::intValue).sum();
+            stringIntegerHashMap.forEach((s1, integer) -> addToProbabilityMatrix(clickProbabilityMatrix, s, s1, Double.valueOf(integer) / sum, urlMap));
         });
+        return clickProbabilityMatrix;
     }
 
-    private void addToProbabilityMatrix(String source, String target, double probability) {
-        if(this.clickProbabilityMatrix == null){
-            this.clickProbabilityMatrix = new TransistionMatrix(urlMapping.size());
-        }
-        int sourceIndex = getIndexByUrl(source);
-        int targetIndex = getIndexByUrl(target);
-        this.clickProbabilityMatrix.set(sourceIndex, targetIndex, probability);
+    private static void addToProbabilityMatrix(TransistionMatrix clickProbabilityMatrix, String source, String target, double probability, Map<String, Integer> urlMap) {
+        int sourceIndex = getIndexByUrl(urlMap, source);
+        int targetIndex = getIndexByUrl(urlMap, target);
+        clickProbabilityMatrix.set(sourceIndex, targetIndex, probability);
     }
 
-    private int getIndexByUrl(String url) {
-        Integer integer = this.urlMapping.get(url);
+    private static int getIndexByUrl(Map<String, Integer> urlMap, String url) {
+        Integer integer = urlMap.get(url);
         return integer;
     }
 
-    private void updateClickCount(String sourceUrl, String targetUrl) {
+    private static void updateClickCount(HashMap<String, HashMap<String, Integer>> clickCountMatrix, String sourceUrl, String targetUrl) {
         if (!clickCountMatrix.containsKey(sourceUrl)) {
             HashMap<String, Integer> targetMap = new HashMap<>();
             targetMap.put(targetUrl, 1);
@@ -76,10 +73,6 @@ public class MarkovChainWithMatrix implements MarkovChain {
                 sourceMap.put(targetUrl, 1);
             }
         }
-    }
-
-    public double getProbabilityForClick(Click currentClick, Click newClick) {
-        return clickProbabilityMatrix.get(getIndexByUrl(currentClick.getUrl()),getIndexByUrl(newClick.getUrl()));
     }
 
 }
