@@ -22,6 +22,7 @@ public class MarkovChainTest extends TestCase {
         clicks.add(new Click("97572", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
         clicks.add(new Click("97572", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
         clicks.add(new Click("97572", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
+        clicks.add(new Click("97572", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
         clicks.add(new Click("97572", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
         clicks.add(new Click("97572", "index2.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
         clicks.add(new Click("97572", "index3.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
@@ -62,44 +63,19 @@ public class MarkovChainTest extends TestCase {
         clicks3.add(new Click("97574", "logout.html", Date.from(Instant.ofEpochMilli(1491390672752L) )));
         trainingSet.add(new ClickStream("Kilian", "97574",clicks3, null));
     }
-    
+
     @Test
     public void testMarkovChainWithMatrix(){
         TransitionModel train = MarkovChainWithMatrix.train(trainingSet);
-        double p = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double x = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double c = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xa = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+        double indexNewsProbability = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+        double newsIndexProbability = train.getProbabilityForClick(new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+        double newsNewsProbability = train.getProbabilityForClick(new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+        double newsLogoutProbability = train.getProbabilityForClick(new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "logout.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
 
-        assertEquals(0.5d, p, 1e-3);
-        assertEquals(true, true);
+        assertEquals(0.5d, indexNewsProbability, 1e-3);
+        assertEquals(1d/4d, newsIndexProbability, 1e-3);
+        assertEquals(2d/4d, newsNewsProbability, 1e-3);
+        assertEquals(1d/4d, newsLogoutProbability, 1e-3);
     }
 
-    @Test
-    public void testSpeed(){
-        long l = System.nanoTime();
-        TransitionModel train = MarkovChainWithMatrix.train(trainingSet);
-        long l2 = System.nanoTime();
-        double p = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double x = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double c = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xa = train.getProbabilityForClick(new Click("1", "index2.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xb = train.getProbabilityForClick(new Click("1", "index3.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xc = train.getProbabilityForClick(new Click("1", "index4.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xd = train.getProbabilityForClick(new Click("1", "index5.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xe = train.getProbabilityForClick(new Click("1", "index6.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xf = train.getProbabilityForClick(new Click("1", "index10.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xg = train.getProbabilityForClick(new Click("1", "index12.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xh = train.getProbabilityForClick(new Click("1", "index13.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xj = train.getProbabilityForClick(new Click("1", "index14.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xk = train.getProbabilityForClick(new Click("1", "index17.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xl = train.getProbabilityForClick(new Click("1", "index20.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xm = train.getProbabilityForClick(new Click("1", "index21.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xn = train.getProbabilityForClick(new Click("1", "index22.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xo = train.getProbabilityForClick(new Click("1", "index23.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        double xp = train.getProbabilityForClick(new Click("1", "index24.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
-        long l3 = System.nanoTime();
-        System.out.println("Matrixtraining: " +  (l2 - l));
-        System.out.println("Matrixquery: " + (l3 - l2));
-    }
 }
