@@ -1,14 +1,11 @@
 package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
-import ch.hsr.markovshield.ml.TransistionMatrix;
 import ch.hsr.markovshield.models.FrequencyModel;
-import ch.hsr.markovshield.models.TransitionModel;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import org.apache.commons.collections.iterators.IteratorChain;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;

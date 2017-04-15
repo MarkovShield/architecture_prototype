@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MarkovChainTest extends TestCase {
@@ -78,4 +79,19 @@ public class MarkovChainTest extends TestCase {
         assertEquals(1d/4d, newsLogoutProbability, 1e-3);
     }
 
+    @Test
+    public void testMarkovChainWithMatrixEmptySet(){
+        Iterable<ClickStream> x = Collections.emptyList();
+        TransitionModel train = MarkovChainWithMatrix.train(x);
+
+        double indexNewsProbability = train.getProbabilityForClick(new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+        double newsIndexProbability = train.getProbabilityForClick(new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "index.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+        double newsNewsProbability = train.getProbabilityForClick(new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+        double newsLogoutProbability = train.getProbabilityForClick(new Click("1", "news.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )), new Click("1", "logout.html", Date.from(Instant.ofEpochMilli(1491390672752L)  )));
+
+        assertEquals(0d, indexNewsProbability, 1e-3);
+        assertEquals(0d, newsIndexProbability, 1e-3);
+        assertEquals(0d, newsNewsProbability, 1e-3);
+        assertEquals(0d, newsLogoutProbability, 1e-3);
+    }
 }
