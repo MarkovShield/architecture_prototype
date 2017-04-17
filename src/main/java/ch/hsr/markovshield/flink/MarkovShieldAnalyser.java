@@ -113,9 +113,8 @@ public class MarkovShieldAnalyser {
         int score = 0;
         if (clickStream.getUserModel() != null) {
             int frequencyValue = clickStream.getUserModel().getFrequencyModel().getFrequencyValue();
-            int transitionValue = clickStream.getUserModel()
-                .getTransitionModel()
-                .getTransitionValue();
+            int transitionValue = (clickStream.getUserModel()
+                .getTransitionModel() != null) ? 1 : 100;
             score = (frequencyValue + transitionValue) * weightingScore;
 
         }
