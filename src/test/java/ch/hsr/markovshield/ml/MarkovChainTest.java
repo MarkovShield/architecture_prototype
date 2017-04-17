@@ -41,28 +41,54 @@ public class MarkovChainTest extends TestCase {
     @Test
     public void testMarkovChainWithMatrix() {
         TransitionModel train = MarkovChainWithMatrix.train(trainingSet);
-        double indexNewsProbability = train.getProbabilityForClick(new Click("1", "1",
-                "index.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "news.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        double newsIndexProbability = train.getProbabilityForClick(new Click("1", "2",
-                "news.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        double newsNewsProbability = train.getProbabilityForClick(new Click("1", "1",
-                "news.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "news.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        double newsLogoutProbability = train.getProbabilityForClick(new Click("1", "1",
-                "news.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+        double indexNewsProbability = train.getProbabilityForClick(
+            "index.html",
+            "news.html");
+        double newsIndexProbability = train.getProbabilityForClick(
+            "news.html",
+            "index.html");
+        double newsNewsProbability = train.getProbabilityForClick(
+            "news.html",
+            "news.html");
+        double newsLogoutProbability = train.getProbabilityForClick(
+            "news.html",
+            "logout.html");
         assertEquals(0.5d, indexNewsProbability, 1e-3);
         assertEquals(1d / 4d, newsIndexProbability, 1e-3);
         assertEquals(2d / 4d, newsNewsProbability, 1e-3);
         assertEquals(1d / 4d, newsLogoutProbability, 1e-3);
     }
 
+    @Test
+    public void testMarkovChainWithClick() {
+        TransitionModel train = MarkovChainWithMatrix.train(trainingSet);
+        double newsIndexProbability = train.getProbabilityForClick(
+            "news.html",
+            "index.html");
+        double newsNewsProbability = train.getProbabilityForClick(
+            "news.html",
+            "news.html");
+        double newsLogoutProbability = train.getProbabilityForClick(
+            "news.html",
+            "logout.html");
+         double newsIndexProbabilityWithClick = train.getProbabilityForClick(new Click("1", "1",
+                "news.html", 1,
+                Date.from(Instant.ofEpochMilli(1491390672752L))),
+            new Click("1", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+
+        double newsNewsProbabilityWithClick = train.getProbabilityForClick(new Click("1", "1",
+                "news.html", 1,
+                Date.from(Instant.ofEpochMilli(1491390672752L))),
+            new Click("1", "1", "news.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+        double newsLogoutProbabilityWithClick = train.getProbabilityForClick(new Click("1", "1",
+                "news.html", 1,
+                Date.from(Instant.ofEpochMilli(1491390672752L))),
+            new Click("1", "1", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+        assertEquals(newsIndexProbabilityWithClick, newsIndexProbability, 1e-3);
+        assertEquals(newsNewsProbabilityWithClick, newsNewsProbability, 1e-3);
+        assertEquals(newsLogoutProbabilityWithClick, newsLogoutProbability, 1e-3);
+    }
+    
     @Test
     public void testMarkovChainWithMatrixEmptySet() {
         Iterable<ClickStream> x = Collections.emptyList();

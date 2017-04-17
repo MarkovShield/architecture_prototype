@@ -47,8 +47,12 @@ public class TransitionModel {
     }
 
     public double getProbabilityForClick(Click currentClick, Click newClick) {
-        Optional<Integer> sourceIndex = getIndexByUrl(currentClick.getUrl());
-        Optional<Integer> targetIndex = getIndexByUrl(newClick.getUrl());
+        return getProbabilityForClick(currentClick.getUrl(), newClick.getUrl());
+    }
+
+    public double getProbabilityForClick(String currentUrl, String newUrl) {
+        Optional<Integer> sourceIndex = getIndexByUrl(currentUrl);
+        Optional<Integer> targetIndex = getIndexByUrl(newUrl);
         double transistionProbability;
         if (sourceIndex.isPresent() && targetIndex.isPresent()) {
             transistionProbability = transitionMatrix.get(sourceIndex.get(), targetIndex.get());
@@ -57,7 +61,6 @@ public class TransitionModel {
         }
         return transistionProbability;
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
