@@ -88,7 +88,7 @@ public class MarkovChainTest extends TestCase {
         assertEquals(newsNewsProbabilityWithClick, newsNewsProbability, 1e-3);
         assertEquals(newsLogoutProbabilityWithClick, newsLogoutProbability, 1e-3);
     }
-    
+
     @Test
     public void testMarkovChainWithMatrixEmptySet() {
         Iterable<ClickStream> x = Collections.emptyList();
