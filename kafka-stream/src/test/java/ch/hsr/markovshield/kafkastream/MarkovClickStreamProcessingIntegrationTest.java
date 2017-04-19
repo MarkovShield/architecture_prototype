@@ -23,7 +23,6 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.test.TestUtils;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
 import java.sql.Date;
 import java.time.Instant;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -39,8 +39,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 
 public class MarkovClickStreamProcessingIntegrationTest {
-
-    private EmbeddedSingleNodeKafkaCluster cluster;
 
     private static final String clickTopic = MarkovClickStreamProcessing.MARKOV_CLICK_TOPIC;
     private static final String loginTopic = MarkovClickStreamProcessing.MARKOV_LOGIN_TOPIC;
@@ -53,6 +51,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
     private static final JsonPOJOSerde<UserModel> userModelSerde = MarkovClickStreamProcessing.userModelSerde;
     private static final JsonPOJOSerde<ClickStream> clickStreamSerde = MarkovClickStreamProcessing.clickStreamSerde;
     private static final JsonPOJOSerde<ValidationClickStream> clickStreamValidationSerde = MarkovClickStreamProcessing.validationClickStreamSerde;
+    private EmbeddedSingleNodeKafkaCluster cluster;
     private Properties streamsConfiguration;
 
 
@@ -152,27 +151,27 @@ public class MarkovClickStreamProcessingIntegrationTest {
         expectedClickStreams.add(new KeyValue<>(session1,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 1))));
         expectedClickStreams.add(new KeyValue<>(session1,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 2))));
         expectedClickStreams.add(new KeyValue<>(session1,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()))));
         expectedClickStreams.add(new KeyValue<>(session2,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session2,
-                clicks.stream().filter(click -> click.getSessionUUID() == session2).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
                     Collectors.toList()).subList(0, 1))));
         expectedClickStreams.add(new KeyValue<>(session2,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session2,
-                clicks.stream().filter(click -> click.getSessionUUID() == session2).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
                     Collectors.toList()))));
         List<KeyValue<String, ClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
@@ -285,32 +284,32 @@ public class MarkovClickStreamProcessingIntegrationTest {
         expectedClickStreams.add(new KeyValue<>(session1,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 1))));
         expectedClickStreams.add(new KeyValue<>(session1,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 2))));
         expectedClickStreams.add(new KeyValue<>(session1,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 3))));
         expectedClickStreams.add(new KeyValue<>(session1,
             new ClickStream(user1,
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()))));
         expectedClickStreams.add(new KeyValue<>(session2,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session2,
-                clicks.stream().filter(click -> click.getSessionUUID() == session2).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
                     Collectors.toList()).subList(0, 1))));
         expectedClickStreams.add(new KeyValue<>(session2,
             new ClickStream("--------------------NOT FOUND---------------------------",
                 session2,
-                clicks.stream().filter(click -> click.getSessionUUID() == session2).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
                     Collectors.toList()))));
         List<KeyValue<String, ClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
@@ -436,16 +435,19 @@ public class MarkovClickStreamProcessingIntegrationTest {
         expectedClickStreams.add(new KeyValue<>(user1,
             new ValidationClickStream(user1,
                 session1,
-                clicks.stream().filter(click -> click.getSessionUUID() == session1).collect(
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 3),
-                userModels.stream().filter(userModel -> userModel.getUserId() == user1).findFirst().orElse(null))));
+                userModels.stream()
+                    .filter(userModel -> Objects.equals(userModel.getUserId(), user1))
+                    .findFirst()
+                    .orElse(null))));
         List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
             analysisTopic,
             1,
             30 * 1000L,
 
-            stringSerde.deserializer(),
+            new StringDeserializer(),
             clickStreamValidationSerde.deserializer()
         );
         streams.close();
