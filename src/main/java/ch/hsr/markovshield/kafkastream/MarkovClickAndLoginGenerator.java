@@ -84,15 +84,15 @@ public class MarkovClickAndLoginGenerator {
         final String clickTopic = "MarkovClicks";
 
         final List<Click> clicksBeforeLogin = new LinkedList<>();
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionUUID(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), String.valueOf(random.nextInt()), "login.html", UrlRating.RISK_LEVEL_MEDIUM, Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionUUID(), String.valueOf(random.nextInt()), "login.html", UrlRating.RISK_LEVEL_MEDIUM, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(1).getSessionId(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(1).getSessionUUID(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(2).getSessionId(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(2).getSessionUUID(), String.valueOf(random.nextInt()), "start.html", UrlRating.RISK_LEVEL_LOW, Date.from(
             Instant.now())));
-        clicksBeforeLogin.add(new Click(logins.get(0).getSessionId(), String.valueOf(random.nextInt()), "xxx.html", UrlRating.RISK_LEVEL_HIGH, Date.from(
+        clicksBeforeLogin.add(new Click(logins.get(0).getSessionUUID(), String.valueOf(random.nextInt()), "xxx.html", UrlRating.RISK_LEVEL_HIGH, Date.from(
             Instant.now())));
 
 
@@ -104,7 +104,7 @@ public class MarkovClickAndLoginGenerator {
 
         sleep(1000);
         for (Session login : logins) {
-            loginProducer.send(new ProducerRecord<>(loginTopic, login.getSessionId().toString(), login));
+            loginProducer.send(new ProducerRecord<>(loginTopic, login.getSessionUUID().toString(), login));
             loginProducer.flush();
         }
         sleep(1000);

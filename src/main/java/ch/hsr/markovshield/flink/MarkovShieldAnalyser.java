@@ -72,7 +72,7 @@ public class MarkovShieldAnalyser {
 
                 @Override
                 public byte[] serializeKey(ClickStreamValidation validation) {
-                    return validation.getSessionId().getBytes();
+                    return validation.getSessionUUID().getBytes();
                 }
 
                 @Override
@@ -102,7 +102,7 @@ public class MarkovShieldAnalyser {
         if (clickStream.getClicks() != null) {
             Click lastClick = clickStream.getClicks().get(clickStream.getClicks().size() - 1);
             if (lastClick != null) {
-                weightingScore = lastClick.getUrlRating();
+                weightingScore = lastClick.getUrlRiskLevel();
             } else {
                 weightingScore = 1000;
             }
@@ -119,7 +119,7 @@ public class MarkovShieldAnalyser {
 
         }
         MarkovRating rating = calculateMarkovFraudLevel(score);
-        return new ClickStreamValidation(clickStream.getUserName(), clickStream.getSessionId(), score, rating);
+        return new ClickStreamValidation(clickStream.getUserName(), clickStream.getSessionUUID(), score, rating);
     }
 
     private static MarkovRating calculateMarkovFraudLevel(int rating) {

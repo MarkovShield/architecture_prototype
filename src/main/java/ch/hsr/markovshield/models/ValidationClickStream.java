@@ -10,7 +10,7 @@ import java.util.List;
 public class ValidationClickStream {
 
     private final String userName;
-    private final String sessionId;
+    private final String sessionUUID;
     private final List<Click> clicks;
     private UserModel userModel;
 
@@ -21,7 +21,7 @@ public class ValidationClickStream {
 
     public static ValidationClickStream fromClickStream(ClickStream clickStream) {
         ValidationClickStream validationClickStream = new ValidationClickStream(clickStream.getUserName(),
-            clickStream.getSessionId(),
+            clickStream.getSessionUUID(),
             clickStream.getClicks(),
             null);
         return validationClickStream;
@@ -29,11 +29,11 @@ public class ValidationClickStream {
 
     @JsonCreator
     public ValidationClickStream(@JsonProperty ("userName") String userName,
-                                 @JsonProperty ("sessionId") String sessionId,
+                                 @JsonProperty ("sessionUUID") String sessionUUID,
                                  @JsonProperty ("clicks") List<Click> clicks,
                                  @JsonProperty ("userModel") UserModel userModel) {
         this.userName = userName;
-        this.sessionId = sessionId;
+        this.sessionUUID = sessionUUID;
         this.clicks = clicks;
         this.userModel = userModel;
     }
@@ -42,8 +42,8 @@ public class ValidationClickStream {
         return userName;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getSessionUUID() {
+        return sessionUUID;
     }
 
     public List<Click> getClicks() {
@@ -71,7 +71,7 @@ public class ValidationClickStream {
     public String toString() {
         return "ValidationClickStream{" +
             "userName='" + userName + '\'' +
-            ", sessionId='" + sessionId + '\'' +
+            ", sessionUUID='" + sessionUUID + '\'' +
             ", clicks=" + clicks +
             ", userModel=" + userModel +
             '}';

@@ -6,17 +6,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Session {
 
-    private final String sessionId;
+    private final String sessionUUID;
     private final String userName;
 
     @JsonCreator
-    public Session(@JsonProperty ("sessionId") String sessionId, @JsonProperty ("userName") String userName) {
-        this.sessionId = sessionId;
+    public Session(@JsonProperty ("sessionUUID") String sessionUUID, @JsonProperty ("userName") String userName) {
+        this.sessionUUID = sessionUUID;
         this.userName = userName;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getSessionUUID() {
+        return sessionUUID;
     }
 
     public String getUserName() {
@@ -26,7 +26,7 @@ public class Session {
     @Override
     public String toString() {
         return "Session{" +
-            "sessionId='" + sessionId + '\'' +
+            "sessionUUID='" + sessionUUID + '\'' +
             ", userName='" + userName + '\'' +
             '}';
     }

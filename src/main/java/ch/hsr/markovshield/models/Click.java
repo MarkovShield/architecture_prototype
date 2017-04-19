@@ -9,7 +9,7 @@ public class Click {
 
     private final String sessionUUID;
     private final String clickUUID;
-    private final int urlRating;
+    private final int urlRiskLevel;
     private final String url;
     private final Date timeStamp;
 
@@ -17,12 +17,12 @@ public class Click {
     public Click(@JsonProperty ("sessionUUID") String sessionUUID,
                  @JsonProperty ("clickUUID") String clickUUID,
                  @JsonProperty ("url") String url,
-                 @JsonProperty ("urlRating") int urlRating,
+                 @JsonProperty ("urlRiskLevel") int urlRiskLevel,
                  @JsonProperty ("timeStamp") Date timeStamp) {
         this.sessionUUID = sessionUUID;
         this.clickUUID = clickUUID;
         this.url = url;
-        this.urlRating = urlRating;
+        this.urlRiskLevel = urlRiskLevel;
         this.timeStamp = timeStamp;
     }
 
@@ -51,7 +51,7 @@ public class Click {
         return clickUUID;
     }
 
-    public int getUrlRating() {
-        return urlRating;
+    public int getUrlRiskLevel() {
+        return urlRiskLevel;
     }
 }

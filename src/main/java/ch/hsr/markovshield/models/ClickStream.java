@@ -10,15 +10,15 @@ import java.util.Optional;
 public class ClickStream {
 
     private final String userName;
-    private final String sessionId;
+    private final String sessionUUID;
     private final List<Click> clicks;
 
     @JsonCreator
     public ClickStream(@JsonProperty ("userName") String userName,
-                       @JsonProperty ("sessionId") String sessionId,
+                       @JsonProperty ("sessionUUID") String sessionUUID,
                        @JsonProperty ("clicks") List<Click> clicks) {
         this.userName = userName;
-        this.sessionId = sessionId;
+        this.sessionUUID = sessionUUID;
         this.clicks = clicks;
     }
 
@@ -26,8 +26,8 @@ public class ClickStream {
         return userName;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getSessionUUID() {
+        return sessionUUID;
     }
 
     public List<Click> getClicks() {
@@ -50,7 +50,7 @@ public class ClickStream {
     public String toString() {
         return "ValidationClickStream{" +
             "userName='" + userName + '\'' +
-            ", sessionId='" + sessionId + '\'' +
+            ", sessionUUID='" + sessionUUID + '\'' +
             ", clicks=" + clicks +
             '}';
     }

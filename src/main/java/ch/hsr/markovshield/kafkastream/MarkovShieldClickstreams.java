@@ -87,7 +87,7 @@ public class MarkovShieldClickstreams {
                     userName = v1.getUserName();
                 }
                 return new ClickStream(userName,
-                    clickStream.getSessionId(),
+                    clickStream.getSessionUUID(),
                     Lists.newLinkedList(concat(clickStream.getClicks(), v1.getClicks())));
             }, "MarkovClickStreamAggregation"
         );
@@ -129,7 +129,7 @@ public class MarkovShieldClickstreams {
     }
 
     private static Boolean isUrlOverThreshold(Click click) {
-        return click.getUrlRating() == UrlRating.RISK_LEVEL_MEDIUM || click.getUrlRating() == UrlRating.RISK_LEVEL_HIGH;
+        return click.getUrlRiskLevel() == UrlRating.RISK_LEVEL_MEDIUM || click.getUrlRiskLevel() == UrlRating.RISK_LEVEL_HIGH;
     }
 
 }
