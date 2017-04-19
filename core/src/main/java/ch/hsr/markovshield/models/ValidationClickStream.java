@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 public class ValidationClickStream {
@@ -64,6 +65,26 @@ public class ValidationClickStream {
                 return 1;
             }
         }).getTimeStamp();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ValidationClickStream that = (ValidationClickStream) o;
+        return Objects.equals(userName, that.userName) &&
+            Objects.equals(sessionUUID, that.sessionUUID) &&
+            Objects.equals(clicks, that.clicks) &&
+            Objects.equals(userModel, that.userModel);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userName, sessionUUID, clicks, userModel);
     }
 
     @Override

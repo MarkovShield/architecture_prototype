@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Random;
 
 
@@ -38,5 +39,23 @@ public class FrequencyModel {
             "frequencyValue=" + frequencyValue +
             ", timeCreated=" + timeCreated +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FrequencyModel that = (FrequencyModel) o;
+        return frequencyValue == that.frequencyValue &&
+            Objects.equals(timeCreated, that.timeCreated);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(frequencyValue, timeCreated);
     }
 }

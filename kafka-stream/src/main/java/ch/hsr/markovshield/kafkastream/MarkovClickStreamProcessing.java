@@ -167,7 +167,7 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     }
 
     private static Boolean isUrlOverThreshold(Click click) {
-        return click.getUrlRiskLevel() == UrlRating.RISK_LEVEL_MEDIUM || click.getUrlRiskLevel() == UrlRating.RISK_LEVEL_HIGH;
+        return click.getUrlRiskLevel() == UrlRating.RISK_LEVEL_HIGH;
     }
 
 }
