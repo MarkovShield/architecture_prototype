@@ -119,7 +119,9 @@ public class MarkovShieldAnalyser {
 
         }
         MarkovRating rating = calculateMarkovFraudLevel(score);
-        return new ClickStreamValidation(clickStream.getUserName(), clickStream.getSessionUUID(), score, rating);
+        return new ClickStreamValidation(clickStream.getUserName(), clickStream.getSessionUUID(),
+            clickStream.lastClick().map(Click::getClickUUID).orElse(null),
+            score, rating);
     }
 
     private static MarkovRating calculateMarkovFraudLevel(int rating) {

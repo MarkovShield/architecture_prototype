@@ -6,13 +6,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
-public class ValidationClickStream {
+public class ValidationClickStream extends ClickStream {
 
-    private final String userName;
-    private final String sessionUUID;
-    private final List<Click> clicks;
     private UserModel userModel;
 
     @JsonCreator
@@ -20,9 +18,7 @@ public class ValidationClickStream {
                                  @JsonProperty ("sessionUUID") String sessionUUID,
                                  @JsonProperty ("clicks") List<Click> clicks,
                                  @JsonProperty ("userModel") UserModel userModel) {
-        this.userName = userName;
-        this.sessionUUID = sessionUUID;
-        this.clicks = clicks;
+        super(userName,sessionUUID, clicks);
         this.userModel = userModel;
     }
 
@@ -34,37 +30,12 @@ public class ValidationClickStream {
         return validationClickStream;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getSessionUUID() {
-        return sessionUUID;
-    }
-
-    public List<Click> getClicks() {
-        return clicks;
-    }
-
     public UserModel getUserModel() {
         return userModel;
     }
 
     public void setUserModel(UserModel userModel) {
         this.userModel = userModel;
-    }
-
-    public Date timeStampOfLastClick() {
-        return Collections.max(clicks, (Click o1, Click o2) -> {
-            if (o1.getTimeStamp().equals(o2.getTimeStamp())) {
-                return 0;
-            }
-            if (o1.getTimeStamp().before(o2.getTimeStamp())) {
-                return -1;
-            } else {
-                return 1;
-            }
-        }).getTimeStamp();
     }
 
     @Override
@@ -75,26 +46,23 @@ public class ValidationClickStream {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        if (!super.equals(o)) {
+            return false;
+        }
         ValidationClickStream that = (ValidationClickStream) o;
-        return Objects.equals(userName, that.userName) &&
-            Objects.equals(sessionUUID, that.sessionUUID) &&
-            Objects.equals(clicks, that.clicks) &&
-            Objects.equals(userModel, that.userModel);
+        return Objects.equals(userModel, that.userModel);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userName, sessionUUID, clicks, userModel);
+        return Objects.hash(super.hashCode(), userModel);
     }
 
     @Override
     public String toString() {
         return "ValidationClickStream{" +
-            "userName='" + userName + '\'' +
-            ", sessionUUID='" + sessionUUID + '\'' +
-            ", clicks=" + clicks +
-            ", userModel=" + userModel +
+            "userModel=" + userModel +
+            super.toString() +
             '}';
     }
-
 }

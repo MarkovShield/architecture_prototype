@@ -10,13 +10,15 @@ public class ClickStreamValidation {
 
     private final String userName;
     private final String sessionUUID;
+    private final String clickUUID;
     private final int validationScore;
     private final MarkovRating rating;
     private final Date timeCreated;
 
-    public ClickStreamValidation(String userName, String sessionUUID, int validationScore, MarkovRating rating) {
+    public ClickStreamValidation(String userName, String sessionUUID, String clickUUID, int validationScore, MarkovRating rating) {
         this.userName = userName;
         this.sessionUUID = sessionUUID;
+        this.clickUUID = clickUUID;
         this.validationScore = validationScore;
         this.rating = rating;
         timeCreated = Date.from(Instant.now());
@@ -25,11 +27,13 @@ public class ClickStreamValidation {
     @JsonCreator
     public ClickStreamValidation(@JsonProperty ("userName") String userName,
                                  @JsonProperty ("sessionUUID") String sessionUUID,
+                                 @JsonProperty ("clickUUID") String clickUUID,
                                  @JsonProperty ("validationScore") int validationScore,
                                  @JsonProperty ("rating") MarkovRating rating,
                                  @JsonProperty ("timeCreated") Date timeCreated) {
         this.userName = userName;
         this.sessionUUID = sessionUUID;
+        this.clickUUID = clickUUID;
         this.validationScore = validationScore;
         this.rating = rating;
         this.timeCreated = timeCreated;
