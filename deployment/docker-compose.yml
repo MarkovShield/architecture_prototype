@@ -1,5 +1,11 @@
 version: '2'
 services:
+  redis:
+    image: redis:3.2.8-alpine
+    hostname: redis
+    ports:
+      - "6379:6379"
+
   zookeeper:
     image: confluentinc/cp-zookeeper
     hostname: zookeeper
@@ -32,10 +38,12 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema_registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
-      
+
   jobmanager:
     image: flink
     hostname: jobmanager
+    depends_on:
+      - redis
     container_name: "jobmanager"
     expose:
       - "6123"
