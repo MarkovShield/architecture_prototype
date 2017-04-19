@@ -102,7 +102,7 @@ public class MarkovShieldAnalyser {
         ) {
             @Override
             public RedisCommandDescription getCommandDescription() {
-                return new RedisCommandDescription(RedisCommand.HSET, "VALIDATIONS");
+                return new RedisCommandDescription(RedisCommand.PUBLISH, "");
             }
 
             @Override
