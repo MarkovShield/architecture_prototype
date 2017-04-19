@@ -54,42 +54,43 @@
         </dependency>
 
 
+        <!-- Test dependencies -->
         <dependency>
-            <!-- This could be a test-only dependency, but we keep it a compile dependency so that
-                 users are able to package the examples via `mvn package` and actually run the examples
-                 against a Kafka cluster. -->
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
             <version>0.9</version>
+            <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
             <version>2.0.1</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
             <version>${jetty.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
             <version>${jetty.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet-core</artifactId>
             <version>${jersey.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
+            <scope>test</scope>
         </dependency>
-
-        <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
