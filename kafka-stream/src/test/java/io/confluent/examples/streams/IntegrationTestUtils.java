@@ -1,11 +1,11 @@
 /**
  * Copyright 2016 Confluent Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -21,12 +21,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.StreamsConfig;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,8 +32,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
-
-import kafka.utils.CoreUtils;
 
 /**
  * Utility functions to make integration testing more convenient.
@@ -55,7 +50,7 @@ public class IntegrationTestUtils {
      * @return The values retrieved via the consumer.
      */
     public static <K, V> List<V> readValues(String topic, Properties consumerConfig, int maxMessages) {
-        List<KeyValue<K, V>> kvs = readKeyValues(topic, consumerConfig, maxMessages);
+        List<KeyValue<K, V>> kvs = readKeyValues(topic, consumerConfig, maxMessages, null, null);
         return kvs.stream().map(kv -> kv.value).collect(Collectors.toList());
     }
 
@@ -68,7 +63,19 @@ public class IntegrationTestUtils {
      * @return The KeyValue elements retrieved via the consumer.
      */
     public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig) {
-        return readKeyValues(topic, consumerConfig, UNLIMITED_MESSAGES);
+        return readKeyValues(topic, consumerConfig, UNLIMITED_MESSAGES, null, null);
+    }
+
+    /**
+     * Returns as many messages as possible from the topic until a (currently hardcoded) timeout is
+     * reached.
+     *
+     * @param topic          Kafka topic to read messages from
+     * @param consumerConfig Kafka consumer configuration
+     * @return The KeyValue elements retrieved via the consumer.
+     */
+    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig,  Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
+        return readKeyValues(topic, consumerConfig, UNLIMITED_MESSAGES, keyDeserializer, valueDeserializer);
     }
 
     /**
@@ -80,8 +87,13 @@ public class IntegrationTestUtils {
      * @param maxMessages    Maximum number of messages to read via the consumer
      * @return The KeyValue elements retrieved via the consumer
      */
-    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig, int maxMessages) {
-        KafkaConsumer<K, V> consumer = new KafkaConsumer<>(consumerConfig);
+    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig, int maxMessages, Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
+        KafkaConsumer<K, V> consumer;
+        if(keyDeserializer == null && valueDeserializer == null){
+            consumer= new KafkaConsumer<>(consumerConfig);
+        }else{
+            consumer= new KafkaConsumer<>(consumerConfig, keyDeserializer, valueDeserializer);
+        }
         consumer.subscribe(Collections.singletonList(topic));
         int pollIntervalMs = 100;
         int maxTotalPollTimeMs = 2000;
@@ -122,6 +134,26 @@ public class IntegrationTestUtils {
         producer.close();
     }
 
+    /**
+     * @param topic          Kafka topic to write the data records to
+     * @param records        Data records to write to Kafka
+     * @param producerConfig Kafka producer configuration
+     * @param <K>            Key type of the data records
+     * @param <V>            Value type of the data records
+     */
+    public static <K, V> void produceKeyValuesSynchronously(
+        String topic, Collection<KeyValue<K, V>> records, Properties producerConfig, Serializer<K> keySerializer, Serializer<V> valueSerializer)
+        throws ExecutionException, InterruptedException {
+        Producer<K, V> producer = new KafkaProducer<>(producerConfig, keySerializer, valueSerializer);
+        for (KeyValue<K, V> record : records) {
+            Future<RecordMetadata> f = producer.send(
+                new ProducerRecord<>(topic, record.key, record.value));
+            f.get();
+        }
+        producer.flush();
+        producer.close();
+    }
+
     public static <V> void produceValuesSynchronously(
         String topic, Collection<V> records, Properties producerConfig)
         throws ExecutionException, InterruptedException {
@@ -134,7 +166,12 @@ public class IntegrationTestUtils {
                                                                                   String topic,
                                                                                   int expectedNumRecords) throws InterruptedException {
 
-        return waitUntilMinKeyValueRecordsReceived(consumerConfig, topic, expectedNumRecords, DEFAULT_TIMEOUT);
+        return waitUntilMinKeyValueRecordsReceived(consumerConfig,
+            topic,
+            expectedNumRecords,
+            DEFAULT_TIMEOUT,
+            null,
+            null);
     }
 
     /**
@@ -150,18 +187,22 @@ public class IntegrationTestUtils {
     public static <K, V> List<KeyValue<K, V>> waitUntilMinKeyValueRecordsReceived(Properties consumerConfig,
                                                                                   String topic,
                                                                                   int expectedNumRecords,
-                                                                                  long waitTime) throws InterruptedException {
+                                                                                  long waitTime,
+                                                                                  Deserializer<K> keyDeserializer,
+                                                                                  Deserializer<V> valueDeserializer) throws InterruptedException {
         List<KeyValue<K, V>> accumData = new ArrayList<>();
         long startTime = System.currentTimeMillis();
         while (true) {
-            List<KeyValue<K, V>> readData = readKeyValues(topic, consumerConfig);
+            List<KeyValue<K, V>> readData = readKeyValues(topic, consumerConfig, keyDeserializer, valueDeserializer);
             accumData.addAll(readData);
-            if (accumData.size() >= expectedNumRecords)
+            if (accumData.size() >= expectedNumRecords) {
                 return accumData;
-            if (System.currentTimeMillis() > startTime + waitTime)
-                throw new AssertionError("Expected " +  expectedNumRecords +
+            }
+            if (System.currentTimeMillis() > startTime + waitTime) {
+                throw new AssertionError("Expected " + expectedNumRecords +
                     " but received only " + accumData.size() +
                     " records before timeout " + waitTime + " ms");
+            }
             Thread.sleep(Math.min(waitTime, 100L));
         }
     }
@@ -192,12 +233,14 @@ public class IntegrationTestUtils {
         while (true) {
             List<V> readData = readValues(topic, consumerConfig, expectedNumRecords);
             accumData.addAll(readData);
-            if (accumData.size() >= expectedNumRecords)
+            if (accumData.size() >= expectedNumRecords) {
                 return accumData;
-            if (System.currentTimeMillis() > startTime + waitTime)
-                throw new AssertionError("Expected " +  expectedNumRecords +
+            }
+            if (System.currentTimeMillis() > startTime + waitTime) {
+                throw new AssertionError("Expected " + expectedNumRecords +
                     " but received only " + accumData.size() +
                     " records before timeout " + waitTime + " ms");
+            }
             Thread.sleep(Math.min(waitTime, 100L));
         }
     }
