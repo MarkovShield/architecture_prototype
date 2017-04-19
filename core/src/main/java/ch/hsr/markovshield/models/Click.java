@@ -4,6 +4,7 @@ package ch.hsr.markovshield.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
+import java.util.Objects;
 
 public class Click {
 
@@ -42,9 +43,32 @@ public class Click {
     public String toString() {
         return "Click{" +
             "sessionUUID='" + sessionUUID + '\'' +
+            ", clickUUID='" + clickUUID + '\'' +
+            ", urlRiskLevel=" + urlRiskLevel +
             ", url='" + url + '\'' +
             ", timeStamp=" + timeStamp +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Click click = (Click) o;
+        return urlRiskLevel == click.urlRiskLevel &&
+            Objects.equals(sessionUUID, click.sessionUUID) &&
+            Objects.equals(clickUUID, click.clickUUID) &&
+            Objects.equals(url, click.url) &&
+            Objects.equals(timeStamp, click.timeStamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sessionUUID, clickUUID, urlRiskLevel, url, timeStamp);
     }
 
     public String getClickUUID() {

@@ -3,6 +3,7 @@ package ch.hsr.markovshield.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
+import java.util.Objects;
 
 
 public class UserModel {
@@ -41,6 +42,25 @@ public class UserModel {
             return this.frequencyModel.getTimeCreated();
         }
         return this.transitionModel.getTimeCreated();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        UserModel userModel = (UserModel) o;
+        return Objects.equals(userId, userModel.userId) &&
+            Objects.equals(transitionModel, userModel.transitionModel) &&
+            Objects.equals(frequencyModel, userModel.frequencyModel);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, transitionModel, frequencyModel);
     }
 
     @Override
