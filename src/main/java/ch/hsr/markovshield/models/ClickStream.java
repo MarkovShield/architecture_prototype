@@ -2,7 +2,6 @@ package ch.hsr.markovshield.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -35,18 +34,8 @@ public class ClickStream {
         return clicks;
     }
 
-
     public Date timeStampOfLastClick() {
-        return Collections.max(clicks, (Click o1, Click o2) -> {
-            if (o1.getTimeStamp().equals(o2.getTimeStamp())) {
-                return 0;
-            }
-            if (o1.getTimeStamp().before(o2.getTimeStamp())) {
-                return -1;
-            } else {
-                return 1;
-            }
-        }).getTimeStamp();
+        return clicks.stream().map(Click::getTimeStamp).max(Date::compareTo).orElse(new Date(0));
     }
 
     public Optional<Click> lastClick() {
