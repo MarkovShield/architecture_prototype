@@ -39,6 +39,10 @@ public class ClickStreamValidation {
         this.timeCreated = timeCreated;
     }
 
+    public String getClickUUID() {
+        return clickUUID;
+    }
+
     public Date getTimeCreated() {
         return timeCreated;
     }

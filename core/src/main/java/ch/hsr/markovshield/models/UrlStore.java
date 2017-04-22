@@ -15,7 +15,7 @@ public class UrlStore {
 
     @JsonCreator
     public UrlStore(@JsonProperty ("urlMapping") Map<String, Integer> urlMapping) {
-        this.urlMapping = Collections.unmodifiableMap(new HashMap<>(urlMapping));
+        this.urlMapping = new HashMap<>(urlMapping);
     }
 
     public Map<String, Integer> getUrlMapping() {

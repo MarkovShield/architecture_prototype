@@ -7,12 +7,18 @@ import ch.hsr.markovshield.models.ValidationClickStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
+import org.apache.flink.streaming.connectors.redis.RedisSink;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.apache.flink.streaming.util.serialization.KeyedDeserializationSchema;
 import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
 import java.io.IOException;
@@ -91,6 +97,32 @@ public class MarkovShieldAnalyser {
                     return MARKOV_CLICK_STREAM_VALIDATION_TOPIC;
                 }
             });
+
+        RedisMapper<ClickStreamValidation> hash_name = new RedisMapper<ClickStreamValidation>(
+        ) {
+            @Override
+            public RedisCommandDescription getCommandDescription() {
+                return new RedisCommandDescription(RedisCommand.PUBLISH, "");
+            }
+
+            @Override
+            public String getKeyFromData(ClickStreamValidation data) {
+                return data.getClickUUID();
+            }
+
+            @Override
+            public String getValueFromData(ClickStreamValidation data) {
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    return new String(mapper.writeValueAsBytes(data));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+                return "";
+            }
+        };
+        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost("redis").build();
+        validationStream.addSink(new RedisSink<ClickStreamValidation>(conf,hash_name));
         validationStream.addSink(producer);
 
 
