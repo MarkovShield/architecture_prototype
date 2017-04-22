@@ -1,17 +1,15 @@
 package io.confluent.examples.streams.kafka;
 
+import io.confluent.examples.streams.zookeeper.ZooKeeperEmbedded;
+import io.confluent.kafka.schemaregistry.RestApp;
+import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
+import kafka.server.KafkaConfig$;
 import org.apache.curator.test.InstanceSpec;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Properties;
-
-import io.confluent.kafka.schemaregistry.RestApp;
-import io.confluent.examples.streams.zookeeper.ZooKeeperEmbedded;
-import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
-import kafka.server.KafkaConfig$;
 
 /**
  * Runs an in-memory, "embedded" Kafka cluster with 1 ZooKeeper instance and 1 Kafka broker.
@@ -22,11 +20,10 @@ public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
     private static final int DEFAULT_BROKER_PORT = 0; // 0 results in a random port being selected
     private static final String KAFKA_SCHEMAS_TOPIC = "_schemas";
     private static final String AVRO_COMPATIBILITY_TYPE = AvroCompatibilityLevel.NONE.name;
-
+    private final Properties brokerConfig;
     private ZooKeeperEmbedded zookeeper;
     private KafkaEmbedded broker;
     private RestApp schemaRegistry;
-    private final Properties brokerConfig;
 
     /**
      * Creates and starts a Kafka cluster.
@@ -43,6 +40,11 @@ public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
     public EmbeddedSingleNodeKafkaCluster(Properties brokerConfig) {
         this.brokerConfig = new Properties();
         this.brokerConfig.putAll(brokerConfig);
+    }
+
+    @Override
+    protected void before() throws Exception {
+        start();
     }
 
     /**
@@ -78,9 +80,14 @@ public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
         return effectiveConfig;
     }
 
-    @Override
-    protected void before() throws Exception {
-        start();
+    /**
+     * This cluster's ZK connection string aka `zookeeper.connect` in `hostnameOrIp:port` format.
+     * Example: `127.0.0.1:2181`.
+     * <p>
+     * You can use this to e.g. tell Kafka consumers how to connect to this cluster.
+     */
+    public String zookeeperConnect() {
+        return zookeeper.connectString();
     }
 
     @Override
@@ -113,21 +120,11 @@ public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
 
     /**
      * This cluster's `bootstrap.servers` value.  Example: `127.0.0.1:9092`.
-     *
+     * <p>
      * You can use this to tell Kafka producers how to connect to this cluster.
      */
     public String bootstrapServers() {
         return broker.brokerList();
-    }
-
-    /**
-     * This cluster's ZK connection string aka `zookeeper.connect` in `hostnameOrIp:port` format.
-     * Example: `127.0.0.1:2181`.
-     *
-     * You can use this to e.g. tell Kafka consumers how to connect to this cluster.
-     */
-    public String zookeeperConnect() {
-        return zookeeper.connectString();
     }
 
     /**
@@ -151,17 +148,6 @@ public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
      *
      * @param topic       The name of the topic.
      * @param partitions  The number of partitions for this topic.
-     * @param replication The replication factor for (the partitions of) this topic.
-     */
-    public void createTopic(String topic, int partitions, int replication) {
-        createTopic(topic, partitions, replication, new Properties());
-    }
-
-    /**
-     * Create a Kafka topic with the given parameters.
-     *
-     * @param topic       The name of the topic.
-     * @param partitions  The number of partitions for this topic.
      * @param replication The replication factor for (partitions of) this topic.
      * @param topicConfig Additional topic-level configuration settings.
      */
@@ -170,6 +156,17 @@ public class EmbeddedSingleNodeKafkaCluster extends ExternalResource {
                             int replication,
                             Properties topicConfig) {
         broker.createTopic(topic, partitions, replication, topicConfig);
+    }
+
+    /**
+     * Create a Kafka topic with the given parameters.
+     *
+     * @param topic       The name of the topic.
+     * @param partitions  The number of partitions for this topic.
+     * @param replication The replication factor for (the partitions of) this topic.
+     */
+    public void createTopic(String topic, int partitions, int replication) {
+        createTopic(topic, partitions, replication, new Properties());
     }
 
 }

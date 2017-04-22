@@ -3,12 +3,11 @@ package io.confluent.examples.streams.zookeeper;
 import org.apache.curator.test.TestingServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 
 /**
  * Runs an in-memory, "embedded" instance of a ZooKeeper server.
- *
+ * <p>
  * The ZooKeeper server instance is automatically started when you create a new instance of this class.
  */
 public class ZooKeeperEmbedded {
@@ -36,21 +35,21 @@ public class ZooKeeperEmbedded {
     }
 
     /**
-     * The ZooKeeper connection string aka `zookeeper.connect` in `hostnameOrIp:port` format.
-     * Example: `127.0.0.1:2181`.
-     *
-     * You can use this to e.g. tell Kafka brokers how to connect to this instance.
-     */
-    public String connectString() {
-        return server.getConnectString();
-    }
-
-    /**
      * The hostname of the ZooKeeper instance.  Example: `127.0.0.1`
      */
     public String hostname() {
         // "server:1:2:3" -> "server:1:2"
         return connectString().substring(0, connectString().lastIndexOf(':'));
+    }
+
+    /**
+     * The ZooKeeper connection string aka `zookeeper.connect` in `hostnameOrIp:port` format.
+     * Example: `127.0.0.1:2181`.
+     * <p>
+     * You can use this to e.g. tell Kafka brokers how to connect to this instance.
+     */
+    public String connectString() {
+        return server.getConnectString();
     }
 
 }

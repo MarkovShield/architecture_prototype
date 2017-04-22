@@ -1,18 +1,5 @@
 package io.confluent.examples.streams.kafka;
 
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.ZkConnection;
-import org.apache.kafka.common.network.ListenerName;
-import org.apache.kafka.common.protocol.SecurityProtocol;
-import org.apache.kafka.common.utils.Time;
-import org.junit.rules.TemporaryFolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.server.KafkaConfig;
@@ -21,11 +8,22 @@ import kafka.server.KafkaServer;
 import kafka.utils.TestUtils;
 import kafka.utils.ZKStringSerializer$;
 import kafka.utils.ZkUtils;
+import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.ZkConnection;
+import org.apache.kafka.common.network.ListenerName;
+import org.apache.kafka.common.protocol.SecurityProtocol;
+import org.apache.kafka.common.utils.Time;
+import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Runs an in-memory, "embedded" instance of a Kafka broker, which listens at `127.0.0.1:9092` by
  * default.
- *
+ * <p>
  * Requires a running ZooKeeper instance to connect to.  By default, it expects a ZooKeeper instance
  * running at `127.0.0.1:2181`.  You can specify a different ZooKeeper instance by setting the
  * `zookeeper.connect` parameter in the broker's configuration.
@@ -82,12 +80,14 @@ public class KafkaEmbedded {
 
     /**
      * This broker's `metadata.broker.list` value.  Example: `127.0.0.1:9092`.
-     *
+     * <p>
      * You can use this to tell Kafka producers and consumers how to connect to this instance.
      */
     public String brokerList() {
-        return String.join(":", kafka.config().hostName(), Integer.toString(kafka.boundPort(ListenerName.forSecurityProtocol(SecurityProtocol
-            .PLAINTEXT))));
+        return String.join(":",
+            kafka.config().hostName(),
+            Integer.toString(kafka.boundPort(ListenerName.forSecurityProtocol(SecurityProtocol
+                .PLAINTEXT))));
     }
 
 
@@ -126,17 +126,6 @@ public class KafkaEmbedded {
      *
      * @param topic       The name of the topic.
      * @param partitions  The number of partitions for this topic.
-     * @param replication The replication factor for (the partitions of) this topic.
-     */
-    public void createTopic(String topic, int partitions, int replication) {
-        createTopic(topic, partitions, replication, new Properties());
-    }
-
-    /**
-     * Create a Kafka topic with the given parameters.
-     *
-     * @param topic       The name of the topic.
-     * @param partitions  The number of partitions for this topic.
      * @param replication The replication factor for (partitions of) this topic.
      * @param topicConfig Additional topic-level configuration settings.
      */
@@ -159,6 +148,17 @@ public class KafkaEmbedded {
         ZkUtils zkUtils = new ZkUtils(zkClient, new ZkConnection(zookeeperConnect()), isSecure);
         AdminUtils.createTopic(zkUtils, topic, partitions, replication, topicConfig, RackAwareMode.Enforced$.MODULE$);
         zkClient.close();
+    }
+
+    /**
+     * Create a Kafka topic with the given parameters.
+     *
+     * @param topic       The name of the topic.
+     * @param partitions  The number of partitions for this topic.
+     * @param replication The replication factor for (the partitions of) this topic.
+     */
+    public void createTopic(String topic, int partitions, int replication) {
+        createTopic(topic, partitions, replication, new Properties());
     }
 
 }

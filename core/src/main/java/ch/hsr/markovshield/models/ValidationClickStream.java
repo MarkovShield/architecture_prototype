@@ -2,11 +2,8 @@ package ch.hsr.markovshield.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 
 public class ValidationClickStream extends ClickStream {
@@ -18,7 +15,7 @@ public class ValidationClickStream extends ClickStream {
                                  @JsonProperty ("sessionUUID") String sessionUUID,
                                  @JsonProperty ("clicks") List<Click> clicks,
                                  @JsonProperty ("userModel") UserModel userModel) {
-        super(userName,sessionUUID, clicks);
+        super(userName, sessionUUID, clicks);
         this.userModel = userModel;
     }
 

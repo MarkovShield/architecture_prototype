@@ -38,21 +38,8 @@ import java.util.stream.Collectors;
  */
 public class IntegrationTestUtils {
 
-    private static final int UNLIMITED_MESSAGES = -1;
     public static final long DEFAULT_TIMEOUT = 30 * 1000L;
-
-    /**
-     * Returns up to `maxMessages` message-values from the topic.
-     *
-     * @param topic          Kafka topic to read messages from
-     * @param consumerConfig Kafka consumer configuration
-     * @param maxMessages    Maximum number of messages to read via the consumer.
-     * @return The values retrieved via the consumer.
-     */
-    public static <K, V> List<V> readValues(String topic, Properties consumerConfig, int maxMessages) {
-        List<KeyValue<K, V>> kvs = readKeyValues(topic, consumerConfig, maxMessages, null, null);
-        return kvs.stream().map(kv -> kv.value).collect(Collectors.toList());
-    }
+    private static final int UNLIMITED_MESSAGES = -1;
 
     /**
      * Returns as many messages as possible from the topic until a (currently hardcoded) timeout is
@@ -67,18 +54,6 @@ public class IntegrationTestUtils {
     }
 
     /**
-     * Returns as many messages as possible from the topic until a (currently hardcoded) timeout is
-     * reached.
-     *
-     * @param topic          Kafka topic to read messages from
-     * @param consumerConfig Kafka consumer configuration
-     * @return The KeyValue elements retrieved via the consumer.
-     */
-    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig,  Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
-        return readKeyValues(topic, consumerConfig, UNLIMITED_MESSAGES, keyDeserializer, valueDeserializer);
-    }
-
-    /**
      * Returns up to `maxMessages` by reading via the provided consumer (the topic(s) to read from are
      * already configured in the consumer).
      *
@@ -89,10 +64,10 @@ public class IntegrationTestUtils {
      */
     public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig, int maxMessages, Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
         KafkaConsumer<K, V> consumer;
-        if(keyDeserializer == null && valueDeserializer == null){
-            consumer= new KafkaConsumer<>(consumerConfig);
-        }else{
-            consumer= new KafkaConsumer<>(consumerConfig, keyDeserializer, valueDeserializer);
+        if (keyDeserializer == null && valueDeserializer == null) {
+            consumer = new KafkaConsumer<>(consumerConfig);
+        } else {
+            consumer = new KafkaConsumer<>(consumerConfig, keyDeserializer, valueDeserializer);
         }
         consumer.subscribe(Collections.singletonList(topic));
         int pollIntervalMs = 100;
@@ -112,26 +87,6 @@ public class IntegrationTestUtils {
 
     private static boolean continueConsuming(int messagesConsumed, int maxMessages) {
         return maxMessages <= 0 || messagesConsumed < maxMessages;
-    }
-
-    /**
-     * @param topic          Kafka topic to write the data records to
-     * @param records        Data records to write to Kafka
-     * @param producerConfig Kafka producer configuration
-     * @param <K>            Key type of the data records
-     * @param <V>            Value type of the data records
-     */
-    public static <K, V> void produceKeyValuesSynchronously(
-        String topic, Collection<KeyValue<K, V>> records, Properties producerConfig)
-        throws ExecutionException, InterruptedException {
-        Producer<K, V> producer = new KafkaProducer<>(producerConfig);
-        for (KeyValue<K, V> record : records) {
-            Future<RecordMetadata> f = producer.send(
-                new ProducerRecord<>(topic, record.key, record.value));
-            f.get();
-        }
-        producer.flush();
-        producer.close();
     }
 
     /**
@@ -162,6 +117,26 @@ public class IntegrationTestUtils {
         produceKeyValuesSynchronously(topic, keyedRecords, producerConfig);
     }
 
+    /**
+     * @param topic          Kafka topic to write the data records to
+     * @param records        Data records to write to Kafka
+     * @param producerConfig Kafka producer configuration
+     * @param <K>            Key type of the data records
+     * @param <V>            Value type of the data records
+     */
+    public static <K, V> void produceKeyValuesSynchronously(
+        String topic, Collection<KeyValue<K, V>> records, Properties producerConfig)
+        throws ExecutionException, InterruptedException {
+        Producer<K, V> producer = new KafkaProducer<>(producerConfig);
+        for (KeyValue<K, V> record : records) {
+            Future<RecordMetadata> f = producer.send(
+                new ProducerRecord<>(topic, record.key, record.value));
+            f.get();
+        }
+        producer.flush();
+        producer.close();
+    }
+
     public static <K, V> List<KeyValue<K, V>> waitUntilMinKeyValueRecordsReceived(Properties consumerConfig,
                                                                                   String topic,
                                                                                   int expectedNumRecords) throws InterruptedException {
@@ -176,13 +151,14 @@ public class IntegrationTestUtils {
 
     /**
      * Wait until enough data (key-value records) has been consumed.
-     * @param consumerConfig Kafka Consumer configuration
-     * @param topic          Topic to consume from
+     *
+     * @param consumerConfig     Kafka Consumer configuration
+     * @param topic              Topic to consume from
      * @param expectedNumRecords Minimum number of expected records
-     * @param waitTime       Upper bound in waiting time in milliseconds
+     * @param waitTime           Upper bound in waiting time in milliseconds
      * @return All the records consumed, or null if no records are consumed
      * @throws InterruptedException
-     * @throws AssertionError if the given wait time elapses
+     * @throws AssertionError       if the given wait time elapses
      */
     public static <K, V> List<KeyValue<K, V>> waitUntilMinKeyValueRecordsReceived(Properties consumerConfig,
                                                                                   String topic,
@@ -207,6 +183,18 @@ public class IntegrationTestUtils {
         }
     }
 
+    /**
+     * Returns as many messages as possible from the topic until a (currently hardcoded) timeout is
+     * reached.
+     *
+     * @param topic          Kafka topic to read messages from
+     * @param consumerConfig Kafka consumer configuration
+     * @return The KeyValue elements retrieved via the consumer.
+     */
+    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig, Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
+        return readKeyValues(topic, consumerConfig, UNLIMITED_MESSAGES, keyDeserializer, valueDeserializer);
+    }
+
     public static <V> List<V> waitUntilMinValuesRecordsReceived(Properties consumerConfig,
                                                                 String topic,
                                                                 int expectedNumRecords) throws InterruptedException {
@@ -216,13 +204,14 @@ public class IntegrationTestUtils {
 
     /**
      * Wait until enough data (value records) has been consumed.
-     * @param consumerConfig Kafka Consumer configuration
-     * @param topic          Topic to consume from
+     *
+     * @param consumerConfig     Kafka Consumer configuration
+     * @param topic              Topic to consume from
      * @param expectedNumRecords Minimum number of expected records
-     * @param waitTime       Upper bound in waiting time in milliseconds
+     * @param waitTime           Upper bound in waiting time in milliseconds
      * @return All the records consumed, or null if no records are consumed
      * @throws InterruptedException
-     * @throws AssertionError if the given wait time elapses
+     * @throws AssertionError       if the given wait time elapses
      */
     public static <V> List<V> waitUntilMinValuesRecordsReceived(Properties consumerConfig,
                                                                 String topic,
@@ -243,5 +232,18 @@ public class IntegrationTestUtils {
             }
             Thread.sleep(Math.min(waitTime, 100L));
         }
+    }
+
+    /**
+     * Returns up to `maxMessages` message-values from the topic.
+     *
+     * @param topic          Kafka topic to read messages from
+     * @param consumerConfig Kafka consumer configuration
+     * @param maxMessages    Maximum number of messages to read via the consumer.
+     * @return The values retrieved via the consumer.
+     */
+    public static <K, V> List<V> readValues(String topic, Properties consumerConfig, int maxMessages) {
+        List<KeyValue<K, V>> kvs = readKeyValues(topic, consumerConfig, maxMessages, null, null);
+        return kvs.stream().map(kv -> kv.value).collect(Collectors.toList());
     }
 }
