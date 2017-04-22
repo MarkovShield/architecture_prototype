@@ -122,12 +122,16 @@ public class MarkovClickAndLoginGenerator {
             clickProducer.flush();
         }
 
+
         sleep(1000);
         for (Session login : logins) {
             loginProducer.send(new ProducerRecord<>(loginTopic, login.getSessionUUID().toString(), login));
             loginProducer.flush();
         }
         sleep(1000);
+
+        clicks.add(new Click(logins.get(0).getSessionUUID(), "1000", "my-secret-url", 2, Date.from(Instant.now())));
+
         for (Click click : clicks) {
 
             clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), click));
