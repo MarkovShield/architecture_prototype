@@ -4,11 +4,6 @@ import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStreamValidation;
 import ch.hsr.markovshield.models.MarkovRating;
 import ch.hsr.markovshield.models.ValidationClickStream;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -16,12 +11,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.streaming.connectors.redis.RedisSink;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
-import org.apache.flink.streaming.util.serialization.KeyedDeserializationSchema;
-import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
-import java.io.IOException;
 import java.util.Properties;
 
 
@@ -33,6 +23,7 @@ public class MarkovShieldAnalyser {
     public static final String MARKOV_CLICK_STREAM_ANALYSIS_TOPIC = "MarkovClickStreamAnalysis";
     public static final String MARKOV_CLICK_STREAM_VALIDATION_TOPIC = "MarkovClickStreamValidations";
     public static final String FLINK_JOB_NAME = "Read from kafka and deserialize";
+    public static final String REDIS_HOST = "redis";
 
     public static void main(final String[] args) throws Exception {
 
@@ -44,89 +35,33 @@ public class MarkovShieldAnalyser {
         properties.setProperty("zookeeper.connect", ZOOKEEPER);
         properties.setProperty("group.id", KAFKA_JOB_NAME);
 
-
         DataStreamSource<ValidationClickStream> stream = env
             .addSource(new FlinkKafkaConsumer010<>(MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
-                new KeyedDeserializationSchema<ValidationClickStream>() {
-                    @Override
-                    public TypeInformation<ValidationClickStream> getProducedType() {
-                        return TypeExtractor.getForClass(ValidationClickStream.class);
-                    }
-
-                    @Override
-                    public ValidationClickStream deserialize(byte[] bytes, byte[] bytes1, String s, int i, long l) throws IOException {
-                        ObjectMapper mapper = new ObjectMapper();
-                        return mapper.readValue(bytes1, ValidationClickStream.class);
-                    }
-
-                    @Override
-                    public boolean isEndOfStream(ValidationClickStream o) {
-
-                        return false;
-                    }
-                },
+                new ClickStreamValidationDeserializationSchema(),
                 properties));
-
 
         SingleOutputStreamOperator<ClickStreamValidation> validationStream = stream.map(MarkovShieldAnalyser::validateSession);
 
-
-        FlinkKafkaProducer010<ClickStreamValidation> producer = new FlinkKafkaProducer010<>(
-            "broker:9092",
-            MARKOV_CLICK_STREAM_VALIDATION_TOPIC,
-            new KeyedSerializationSchema<ClickStreamValidation>() {
-
-                @Override
-                public byte[] serializeKey(ClickStreamValidation validation) {
-                    return validation.getSessionUUID().getBytes();
-                }
-
-                @Override
-                public byte[] serializeValue(ClickStreamValidation validation) {
-                    try {
-                        ObjectMapper mapper = new ObjectMapper();
-                        return mapper.writeValueAsBytes(validation);
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-                    return new byte[1];
-                }
-
-                @Override
-                public String getTargetTopic(ClickStreamValidation validation) {
-                    return MARKOV_CLICK_STREAM_VALIDATION_TOPIC;
-                }
-            });
-
-        RedisMapper<ClickStreamValidation> hash_name = new RedisMapper<ClickStreamValidation>(
-        ) {
-            @Override
-            public RedisCommandDescription getCommandDescription() {
-                return new RedisCommandDescription(RedisCommand.PUBLISH, "");
-            }
-
-            @Override
-            public String getKeyFromData(ClickStreamValidation data) {
-                return data.getClickUUID();
-            }
-
-            @Override
-            public String getValueFromData(ClickStreamValidation data) {
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    return new String(mapper.writeValueAsBytes(data));
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-                return "";
-            }
-        };
-        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost("redis").build();
-        validationStream.addSink(new RedisSink<ClickStreamValidation>(conf,hash_name));
+        RedisSink<ClickStreamValidation> sinkFunction = getRedisClickStreamValidationSink();
+        validationStream.addSink(sinkFunction);
+        FlinkKafkaProducer010<ClickStreamValidation> producer = getKafkaClickStreamValidationProducer();
         validationStream.addSink(producer);
 
 
         env.execute(FLINK_JOB_NAME);
+    }
+
+    private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink() {
+        RedisMapper<ClickStreamValidation> redisMapper = new ClickStreamValidationRedisMapper();
+        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost(REDIS_HOST).build();
+        return new RedisSink<>(conf, redisMapper);
+    }
+
+    private static FlinkKafkaProducer010<ClickStreamValidation> getKafkaClickStreamValidationProducer() {
+        return new FlinkKafkaProducer010<>(
+            "broker:9092",
+            MARKOV_CLICK_STREAM_VALIDATION_TOPIC,
+            new ClickStreamValidationSerializationSchema());
     }
 
     private static ClickStreamValidation validateSession(ValidationClickStream clickStream) {
