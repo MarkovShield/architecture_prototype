@@ -9,6 +9,7 @@ import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import com.google.common.collect.Lists;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
@@ -62,10 +63,10 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     public KStreamBuilder getStreamBuilder() {
         KStreamBuilder builder = new KStreamBuilder();
 
-        final KTable<String, Session> sessions = getSessionTable(builder);
-        final KTable<String, UserModel> userModels = getUserModelTable(builder);
+        final GlobalKTable<String, Session> sessions = getSessionTable(builder);
+        final GlobalKTable<String, UserModel> userModels = getUserModelTable(builder);
         final KStream<String, Click> views = getClickStream(builder);
-
+        views.print();
         KTable<String, ClickStream> clickstreams = aggregateClicks(sessions, views);
 
         KStream<String, ClickStream> stringValidationClickStreamKStream = clickstreams.toStream((s, clickStream) -> clickStream
@@ -77,8 +78,7 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
         outputClickstreamsForAnalysis(clickStreamsWithModel);
 
         stringValidationClickStreamKStream.print();
-        userModels.foreach((key, value) -> System.out.println("UserModel: " + key + " " + value.toString()));
-        sessions.foreach((key, value) -> System.out.println("Session: " + key + " " + value.toString()));
+
         views.foreach((key, value) -> System.out.println("Click: " + key + " " + value.toString()));
         clickStreamsWithModel.print();
 
@@ -92,24 +92,23 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
     }
 
-    private static KStream<String, ValidationClickStream> addModelToClickStreams(KTable<String, UserModel> userModels, KStream<String, ClickStream> stringValidationClickStreamKStream) {
+    private static KStream<String, ValidationClickStream> addModelToClickStreams(GlobalKTable<String, UserModel> userModels, KStream<String, ClickStream> stringValidationClickStreamKStream) {
         return stringValidationClickStreamKStream
             .mapValues(ValidationClickStream::fromClickStream)
             .leftJoin(userModels,
-                (ValidationClickStream clickStream, UserModel userModel) -> {
-                    clickStream.setUserModel(userModel);
-                    return clickStream;
-                },
-                stringSerde,
-                validationClickStreamSerde);
+                (s, validationClickStream) -> validationClickStream.getUserName(),
+                (validationClickStream, gv) -> {
+                    validationClickStream.setUserModel(gv);
+                    return validationClickStream;
+                });
     }
 
-    private static KTable<String, ClickStream> aggregateClicks(KTable<String, Session> sessions, KStream<String, Click> clicks) {
+    private static KTable<String, ClickStream> aggregateClicks(GlobalKTable<String, Session> sessions, KStream<String, Click> clicks) {
         return clicks
             .leftJoin(sessions,
-                MarkovClickStreamProcessing::getInitialClickStream,
-                stringSerde,
-                clickSerde)
+                (s, click) -> click.getSessionUUID(),
+                MarkovClickStreamProcessing::getInitialClickStream
+            )
             .groupByKey(stringSerde,
                 clickStreamSerde)
             .reduce(
@@ -124,17 +123,17 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 MARKOV_CLICK_TOPIC);
     }
 
-    private static KTable<String, UserModel> getUserModelTable(KStreamBuilder builder) {
+    private static GlobalKTable<String, UserModel> getUserModelTable(KStreamBuilder builder) {
         return builder
-            .table(stringSerde,
+            .globalTable(stringSerde,
                 userModelSerde,
                 MARKOV_USER_MODEL_TOPIC,
                 "MarkovUserModelStore");
     }
 
-    private static KTable<String, Session> getSessionTable(KStreamBuilder builder) {
+    private static GlobalKTable<String, Session> getSessionTable(KStreamBuilder builder) {
         return builder
-            .table(stringSerde,
+            .globalTable(stringSerde,
                 sessionSerde,
                 MARKOV_LOGIN_TOPIC,
                 "MarkovLoginStore");
