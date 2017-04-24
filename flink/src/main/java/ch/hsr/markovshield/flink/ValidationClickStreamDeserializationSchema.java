@@ -11,14 +11,16 @@ import java.io.IOException;
 public class ValidationClickStreamDeserializationSchema implements KeyedDeserializationSchema<ValidationClickStream> {
 
     private final ObjectMapper mapper;
+    private final TypeInformation<ValidationClickStream> forClass;
 
     public ValidationClickStreamDeserializationSchema() {
         mapper = new ObjectMapper();
+        forClass = TypeExtractor.getForClass(ValidationClickStream.class);
     }
 
     @Override
     public TypeInformation<ValidationClickStream> getProducedType() {
-        return TypeExtractor.getForClass(ValidationClickStream.class);
+        return forClass;
     }
 
     @Override

@@ -5,15 +5,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
 
-import static ch.hsr.markovshield.flink.MarkovShieldAnalyser.MARKOV_VALIDATED_CLICK_STREAMS;
-
 
 public class ValidatedClickStreamSerializationSchema implements KeyedSerializationSchema<ValidatedClickStream> {
 
     private final ObjectMapper mapper;
+    private final String topic;
 
-    public ValidatedClickStreamSerializationSchema() {
+    public ValidatedClickStreamSerializationSchema(String topic) {
         mapper = new ObjectMapper();
+        this.topic = topic;
     }
 
     @Override
@@ -33,6 +33,6 @@ public class ValidatedClickStreamSerializationSchema implements KeyedSerializati
 
     @Override
     public String getTargetTopic(ValidatedClickStream validation) {
-        return MARKOV_VALIDATED_CLICK_STREAMS;
+        return topic;
     }
 }
