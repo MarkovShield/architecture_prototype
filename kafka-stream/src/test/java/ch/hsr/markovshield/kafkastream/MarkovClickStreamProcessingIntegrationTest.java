@@ -264,8 +264,8 @@ public class MarkovClickStreamProcessingIntegrationTest {
 
         String session1 = "1";
         String session2 = "2";
-        String user1 = "user100";
-        String user2 = "user200";
+        String user1 = "user1";
+        String user2 = "user2";
 
         List<UserModel> userModels = new ArrayList<>();
         UserModel user1Model = new UserModel(user1,
@@ -309,33 +309,11 @@ public class MarkovClickStreamProcessingIntegrationTest {
             clickSerde.serializer());
 
 
-        Properties consumerConfig = new Properties();
-        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
-            "markov-chlick-stream-processing-integration-test-standard-consumer");
-        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
-        List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
-            consumerConfig,
-            analysisTopic,
-            2,
-            30 * 1000L,
-
-            new StringDeserializer(),
-            clickStreamValidationSerde.deserializer()
-        );
-
-        assertThat(actualClickStreams, hasSize(2));
-        //assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
-
-
         List<Session> logins = new ArrayList<>();
         Session login1 = new Session(session1, user1);
         logins.add(login1);
         Session login2 = new Session(session2, user2);
         logins.add(login2);
-
         List sessionKeyValues = logins.stream().map(session -> new KeyValue(session.getSessionUUID(), session)).collect(
             Collectors.toList());
         IntegrationTestUtils.produceKeyValuesSynchronously(loginTopic,
@@ -343,6 +321,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
             producerConfig,
             stringSerde.serializer(),
             sessionSerde.serializer());
+
         final List<Click> clicksAfterLogins = new LinkedList<>();
         clicksAfterLogins.add(
             new Click(session1,
@@ -359,7 +338,6 @@ public class MarkovClickStreamProcessingIntegrationTest {
                 Date.from(
                     Instant.now())));
         clicks.addAll(clicksAfterLogins);
-
         List collect1 = clicksAfterLogins.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
             Collectors.toList());
         IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
@@ -368,10 +346,17 @@ public class MarkovClickStreamProcessingIntegrationTest {
             stringSerde.serializer(),
             clickSerde.serializer());
 
+
         //
         // Step 3: Verify the application's output data.
         //
-
+        Properties consumerConfig = new Properties();
+        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
+        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
+            "markov-chlick-stream-processing-integration-test-standard-consumer");
+        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
         ArrayList<KeyValue<String, ValidationClickStream>> expectedClickStreams = new ArrayList<>();
         String UNKOWN_USER = "--------------------NOT FOUND---------------------------";
         expectedClickStreams.add(new KeyValue<>(UNKOWN_USER,
@@ -400,20 +385,19 @@ public class MarkovClickStreamProcessingIntegrationTest {
                     Collectors.toList()).subList(0, 2),
                 user2Model)));
 
-        List<KeyValue<String, ValidationClickStream>> actual2ClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
+        List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
             analysisTopic,
-            2,
+            4,
             30 * 1000L,
 
             new StringDeserializer(),
             clickStreamValidationSerde.deserializer()
         );
-        actualClickStreams.addAll(actual2ClickStreams);
         streams.close();
         assertThat(actualClickStreams, hasSize(4));
         assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
-        
+
     }
 
 }
