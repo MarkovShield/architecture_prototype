@@ -1,11 +1,13 @@
 package ch.hsr.markovshield.kafkastream;
 
+import ch.hsr.markovshield.ml.FrequencyMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.FrequencyModel;
 import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.UrlRating;
+import ch.hsr.markovshield.models.UrlStore;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
@@ -115,6 +117,8 @@ public class MarkovClickStreamProcessingIntegrationTest {
             stringSerde.serializer(),
             sessionSerde.serializer());
         List<UserModel> userModels = new ArrayList<>();
+        FrequencyMatrix frequencyMatrix = null;
+        UrlStore urlStore = null;
         UserModel user1Model = new UserModel(user1,
             MarkovChainWithMatrix.train(Collections.emptyList()),
             new FrequencyModel(frequencyMatrix, urlStore));
@@ -268,6 +272,8 @@ public class MarkovClickStreamProcessingIntegrationTest {
         String user2 = "user200";
 
         List<UserModel> userModels = new ArrayList<>();
+        FrequencyMatrix frequencyMatrix = null;
+        UrlStore urlStore = null;
         UserModel user1Model = new UserModel(user1,
             MarkovChainWithMatrix.train(Collections.emptyList()),
             new FrequencyModel(frequencyMatrix, urlStore));

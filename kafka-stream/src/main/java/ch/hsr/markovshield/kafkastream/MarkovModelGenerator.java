@@ -1,7 +1,9 @@
 package ch.hsr.markovshield.kafkastream;
 
+import ch.hsr.markovshield.ml.FrequencyMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.FrequencyModel;
+import ch.hsr.markovshield.models.UrlStore;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
@@ -43,9 +45,11 @@ public class MarkovModelGenerator {
         for (String user : users) {
             int transisitionModelRating = random.nextInt(1, 100);
             int frequencyModelRating = random.nextInt(1, 100);
+            FrequencyMatrix frequencyMatrix = null;
+            UrlStore urlStore = null;
             UserModel userModel = new UserModel(user,
                 MarkovChainWithMatrix.train(Collections.emptyList()),
-                new FrequencyModel(frequencyMatrix, urlStore, frequencyModelRating, Date.from(
+                new FrequencyModel(frequencyMatrix, urlStore, Date.from(
                     Instant.now())));
             userModels.add(userModel);
         }

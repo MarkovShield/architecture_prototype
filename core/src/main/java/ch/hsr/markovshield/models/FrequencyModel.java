@@ -2,13 +2,14 @@ package ch.hsr.markovshield.models;
 
 import ch.hsr.markovshield.ml.FrequencyMatrix;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
-
+@JsonIgnoreProperties (ignoreUnknown = true)
 public class FrequencyModel {
 
     private final FrequencyMatrix frequencyMatrix;

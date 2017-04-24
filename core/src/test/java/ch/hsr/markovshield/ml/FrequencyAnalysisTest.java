@@ -72,7 +72,7 @@ public class FrequencyAnalysisTest extends TestCase {
         clicks3.add(new Click("97575", "9", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
         clicks3.add(new Click("97575", "10", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L))));
         clicks3.add(new Click("97575", "11", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        trainingSet.add(new ClickStream("Kilian", "97576", clicks4));
+        trainingSet.add(new ClickStream("Kilian", "97575", clicks4));
         List<Click> clicks5 = new ArrayList<>();
         clicks3.add(new Click("97576", "9", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
         clicks3.add(new Click("97576", "11", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));

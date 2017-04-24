@@ -11,11 +11,11 @@ public class ClickStreamValidation {
     private final String userName;
     private final String sessionUUID;
     private final String clickUUID;
-    private final int validationScore;
+    private final double validationScore;
     private final MarkovRating rating;
     private final Date timeCreated;
 
-    public ClickStreamValidation(String userName, String sessionUUID, String clickUUID, int validationScore, MarkovRating rating) {
+    public ClickStreamValidation(String userName, String sessionUUID, String clickUUID, double validationScore, MarkovRating rating) {
         this.userName = userName;
         this.sessionUUID = sessionUUID;
         this.clickUUID = clickUUID;
@@ -55,7 +55,7 @@ public class ClickStreamValidation {
         return sessionUUID;
     }
 
-    public int getValidationScore() {
+    public double getValidationScore() {
         return validationScore;
     }
 

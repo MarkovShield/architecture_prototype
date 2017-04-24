@@ -100,9 +100,9 @@ public class MarkovShieldAnalyser {
                 weightingScore = 1000;
 
             }
-            int score = 0;
+            double score = 0;
             if (clickStream.getUserModel() != null) {
-                int frequencyValue = clickStream.getUserModel().getFrequencyModel().getFrequencyValue();
+                double frequencyValue = clickStream.getUserModel().getFrequencyModel().getFrequencyLowerBound(clickStream.lastClick().get().getUrl());
                 int transitionValue = (clickStream.getUserModel()
                     .getTransitionModel() != null) ? 1 : 100;
                 score = (frequencyValue + transitionValue) * weightingScore;
@@ -127,7 +127,7 @@ public class MarkovShieldAnalyser {
 
     }
 
-    private static MarkovRating calculateMarkovFraudLevel(int rating) {
+    private static MarkovRating calculateMarkovFraudLevel(double rating) {
         if (rating < 100) {
             return MarkovRating.VALID;
         }
