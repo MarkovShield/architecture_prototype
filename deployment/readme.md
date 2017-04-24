@@ -15,12 +15,12 @@ kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partit
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovUserModels
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreams
 kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreamAnalysis
-kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovClickStreamValidations
+kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic MarkovValidatedClickStream
 
 ```
 ### consumer
 ```bash
-kafka-console-consumer --zookeeper zookeeper:2181 --topic MarkovClickStreamValidations --from-beginning --property print.key=true
+kafka-console-consumer --zookeeper zookeeper:2181 --topic MarkovValidatedClickStream --from-beginning --property print.key=true
 ```
 ### build jar
 ```bash

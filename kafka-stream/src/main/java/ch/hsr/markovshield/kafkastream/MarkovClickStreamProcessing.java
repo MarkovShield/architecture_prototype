@@ -3,7 +3,6 @@ package ch.hsr.markovshield.kafkastream;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
@@ -14,7 +13,6 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
-import java.util.Optional;
 
 import static com.google.common.collect.Iterables.concat;
 
@@ -60,10 +58,6 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
             && !(clickStream.getUserName().equals(anotherClickStream.getUserName()));
     }
 
-    private static Boolean isUrlOverThreshold(Click click) {
-        return click.getUrlRiskLevel() == UrlRating.RISK_LEVEL_HIGH;
-    }
-
     @Override
     public KStreamBuilder getStreamBuilder() {
         KStreamBuilder builder = new KStreamBuilder();
@@ -74,12 +68,11 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
 
         KTable<String, ClickStream> clickstreams = aggregateClicks(sessions, views);
 
-        KStream<String, ClickStream> stringValidationClickStreamKStream = filterForAnalysis(clickstreams);
+        KStream<String, ClickStream> stringValidationClickStreamKStream = clickstreams.toStream((s, clickStream) -> clickStream
+            .getUserName());
 
         KStream<String, ValidationClickStream> clickStreamsWithModel = addModelToClickStreams(userModels,
             stringValidationClickStreamKStream);
-
-        outputClickStreams(clickstreams);
 
         outputClickstreamsForAnalysis(clickStreamsWithModel);
 
@@ -99,10 +92,6 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
     }
 
-    private static void outputClickStreams(KTable<String, ClickStream> clickStreams) {
-        clickStreams.to(stringSerde, clickStreamSerde, MARKOV_CLICK_STREAM_TOPIC);
-    }
-
     private static KStream<String, ValidationClickStream> addModelToClickStreams(KTable<String, UserModel> userModels, KStream<String, ClickStream> stringValidationClickStreamKStream) {
         return stringValidationClickStreamKStream
             .mapValues(ValidationClickStream::fromClickStream)
@@ -113,19 +102,6 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 },
                 stringSerde,
                 validationClickStreamSerde);
-    }
-
-    private static KStream<String, ClickStream> filterForAnalysis(KTable<String, ClickStream> clickstreams) {
-        return clickstreams
-            .toStream((s, clickStream) -> clickStream.getUserName())
-            .filter((s, validationClickStream) -> isClickStreamToBeAnalysed(validationClickStream));
-    }
-
-    private static boolean isClickStreamToBeAnalysed(ClickStream validationClickStream) {
-        Optional<Boolean> overThreshold = validationClickStream
-            .lastClick()
-            .map(MarkovClickStreamProcessing::isUrlOverThreshold);
-        return overThreshold.orElse(false);
     }
 
     private static KTable<String, ClickStream> aggregateClicks(KTable<String, Session> sessions, KStream<String, Click> clicks) {

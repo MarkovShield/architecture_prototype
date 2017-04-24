@@ -81,251 +81,6 @@ public class MarkovClickStreamProcessingIntegrationTest {
     }
 
     @Test
-    public void shouldAggregateClicksToClickStreamTopic() throws Exception {
-        MarkovClickStreamProcessing clickStreamProcessing = new MarkovClickStreamProcessing();
-        final KafkaStreams streams = new KafkaStreams(clickStreamProcessing.getStreamBuilder(), streamsConfiguration);
-        streams.cleanUp();
-        streams.start();
-
-        //
-        // Step 2: Produce some input data to the input topic.
-        //
-        Properties producerConfig = new Properties();
-        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
-        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
-        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        final List<Click> clicks = new LinkedList<>();
-        String session1 = "1";
-        String session2 = "2";
-        clicks.add(new Click(session1,
-            String.valueOf(1),
-            "start.html",
-            UrlRating.RISK_LEVEL_LOW,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session1,
-            String.valueOf(2),
-            "login.html",
-            UrlRating.RISK_LEVEL_MEDIUM,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session2,
-            String.valueOf(3),
-            "start.html",
-            UrlRating.RISK_LEVEL_LOW,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session2,
-            String.valueOf(4),
-            "start.html",
-            UrlRating.RISK_LEVEL_LOW,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session1,
-            String.valueOf(5),
-            "xxx.html",
-            UrlRating.RISK_LEVEL_HIGH,
-            Date.from(
-                Instant.now())));
-        List collect = clicks.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
-            Collectors.toList());
-        IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
-            collect,
-            producerConfig,
-            stringSerde.serializer(),
-            clickSerde.serializer());
-
-        //
-        // Step 3: Verify the application's output data.
-        //
-        Properties consumerConfig = new Properties();
-        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
-            "markov-chlick-stream-processing-integration-test-standard-consumer");
-        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
-        ArrayList<KeyValue<String, ClickStream>> expectedClickStreams = new ArrayList<>();
-        expectedClickStreams.add(new KeyValue<>(session1,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session1,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
-                    Collectors.toList()).subList(0, 1))));
-        expectedClickStreams.add(new KeyValue<>(session1,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session1,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
-                    Collectors.toList()).subList(0, 2))));
-        expectedClickStreams.add(new KeyValue<>(session1,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session1,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
-                    Collectors.toList()))));
-        expectedClickStreams.add(new KeyValue<>(session2,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session2,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
-                    Collectors.toList()).subList(0, 1))));
-        expectedClickStreams.add(new KeyValue<>(session2,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session2,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
-                    Collectors.toList()))));
-        List<KeyValue<String, ClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
-            consumerConfig,
-            clickStreamTopic,
-            5,
-            30 * 1000L,
-
-            new StringDeserializer(),
-            clickStreamSerde.deserializer()
-        );
-        streams.close();
-        assertThat(actualClickStreams, hasSize(5));
-        assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
-    }
-
-    @Test
-    public void shouldAggregateClicksToClickStreamTopicWithLateLogin() throws Exception {
-        MarkovClickStreamProcessing clickStreamProcessing = new MarkovClickStreamProcessing();
-        final KafkaStreams streams = new KafkaStreams(clickStreamProcessing.getStreamBuilder(), streamsConfiguration);
-        streams.cleanUp();
-        streams.start();
-
-
-        //
-        // Step 2: Produce some input data to the input topic.
-        //
-        Properties producerConfig = new Properties();
-        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
-        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
-        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        final List<Click> clicks = new LinkedList<>();
-        String session1 = "1";
-        String session2 = "2";
-        clicks.add(new Click(session1,
-            String.valueOf(1),
-            "start.html",
-            UrlRating.RISK_LEVEL_LOW,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session1,
-            String.valueOf(2),
-            "login.html",
-            UrlRating.RISK_LEVEL_MEDIUM,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session2,
-            String.valueOf(3),
-            "start.html",
-            UrlRating.RISK_LEVEL_LOW,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session2,
-            String.valueOf(4),
-            "start.html",
-            UrlRating.RISK_LEVEL_LOW,
-            Date.from(
-                Instant.now())));
-        clicks.add(new Click(session1,
-            String.valueOf(5),
-            "xxx.html",
-            UrlRating.RISK_LEVEL_HIGH,
-            Date.from(
-                Instant.now())));
-        List collect = clicks.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
-            Collectors.toList());
-        IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
-            collect,
-            producerConfig,
-            stringSerde.serializer(),
-            clickSerde.serializer());
-
-        String user1 = "user1";
-        List<Session> logins = new ArrayList<>();
-        logins.add(new Session(session1, user1));
-        List sessionKeyValues = logins.stream().map(session -> new KeyValue(session.getSessionUUID(), session)).collect(
-            Collectors.toList());
-        IntegrationTestUtils.produceKeyValuesSynchronously(loginTopic,
-            sessionKeyValues,
-            producerConfig,
-            stringSerde.serializer(),
-            sessionSerde.serializer());
-
-        Click anotherClick = new Click(session1,
-            String.valueOf(5),
-            "xxx.html",
-            UrlRating.RISK_LEVEL_HIGH,
-            Date.from(
-                Instant.now()));
-        clicks.add(anotherClick);
-        IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
-
-            Collections.singletonList(new KeyValue<>(session1, anotherClick)),
-            producerConfig,
-            stringSerde.serializer(),
-            clickSerde.serializer());
-
-        //
-        // Step 3: Verify the application's output data.
-        //
-        Properties consumerConfig = new Properties();
-        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
-            "markov-chlick-stream-processing-integration-test-standard-consumer");
-        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
-        ArrayList<KeyValue<String, ClickStream>> expectedClickStreams = new ArrayList<>();
-        expectedClickStreams.add(new KeyValue<>(session1,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session1,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
-                    Collectors.toList()).subList(0, 1))));
-        expectedClickStreams.add(new KeyValue<>(session1,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session1,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
-                    Collectors.toList()).subList(0, 2))));
-        expectedClickStreams.add(new KeyValue<>(session1,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session1,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
-                    Collectors.toList()).subList(0, 3))));
-        expectedClickStreams.add(new KeyValue<>(session1,
-            new ClickStream(user1,
-                session1,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
-                    Collectors.toList()))));
-        expectedClickStreams.add(new KeyValue<>(session2,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session2,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
-                    Collectors.toList()).subList(0, 1))));
-        expectedClickStreams.add(new KeyValue<>(session2,
-            new ClickStream("--------------------NOT FOUND---------------------------",
-                session2,
-                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
-                    Collectors.toList()))));
-        List<KeyValue<String, ClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
-            consumerConfig,
-            clickStreamTopic,
-            6,
-            30 * 1000L,
-
-            new StringDeserializer(),
-            clickStreamSerde.deserializer()
-        );
-        streams.close();
-        assertThat(actualClickStreams, hasSize(6));
-        assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
-    }
-
-    @Test
     public void shouldAggregateClicksToValidationClickStreamTopic() throws Exception {
         MarkovClickStreamProcessing clickStreamProcessing = new MarkovClickStreamProcessing();
         final KafkaStreams streams = new KafkaStreams(clickStreamProcessing.getStreamBuilder(), streamsConfiguration);
@@ -348,8 +103,10 @@ public class MarkovClickStreamProcessingIntegrationTest {
         String user1 = "user1";
         String user2 = "user2";
         List<Session> logins = new ArrayList<>();
-        logins.add(new Session(session1, user1));
-        logins.add(new Session(session2, user2));
+        Session login1 = new Session(session1, user1);
+        logins.add(login1);
+        Session login2 = new Session(session2, user2);
+        logins.add(login2);
         List sessionKeyValues = logins.stream().map(session -> new KeyValue(session.getSessionUUID(), session)).collect(
             Collectors.toList());
         IntegrationTestUtils.produceKeyValuesSynchronously(loginTopic,
@@ -358,12 +115,14 @@ public class MarkovClickStreamProcessingIntegrationTest {
             stringSerde.serializer(),
             sessionSerde.serializer());
         List<UserModel> userModels = new ArrayList<>();
-        userModels.add(new UserModel(user1,
+        UserModel user1Model = new UserModel(user1,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel()));
-        userModels.add(new UserModel(user2,
+            new FrequencyModel());
+        userModels.add(user1Model);
+        UserModel user2Model = new UserModel(user2,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel()));
+            new FrequencyModel());
+        userModels.add(user2Model);
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
             .collect(
@@ -436,23 +195,209 @@ public class MarkovClickStreamProcessingIntegrationTest {
             new ValidationClickStream(user1,
                 session1,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
+                    Collectors.toList()).subList(0, 1),
+                user1Model)));
+        expectedClickStreams.add(new KeyValue<>(user1,
+            new ValidationClickStream(user1,
+                session1,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
+                    Collectors.toList()).subList(0, 2),
+                user1Model)));
+        expectedClickStreams.add(new KeyValue<>(user2,
+            new ValidationClickStream(user2,
+                session2,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
+                    Collectors.toList()).subList(0, 1),
+                user2Model)));
+        expectedClickStreams.add(new KeyValue<>(user2,
+            new ValidationClickStream(user2,
+                session2,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
+                    Collectors.toList()).subList(0, 2),
+                user2Model)));
+        expectedClickStreams.add(new KeyValue<>(user1,
+            new ValidationClickStream(user1,
+                session1,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 3),
-                userModels.stream()
-                    .filter(userModel -> Objects.equals(userModel.getUserId(), user1))
-                    .findFirst()
-                    .orElse(null))));
+                user1Model)));
+        expectedClickStreams.add(new KeyValue<>(user1,
+            new ValidationClickStream(user1,
+                session1,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
+                    Collectors.toList()).subList(0, 4),
+                user1Model)));
+
         List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
             analysisTopic,
-            1,
+            6,
             30 * 1000L,
 
             new StringDeserializer(),
             clickStreamValidationSerde.deserializer()
         );
         streams.close();
-        assertThat(actualClickStreams, hasSize(1));
+        assertThat(actualClickStreams, hasSize(6));
         assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
+    }
+
+    @Test
+    public void shouldAggregateClicksToValidationClickStreamTopicWithLateLogin() throws Exception {
+
+
+        MarkovClickStreamProcessing clickStreamProcessing = new MarkovClickStreamProcessing();
+        final KafkaStreams streams = new KafkaStreams(clickStreamProcessing.getStreamBuilder(), streamsConfiguration);
+        streams.cleanUp();
+        streams.start();
+
+
+        //
+        // Step 2: Produce some input data to the input topic.
+        //
+        Properties producerConfig = new Properties();
+        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
+        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
+        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
+        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+
+        String session1 = "1";
+        String session2 = "2";
+        String user1 = "user1";
+        String user2 = "user2";
+
+        List<UserModel> userModels = new ArrayList<>();
+        UserModel user1Model = new UserModel(user1,
+            MarkovChainWithMatrix.train(Collections.emptyList()),
+            new FrequencyModel());
+        userModels.add(user1Model);
+        UserModel user2Model = new UserModel(user2,
+            MarkovChainWithMatrix.train(Collections.emptyList()),
+            new FrequencyModel());
+        userModels.add(user2Model);
+        List userModelsKeyValue = userModels.stream()
+            .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
+            .collect(
+                Collectors.toList());
+        IntegrationTestUtils.produceKeyValuesSynchronously(modelTopic,
+            userModelsKeyValue,
+            producerConfig,
+            stringSerde.serializer(),
+            userModelSerde.serializer());
+
+        final List<Click> clicks = new LinkedList<>();
+
+        clicks.add(new Click(session1,
+            String.valueOf(1),
+            "start.html",
+            UrlRating.RISK_LEVEL_LOW,
+            Date.from(
+                Instant.now())));
+        clicks.add(new Click(session2,
+            String.valueOf(2),
+            "start.html",
+            UrlRating.RISK_LEVEL_LOW,
+            Date.from(
+                Instant.now())));
+        List collect = clicks.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
+            Collectors.toList());
+        IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
+            collect,
+            producerConfig,
+            stringSerde.serializer(),
+            clickSerde.serializer());
+
+
+        List<Session> logins = new ArrayList<>();
+        Session login1 = new Session(session1, user1);
+        logins.add(login1);
+        Session login2 = new Session(session2, user2);
+        logins.add(login2);
+        List sessionKeyValues = logins.stream().map(session -> new KeyValue(session.getSessionUUID(), session)).collect(
+            Collectors.toList());
+        IntegrationTestUtils.produceKeyValuesSynchronously(loginTopic,
+            sessionKeyValues,
+            producerConfig,
+            stringSerde.serializer(),
+            sessionSerde.serializer());
+
+        final List<Click> clicksAfterLogins = new LinkedList<>();
+        clicksAfterLogins.add(
+            new Click(session1,
+                String.valueOf(3),
+                "xxx.html",
+                UrlRating.RISK_LEVEL_HIGH,
+                Date.from(
+                    Instant.now())));
+        clicksAfterLogins.add(
+            new Click(session2,
+                String.valueOf(4),
+                "xxx.html",
+                UrlRating.RISK_LEVEL_HIGH,
+                Date.from(
+                    Instant.now())));
+        clicks.addAll(clicksAfterLogins);
+        List collect1 = clicksAfterLogins.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
+            Collectors.toList());
+        IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
+            collect1,
+            producerConfig,
+            stringSerde.serializer(),
+            clickSerde.serializer());
+
+
+        //
+        // Step 3: Verify the application's output data.
+        //
+        Properties consumerConfig = new Properties();
+        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
+        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
+            "markov-chlick-stream-processing-integration-test-standard-consumer");
+        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
+        ArrayList<KeyValue<String, ValidationClickStream>> expectedClickStreams = new ArrayList<>();
+        String UNKOWN_USER = "--------------------NOT FOUND---------------------------";
+        expectedClickStreams.add(new KeyValue<>(UNKOWN_USER,
+            new ValidationClickStream(UNKOWN_USER,
+                session1,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
+                    Collectors.toList()).subList(0, 1),
+                null)));
+        expectedClickStreams.add(new KeyValue<>(UNKOWN_USER,
+            new ValidationClickStream(UNKOWN_USER,
+                session2,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
+                    Collectors.toList()).subList(0, 1),
+                null)));
+
+        expectedClickStreams.add(new KeyValue<>(user1,
+            new ValidationClickStream(user1,
+                session1,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
+                    Collectors.toList()).subList(0, 2),
+                user1Model)));
+        expectedClickStreams.add(new KeyValue<>(user2,
+            new ValidationClickStream(user2,
+                session2,
+                clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
+                    Collectors.toList()).subList(0, 2),
+                user2Model)));
+
+        List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
+            consumerConfig,
+            analysisTopic,
+            4,
+            30 * 1000L,
+
+            new StringDeserializer(),
+            clickStreamValidationSerde.deserializer()
+        );
+        streams.close();
+        assertThat(actualClickStreams, hasSize(4));
+        assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
+
     }
 
 }

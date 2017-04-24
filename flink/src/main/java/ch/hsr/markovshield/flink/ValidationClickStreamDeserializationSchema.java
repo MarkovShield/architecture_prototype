@@ -8,11 +8,11 @@ import org.apache.flink.streaming.util.serialization.KeyedDeserializationSchema;
 import java.io.IOException;
 
 
-public class ClickStreamValidationDeserializationSchema implements KeyedDeserializationSchema<ValidationClickStream> {
+public class ValidationClickStreamDeserializationSchema implements KeyedDeserializationSchema<ValidationClickStream> {
 
     private final ObjectMapper mapper;
 
-    public ClickStreamValidationDeserializationSchema() {
+    public ValidationClickStreamDeserializationSchema() {
         mapper = new ObjectMapper();
     }
 

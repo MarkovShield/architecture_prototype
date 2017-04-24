@@ -1,28 +1,28 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.models.ClickStreamValidation;
+import ch.hsr.markovshield.models.ValidatedClickStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
 
-import static ch.hsr.markovshield.flink.MarkovShieldAnalyser.MARKOV_CLICK_STREAM_VALIDATION_TOPIC;
+import static ch.hsr.markovshield.flink.MarkovShieldAnalyser.MARKOV_VALIDATED_CLICK_STREAMS;
 
 
-public class ClickStreamValidationSerializationSchema implements KeyedSerializationSchema<ClickStreamValidation> {
+public class ValidatedClickStreamSerializationSchema implements KeyedSerializationSchema<ValidatedClickStream> {
 
     private final ObjectMapper mapper;
 
-    public ClickStreamValidationSerializationSchema() {
+    public ValidatedClickStreamSerializationSchema() {
         mapper = new ObjectMapper();
     }
 
     @Override
-    public byte[] serializeKey(ClickStreamValidation validation) {
+    public byte[] serializeKey(ValidatedClickStream validation) {
         return validation.getSessionUUID().getBytes();
     }
 
     @Override
-    public byte[] serializeValue(ClickStreamValidation validation) {
+    public byte[] serializeValue(ValidatedClickStream validation) {
         try {
             return mapper.writeValueAsBytes(validation);
         } catch (JsonProcessingException e) {
@@ -32,7 +32,7 @@ public class ClickStreamValidationSerializationSchema implements KeyedSerializat
     }
 
     @Override
-    public String getTargetTopic(ClickStreamValidation validation) {
-        return MARKOV_CLICK_STREAM_VALIDATION_TOPIC;
+    public String getTargetTopic(ValidatedClickStream validation) {
+        return MARKOV_VALIDATED_CLICK_STREAMS;
     }
 }
