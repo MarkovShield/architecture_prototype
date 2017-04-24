@@ -77,7 +77,8 @@ public class MarkovShieldModelUpdate {
         //Do freqency Analysis
 
 
-        model = new UserModel(key, MarkovChainWithMatrix.train(filteredClicks), new FrequencyModel());
+        model = new UserModel(key, MarkovChainWithMatrix.train(filteredClicks), new FrequencyModel(frequencyMatrix,
+            urlStore));
         collector.collect(model);
 
     }

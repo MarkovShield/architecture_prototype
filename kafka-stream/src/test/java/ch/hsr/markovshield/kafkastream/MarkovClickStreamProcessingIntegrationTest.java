@@ -117,11 +117,11 @@ public class MarkovClickStreamProcessingIntegrationTest {
         List<UserModel> userModels = new ArrayList<>();
         UserModel user1Model = new UserModel(user1,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel());
+            new FrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user1Model);
         UserModel user2Model = new UserModel(user2,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel());
+            new FrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user2Model);
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
@@ -270,11 +270,11 @@ public class MarkovClickStreamProcessingIntegrationTest {
         List<UserModel> userModels = new ArrayList<>();
         UserModel user1Model = new UserModel(user1,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel());
+            new FrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user1Model);
         UserModel user2Model = new UserModel(user2,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel());
+            new FrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user2Model);
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
@@ -413,7 +413,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
         streams.close();
         assertThat(actualClickStreams, hasSize(4));
         assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
-        
+
     }
 
 }

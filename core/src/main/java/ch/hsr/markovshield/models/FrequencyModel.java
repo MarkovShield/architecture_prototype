@@ -1,44 +1,46 @@
 package ch.hsr.markovshield.models;
 
+import ch.hsr.markovshield.ml.FrequencyMatrix;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Random;
+import java.util.Optional;
 
 
 public class FrequencyModel {
 
-    private final int frequencyValue;
+    private final FrequencyMatrix frequencyMatrix;
+    private final UrlStore urlStore;
     private final Date timeCreated;
 
-    public FrequencyModel() {
-        frequencyValue = new Random().nextInt(100);
+    public FrequencyModel(FrequencyMatrix frequencyMatrix, UrlStore urlStore) {
+        this.frequencyMatrix = frequencyMatrix;
+        this.urlStore = urlStore;
         this.timeCreated = Date.from(Instant.now());
     }
 
     @JsonCreator
-    public FrequencyModel(@JsonProperty ("frequencyValue") int frequencyValue,
+    public FrequencyModel(@JsonProperty ("frequencyMatrix") FrequencyMatrix frequencyMatrix,
+                          @JsonProperty ("urlStore") UrlStore urlStore,
                           @JsonProperty ("timeCreated") Date timeCreated) {
-        this.frequencyValue = frequencyValue;
+        this.frequencyMatrix = frequencyMatrix;
+        this.urlStore = urlStore;
         this.timeCreated = timeCreated;
-    }
-
-    public int getFrequencyValue() {
-        return frequencyValue;
-    }
-
-    public Date getTimeCreated() {
-        return this.timeCreated;
     }
 
     @Override
     public String toString() {
         return "FrequencyModel{" +
-            "frequencyValue=" + frequencyValue +
+            "frequencyMatrix=" + frequencyMatrix +
+            ", urlStore=" + urlStore +
             ", timeCreated=" + timeCreated +
             '}';
+    }
+
+    public Date getTimeCreated() {
+        return this.timeCreated;
     }
 
     @Override
@@ -50,12 +52,47 @@ public class FrequencyModel {
             return false;
         }
         FrequencyModel that = (FrequencyModel) o;
-        return frequencyValue == that.frequencyValue &&
+        return Objects.equals(frequencyMatrix, that.frequencyMatrix) &&
+            Objects.equals(urlStore, that.urlStore) &&
             Objects.equals(timeCreated, that.timeCreated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(frequencyValue, timeCreated);
+        return Objects.hash(frequencyMatrix, urlStore, timeCreated);
+    }
+
+    public double getFrequencyLowerBound(Click currentClick) {
+        return getFrequencyLowerBound(currentClick.getUrl());
+    }
+
+    private Optional<Integer> getIndexByUrl(String url) {
+        return this.urlStore.get(url);
+    }
+
+    public double getFrequencyLowerBound(String currentUrl) {
+        Optional<Integer> sourceIndex = getIndexByUrl(currentUrl);
+        double lowerBound;
+        if (sourceIndex.isPresent()) {
+            lowerBound = frequencyMatrix.get(sourceIndex.get(), 0);
+        } else {
+            lowerBound = 0;
+        }
+        return lowerBound;
+    }
+
+    public double getFrequencyUpperBound(Click currentClick) {
+        return getFrequencyLowerBound(currentClick.getUrl());
+    }
+
+    public double getFrequencyUpperBound(String currentUrl) {
+        Optional<Integer> sourceIndex = getIndexByUrl(currentUrl);
+        double lowerBound;
+        if (sourceIndex.isPresent()) {
+            lowerBound = frequencyMatrix.get(sourceIndex.get(), 1);
+        } else {
+            lowerBound = 0;
+        }
+        return lowerBound;
     }
 }

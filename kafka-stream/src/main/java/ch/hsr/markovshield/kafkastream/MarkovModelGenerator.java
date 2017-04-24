@@ -45,7 +45,7 @@ public class MarkovModelGenerator {
             int frequencyModelRating = random.nextInt(1, 100);
             UserModel userModel = new UserModel(user,
                 MarkovChainWithMatrix.train(Collections.emptyList()),
-                new FrequencyModel(frequencyModelRating, Date.from(
+                new FrequencyModel(frequencyMatrix, urlStore, frequencyModelRating, Date.from(
                     Instant.now())));
             userModels.add(userModel);
         }
