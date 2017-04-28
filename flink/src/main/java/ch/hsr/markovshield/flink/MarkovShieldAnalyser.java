@@ -87,7 +87,7 @@ public class MarkovShieldAnalyser {
     }
 
     private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {
-        if (clickStream.lastClick().map(click -> click.getUrlRiskLevel() >= 2).orElse(false)) {
+        if (clickStream.lastClick().map(Click::isValidationRequired).orElse(false)) {
             int weightingScore;
             if (clickStream.getClicks() != null) {
                 Click lastClick = clickStream.getClicks().get(clickStream.getClicks().size() - 1);

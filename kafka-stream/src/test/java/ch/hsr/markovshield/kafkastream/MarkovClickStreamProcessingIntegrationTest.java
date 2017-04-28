@@ -140,37 +140,37 @@ public class MarkovClickStreamProcessingIntegrationTest {
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(session1,
             String.valueOf(2),
             "login.html",
             UrlRating.RISK_LEVEL_MEDIUM,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(session2,
             String.valueOf(3),
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(session2,
             String.valueOf(4),
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(session1,
             String.valueOf(5),
             "xxx.html",
             UrlRating.RISK_LEVEL_HIGH,
             Date.from(
-                Instant.now())));
+                Instant.now()), true));
         clicks.add(new Click(session1,
             String.valueOf(6),
             "xxx.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         List clickKeyValues = clicks.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
             Collectors.toList());
         IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
@@ -293,13 +293,13 @@ public class MarkovClickStreamProcessingIntegrationTest {
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(session2,
             String.valueOf(2),
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         List collect = clicks.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
             Collectors.toList());
         IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
@@ -329,14 +329,14 @@ public class MarkovClickStreamProcessingIntegrationTest {
                 "xxx.html",
                 UrlRating.RISK_LEVEL_HIGH,
                 Date.from(
-                    Instant.now())));
+                    Instant.now()), true));
         clicksAfterLogins.add(
             new Click(session2,
                 String.valueOf(4),
                 "xxx.html",
                 UrlRating.RISK_LEVEL_HIGH,
                 Date.from(
-                    Instant.now())));
+                    Instant.now()), true));
         clicks.addAll(clicksAfterLogins);
         List collect1 = clicksAfterLogins.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
             Collectors.toList());

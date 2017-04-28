@@ -10,12 +10,6 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 
 public class ClickStreamValidationRedisMapper implements RedisMapper<ClickStreamValidation> {
 
-    private final ObjectMapper mapper;
-
-    public ClickStreamValidationRedisMapper() {
-        mapper = new ObjectMapper();
-    }
-
     @Override
     public RedisCommandDescription getCommandDescription() {
         return new RedisCommandDescription(RedisCommand.PUBLISH, "");
@@ -28,11 +22,6 @@ public class ClickStreamValidationRedisMapper implements RedisMapper<ClickStream
 
     @Override
     public String getValueFromData(ClickStreamValidation data) {
-        try {
-            return new String(mapper.writeValueAsBytes(data));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return "";
+        return data.getRating().toString();
     }
 }
