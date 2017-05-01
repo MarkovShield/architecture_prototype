@@ -129,7 +129,7 @@ public class MarkovShieldAnalyser {
 
     private static MarkovRating calculateMarkovFraudLevel(int rating) {
         if (rating < 100) {
-            return MarkovRating.VALID;
+            return MarkovRating.OK;
         }
         if (rating < 150) {
             return MarkovRating.SUSPICIOUS;

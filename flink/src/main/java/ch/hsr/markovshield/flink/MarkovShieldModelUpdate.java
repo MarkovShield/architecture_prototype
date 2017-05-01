@@ -70,7 +70,7 @@ public class MarkovShieldModelUpdate {
 
         for (ValidatedClickStream clickStream : iterable) {
             MarkovRating rating = clickStream.getClickStreamValidation().getRating();
-            if (rating == MarkovRating.UNEVALUDATED || rating == MarkovRating.VALID) {
+            if (rating == MarkovRating.UNEVALUDATED || rating == MarkovRating.OK) {
                 filteredClicks.add(clickStream);
             }
         }

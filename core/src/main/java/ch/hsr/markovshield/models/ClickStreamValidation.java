@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 
 public class ClickStreamValidation {
 
@@ -61,5 +62,39 @@ public class ClickStreamValidation {
 
     public String getUserName() {
         return userName;
+    }
+
+    @Override
+    public String toString() {
+        return "ClickStreamValidation{" +
+            "userName='" + userName + '\'' +
+            ", sessionUUID='" + sessionUUID + '\'' +
+            ", clickUUID='" + clickUUID + '\'' +
+            ", validationScore=" + validationScore +
+            ", rating=" + rating +
+            ", timeCreated=" + timeCreated +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ClickStreamValidation that = (ClickStreamValidation) o;
+        return validationScore == that.validationScore &&
+            Objects.equals(userName, that.userName) &&
+            Objects.equals(sessionUUID, that.sessionUUID) &&
+            Objects.equals(clickUUID, that.clickUUID) &&
+            rating == that.rating &&
+            Objects.equals(timeCreated, that.timeCreated);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userName, sessionUUID, clickUUID, validationScore, rating, timeCreated);
     }
 }
