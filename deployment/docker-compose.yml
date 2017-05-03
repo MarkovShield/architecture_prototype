@@ -40,7 +40,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
 
   jobmanager:
-    image: flink
+    image: pschmid/flink:1.2.0
     hostname: jobmanager
     depends_on:
       - redis
@@ -56,7 +56,7 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
   taskmanager:
-    image: flink
+    image: pschmid/flink:1.2.0
     expose:
       - "6121"
       - "6122"
