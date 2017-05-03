@@ -6,9 +6,12 @@ import ch.hsr.markovshield.models.ClickStreamValidation;
 import ch.hsr.markovshield.models.MarkovRating;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
+import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
+import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
 import org.apache.flink.streaming.api.windowing.assigners.ProcessingTimeSessionWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
@@ -32,8 +35,7 @@ public class MarkovShieldAnalyser {
     public static void main(final String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         Properties properties = new Properties();
         properties.setProperty("bootstrap.servers", BROKER);
         properties.setProperty("zookeeper.connect", ZOOKEEPER);
@@ -51,9 +53,14 @@ public class MarkovShieldAnalyser {
             .addSink(sinkFunction);
 
 
-        SingleOutputStreamOperator<ValidatedClickStream> reduce = validationStream.keyBy(ClickStream::getSessionUUID)
+        SingleOutputStreamOperator<ValidatedClickStream> reduce = validationStream.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<ValidatedClickStream>() {
+            @Override
+            public long extractAscendingTimestamp(ValidatedClickStream validatedClickStream) {
+                return validatedClickStream.timeStampOfLastClick().getTime();
+            }
+        }).keyBy(ClickStream::getSessionUUID)
             .window(
-                ProcessingTimeSessionWindows.withGap(Time.minutes(2)))
+                EventTimeSessionWindows.withGap(Time.minutes(2)))
             .reduce((clickStreamValidation, t1) -> {
                 if (t1.getClickStreamValidation()
                     .getRating() == MarkovRating.UNEVALUDATED && clickStreamValidation.getClickStreamValidation()
