@@ -11,8 +11,6 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
@@ -37,9 +35,7 @@ public class MarkovShieldModelUpdate {
     public static void main(final String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-
-
+        env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
         Properties properties = new Properties();
         properties.setProperty("bootstrap.servers", BROKER);
         properties.setProperty("zookeeper.connect", ZOOKEEPER);
@@ -50,13 +46,7 @@ public class MarkovShieldModelUpdate {
             .addSource(new FlinkKafkaConsumer010<ValidatedClickStream>(MarkovShieldAnalyser.MARKOV_VALIDATED_CLICK_STREAMS,
                 new ValidatedClickStreamDeserializationSchema(),
                 properties));
-        WindowedStream<ValidatedClickStream, String, TimeWindow> windowedStream = stream.assignTimestampsAndWatermarks(
-            new BoundedOutOfOrdernessTimestampExtractor<ValidatedClickStream>(Time.seconds(10)) {
-                @Override
-                public long extractTimestamp(ValidatedClickStream validatedClickStream) {
-                    return validatedClickStream.timeStampOfLastClick().getTime();
-                }
-            })
+        WindowedStream<ValidatedClickStream, String, TimeWindow> windowedStream = stream
             .keyBy(ClickStream::getUserName)
             .timeWindow(Time.minutes(SLIDING_TIME_MINUTES), Time.minutes(REEVALUATION_INTERVAL_MINUTES));
 
