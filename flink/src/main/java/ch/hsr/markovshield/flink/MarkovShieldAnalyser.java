@@ -53,8 +53,8 @@ public class MarkovShieldAnalyser {
             .filter(clickStreamValidation -> clickStreamValidation.getRating() != MarkovRating.UNEVALUDATED)
             .addSink(sinkFunction);
 
-
-        SingleOutputStreamOperator<ValidatedClickStream> reduce = validationStream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<ValidatedClickStream>(Time.seconds(10)) {
+        
+        SingleOutputStreamOperator<ValidatedClickStream> reducedClickStream = validationStream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<ValidatedClickStream>(Time.seconds(10)) {
             @Override
             public long extractTimestamp(ValidatedClickStream validatedClickStream) {
                 return validatedClickStream.timeStampOfLastClick().getTime();
@@ -75,7 +75,7 @@ public class MarkovShieldAnalyser {
                 }
             });
         FlinkKafkaProducer010<ValidatedClickStream> producer = getKafkaValidatedClickStreamProducer();
-        reduce.addSink(producer);
+        reducedClickStream.addSink(producer);
 
 
         env.execute(FLINK_JOB_NAME);
