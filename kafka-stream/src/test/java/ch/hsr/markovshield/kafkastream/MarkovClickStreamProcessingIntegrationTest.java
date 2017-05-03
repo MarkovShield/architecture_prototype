@@ -40,11 +40,11 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 
 public class MarkovClickStreamProcessingIntegrationTest {
 
-    private static final String clickTopic = MarkovClickStreamProcessing.MARKOV_CLICK_TOPIC;
-    private static final String loginTopic = MarkovClickStreamProcessing.MARKOV_LOGIN_TOPIC;
-    private static final String modelTopic = MarkovClickStreamProcessing.MARKOV_USER_MODEL_TOPIC;
-    private static final String clickStreamTopic = MarkovClickStreamProcessing.MARKOV_CLICK_STREAM_TOPIC;
-    private static final String analysisTopic = MarkovClickStreamProcessing.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
+    private static final String clickTopic = MarkovTopics.MARKOV_CLICK_TOPIC;
+    private static final String loginTopic = MarkovTopics.MARKOV_LOGIN_TOPIC;
+    private static final String modelTopic = MarkovTopics.MARKOV_USER_MODEL_TOPIC;
+    private static final String clickStreamTopic = MarkovTopics.MARKOV_CLICK_STREAM_TOPIC;
+    private static final String analysisTopic = MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
     private static final Serde stringSerde = MarkovClickStreamProcessing.stringSerde;
     private static final JsonPOJOSerde<Click> clickSerde = MarkovClickStreamProcessing.clickSerde;
     private static final JsonPOJOSerde<Session> sessionSerde = MarkovClickStreamProcessing.sessionSerde;

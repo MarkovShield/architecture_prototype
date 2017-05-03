@@ -14,17 +14,16 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
 
+import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
+import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_CLICK_TOPIC;
+import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_LOGIN_TOPIC;
+import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
 import static com.google.common.collect.Iterables.concat;
 
 
 public class MarkovClickStreamProcessing implements StreamProcessing {
 
     public static final String USER_NOT_FOUND = "--------------------NOT FOUND---------------------------";
-    public static final String MARKOV_LOGIN_TOPIC = "MarkovLogins";
-    public static final String MARKOV_USER_MODEL_TOPIC = "MarkovUserModels";
-    public static final String MARKOV_CLICK_TOPIC = "MarkovClicks";
-    public static final String MARKOV_CLICK_STREAM_TOPIC = "MarkovClickStreams";
-    public static final String MARKOV_CLICK_STREAM_ANALYSIS_TOPIC = "MarkovClickStreamAnalysis";
     public static final Serde<String> stringSerde = Serdes.String();
     public static final JsonPOJOSerde<ValidationClickStream> validationClickStreamSerde = new JsonPOJOSerde<>(
         ValidationClickStream.class);

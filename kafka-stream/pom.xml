@@ -53,14 +53,13 @@
             <version>${kafka.version}</version>
         </dependency>
 
-
-        <!-- Test dependencies -->
         <dependency>
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
             <version>0.9</version>
-            <scope>test</scope>
         </dependency>
+
+        <!-- Test dependencies -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
@@ -158,6 +157,11 @@
             <artifactId>hamcrest-junit</artifactId>
             <version>2.0.0.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>0.10.2.0-cp1</version>
         </dependency>
 
     </dependencies>
