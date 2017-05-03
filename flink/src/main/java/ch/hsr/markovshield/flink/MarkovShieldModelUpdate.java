@@ -12,6 +12,7 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
+import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
@@ -50,9 +51,9 @@ public class MarkovShieldModelUpdate {
                 new ValidatedClickStreamDeserializationSchema(),
                 properties));
         WindowedStream<ValidatedClickStream, String, TimeWindow> windowedStream = stream.assignTimestampsAndWatermarks(
-            new AscendingTimestampExtractor<ValidatedClickStream>() {
+            new BoundedOutOfOrdernessTimestampExtractor<ValidatedClickStream>(Time.seconds(10)) {
                 @Override
-                public long extractAscendingTimestamp(ValidatedClickStream validatedClickStream) {
+                public long extractTimestamp(ValidatedClickStream validatedClickStream) {
                     return validatedClickStream.timeStampOfLastClick().getTime();
                 }
             })
