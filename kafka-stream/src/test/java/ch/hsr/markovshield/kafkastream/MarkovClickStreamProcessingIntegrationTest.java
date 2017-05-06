@@ -4,7 +4,7 @@ import ch.hsr.markovshield.ml.FrequencyMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.FrequencyModel;
+import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.models.UrlStore;
@@ -121,11 +121,11 @@ public class MarkovClickStreamProcessingIntegrationTest {
         UrlStore urlStore = null;
         UserModel user1Model = new UserModel(user1,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel(frequencyMatrix, urlStore));
+            new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user1Model);
         UserModel user2Model = new UserModel(user2,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel(frequencyMatrix, urlStore));
+            new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user2Model);
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
@@ -276,11 +276,11 @@ public class MarkovClickStreamProcessingIntegrationTest {
         UrlStore urlStore = null;
         UserModel user1Model = new UserModel(user1,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel(frequencyMatrix, urlStore));
+            new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user1Model);
         UserModel user2Model = new UserModel(user2,
             MarkovChainWithMatrix.train(Collections.emptyList()),
-            new FrequencyModel(frequencyMatrix, urlStore));
+            new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user2Model);
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))

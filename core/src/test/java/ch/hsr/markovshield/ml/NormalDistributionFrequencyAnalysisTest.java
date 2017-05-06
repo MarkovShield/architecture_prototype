@@ -2,17 +2,15 @@ package ch.hsr.markovshield.ml;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.FrequencyModel;
-import ch.hsr.markovshield.models.TransitionModel;
+import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import junit.framework.TestCase;
 import org.junit.Test;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class FrequencyAnalysisTest extends TestCase {
+public class NormalDistributionFrequencyAnalysisTest extends TestCase {
 
 
     private List<ClickStream> trainingSet;
@@ -81,7 +79,8 @@ public class FrequencyAnalysisTest extends TestCase {
 
     @Test
     public void testMarkovChainWithMatrix() {
-        FrequencyModel train = FrequencyAnalysis.train(trainingSet);
+        NormalDistributionFrequencyAnalysis x = new NormalDistributionFrequencyAnalysis();
+        MatrixFrequencyModel train = x.train(trainingSet);
         double newsLowerBound = train.getFrequencyLowerBound(
             "news.html");
         double newsUpperBound = train.getFrequencyLowerBound(

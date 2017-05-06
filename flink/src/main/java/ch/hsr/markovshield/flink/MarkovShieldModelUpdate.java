@@ -3,7 +3,7 @@ package ch.hsr.markovshield.flink;
 import ch.hsr.markovshield.ml.FrequencyMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.FrequencyModel;
+import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.MarkovRating;
 import ch.hsr.markovshield.models.UrlStore;
 import ch.hsr.markovshield.models.UserModel;
@@ -81,7 +81,7 @@ public class MarkovShieldModelUpdate {
 
         FrequencyMatrix frequencyMatrix = null;
         UrlStore urlStore = null;
-        model = new UserModel(key, MarkovChainWithMatrix.train(filteredClicks), new FrequencyModel(frequencyMatrix,
+        model = new UserModel(key, MarkovChainWithMatrix.train(filteredClicks), new MatrixFrequencyModel(frequencyMatrix,
             urlStore));
         collector.collect(model);
 

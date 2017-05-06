@@ -2,7 +2,7 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.ml.FrequencyMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
-import ch.hsr.markovshield.models.FrequencyModel;
+import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.UrlStore;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
@@ -49,7 +49,7 @@ public class MarkovModelGenerator {
             UrlStore urlStore = null;
             UserModel userModel = new UserModel(user,
                 MarkovChainWithMatrix.train(Collections.emptyList()),
-                new FrequencyModel(frequencyMatrix, urlStore, Date.from(
+                new MatrixFrequencyModel(frequencyMatrix, urlStore, Date.from(
                     Instant.now())));
             userModels.add(userModel);
         }

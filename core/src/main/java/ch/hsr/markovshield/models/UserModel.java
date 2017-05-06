@@ -10,13 +10,13 @@ public class UserModel {
 
     private final String userId;
     private final TransitionModel transitionModel;
-    private final FrequencyModel frequencyModel;
+    private final MatrixFrequencyModel frequencyModel;
 
     @JsonCreator
     public UserModel(
         @JsonProperty ("userId") String userId,
         @JsonProperty ("transitionModel") TransitionModel transitionModel,
-        @JsonProperty ("frequencyModel") FrequencyModel frequencyModel) {
+        @JsonProperty ("frequencyModel") MatrixFrequencyModel frequencyModel) {
         this.userId = userId;
         this.transitionModel = transitionModel;
         this.frequencyModel = frequencyModel;
@@ -33,7 +33,7 @@ public class UserModel {
     }
 
 
-    public FrequencyModel getFrequencyModel() {
+    public MatrixFrequencyModel getFrequencyModel() {
         return frequencyModel;
     }
 

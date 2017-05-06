@@ -3,6 +3,7 @@ package ch.hsr.markovshield.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,6 +39,8 @@ public class ClickStream {
     public Date timeStampOfLastClick() {
         return clicks.stream().map(Click::getTimeStamp).max(Date::compareTo).orElse(new Date(0));
     }
+
+
 
     public Optional<Click> lastClick() {
         if (clicks.size() == 0) {
