@@ -5,9 +5,7 @@ import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.UrlStore;
-import org.apache.commons.math3.distribution.LogNormalDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,25 +44,19 @@ public class NormalDistributionFrequencyAnalysis implements FrequencyAnalysis {
         }
     }
 
-    private static Map<String, Integer> getMappings(HashMap<String, HashMap<String, Double>> clickCountMatrix) {
-        HashMap<String, Integer> urlMapping = new HashMap<>();
-        int urlCount = 0;
-        for (String url : clickCountMatrix.keySet()) {
-            urlMapping.put(url, urlCount++);
-        }
-        urlMapping.put("endOfClickStream", urlCount);
-        return urlMapping;
-    }
-
     private static FrequencyMatrix calculateFrequencies(double[][] data, Map<String, Integer> urlMap) {
         FrequencyMatrix clickFrequencyMatrix = new FrequencyMatrix(urlMap.size());
         for (Map.Entry<String, Integer> entry : urlMap.entrySet()
             ) {
-            DescriptiveStatistics da = new DescriptiveStatistics(data[entry.getValue()]);
+            SummaryStatistics da = new SummaryStatistics();
+            double[] datum = data[entry.getValue()];
+            for (double v : datum) {
+                da.addValue(v);
+            }
             double standardDeviation = da.getStandardDeviation();
             double mean = da.getMean();
-            double lowerBound = mean - 2*standardDeviation;
-            double upperBound = mean + 2*standardDeviation;
+            double lowerBound = mean - 2 * standardDeviation;
+            double upperBound = mean + 2 * standardDeviation;
             addToFrequencyMatrix(clickFrequencyMatrix,
                 entry.getKey(),
                 lowerBound,

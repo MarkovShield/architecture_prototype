@@ -56,14 +56,7 @@ public class IQRFrequencyAnalysis implements FrequencyAnalysis {
         FrequencyMatrix clickFrequencyMatrix = new FrequencyMatrix(urlMap.size());
         for (Map.Entry<String, Integer> entry : urlMap.entrySet()
             ) {
-
             DescriptiveStatistics da = new DescriptiveStatistics(data[entry.getValue()]);
-            double standardDeviation = da.getStandardDeviation();
-            double mean = da.getMean();
-            LogNormalDistribution logNormalDistribution = new LogNormalDistribution(1.2, 0.25);
-            double v1 = logNormalDistribution.density(1.2);
-            NormalDistribution normalDistribution = new NormalDistribution(mean, standardDeviation);
-            double v = normalDistribution.density(5);
             double firstQuartile = da.getPercentile(25);
             double thirdQuartile = da.getPercentile(75);
             double iqr = thirdQuartile - firstQuartile;
