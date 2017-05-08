@@ -13,18 +13,21 @@ public class Click {
     private final int urlRiskLevel;
     private final String url;
     private final Date timeStamp;
+    private final boolean validationRequired;
 
     @JsonCreator
     public Click(@JsonProperty ("sessionUUID") String sessionUUID,
                  @JsonProperty ("clickUUID") String clickUUID,
                  @JsonProperty ("url") String url,
                  @JsonProperty ("urlRiskLevel") int urlRiskLevel,
-                 @JsonProperty ("timeStamp") Date timeStamp) {
+                 @JsonProperty ("timeStamp") Date timeStamp,
+                 @JsonProperty ("validationRequired") boolean validationRequired) {
         this.sessionUUID = sessionUUID;
         this.clickUUID = clickUUID;
         this.url = url;
         this.urlRiskLevel = urlRiskLevel;
         this.timeStamp = timeStamp;
+        this.validationRequired = validationRequired;
     }
 
     public String getSessionUUID() {
@@ -39,6 +42,10 @@ public class Click {
         return timeStamp;
     }
 
+    public boolean isValidationRequired() {
+        return validationRequired;
+    }
+
     @Override
     public String toString() {
         return "Click{" +
@@ -47,6 +54,7 @@ public class Click {
             ", urlRiskLevel=" + urlRiskLevel +
             ", url='" + url + '\'' +
             ", timeStamp=" + timeStamp +
+            ", validationRequired=" + validationRequired +
             '}';
     }
 
@@ -60,6 +68,7 @@ public class Click {
         }
         Click click = (Click) o;
         return urlRiskLevel == click.urlRiskLevel &&
+            validationRequired == click.validationRequired &&
             Objects.equals(sessionUUID, click.sessionUUID) &&
             Objects.equals(clickUUID, click.clickUUID) &&
             Objects.equals(url, click.url) &&
@@ -68,7 +77,7 @@ public class Click {
 
     @Override
     public int hashCode() {
-        return Objects.hash(sessionUUID, clickUUID, urlRiskLevel, url, timeStamp);
+        return Objects.hash(sessionUUID, clickUUID, urlRiskLevel, url, timeStamp, validationRequired);
     }
 
     public String getClickUUID() {

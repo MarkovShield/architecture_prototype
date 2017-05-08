@@ -62,7 +62,7 @@ public class MarkovClickAndLoginGenerator {
                         s,
                         urlRatings.get(s),
                         Date.from(
-                            Instant.now())));
+                            Instant.now()), urlRatings.get(s) >= 2));
                 }
             );
         }
@@ -89,31 +89,31 @@ public class MarkovClickAndLoginGenerator {
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicksBeforeLogin.add(new Click(logins.get(0).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "login.html",
             UrlRating.RISK_LEVEL_MEDIUM,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicksBeforeLogin.add(new Click(logins.get(1).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicksBeforeLogin.add(new Click(logins.get(2).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicksBeforeLogin.add(new Click(logins.get(0).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "xxx.html",
             UrlRating.RISK_LEVEL_HIGH,
             Date.from(
-                Instant.now())));
+                Instant.now()), true));
 
 
         for (Click click : clicksBeforeLogin) {
@@ -130,7 +130,8 @@ public class MarkovClickAndLoginGenerator {
         }
         sleep(1000);
 
-        clicks.add(new Click(logins.get(0).getSessionUUID(), "1000", "my-secret-url", 2, Date.from(Instant.now())));
+        clicks.add(new Click(logins.get(0).getSessionUUID(), "1000", "my-secret-url", 2, Date.from(Instant.now()),
+            true));
 
         for (Click click : clicks) {
 

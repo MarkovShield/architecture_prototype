@@ -38,8 +38,6 @@ public class MarkovShieldModelUpdate {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
-
-
         Properties properties = new Properties();
         properties.setProperty("bootstrap.servers", BROKER);
         properties.setProperty("zookeeper.connect", ZOOKEEPER);
@@ -72,7 +70,7 @@ public class MarkovShieldModelUpdate {
 
         for (ValidatedClickStream clickStream : iterable) {
             MarkovRating rating = clickStream.getClickStreamValidation().getRating();
-            if (rating == MarkovRating.UNEVALUDATED || rating == MarkovRating.VALID) {
+            if (rating == MarkovRating.UNEVALUDATED || rating == MarkovRating.OK) {
                 filteredClicks.add(clickStream);
             }
         }

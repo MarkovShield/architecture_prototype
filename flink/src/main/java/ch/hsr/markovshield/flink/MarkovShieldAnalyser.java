@@ -94,7 +94,7 @@ public class MarkovShieldAnalyser {
     }
 
     private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {
-        if (clickStream.lastClick().map(click -> click.getUrlRiskLevel() >= 2).orElse(false)) {
+        if (clickStream.lastClick().map(Click::isValidationRequired).orElse(false)) {
             double score = 0;
             if (clickStream.getUserModel() != null) {
                 double frequencyValue = getFrequencyScore(clickStream);
@@ -169,7 +169,7 @@ public class MarkovShieldAnalyser {
 
     private static MarkovRating calculateMarkovFraudLevel(double rating) {
         if (rating < 100) {
-            return MarkovRating.VALID;
+            return MarkovRating.OK;
         }
         if (rating < 150) {
             return MarkovRating.SUSPICIOUS;

@@ -12,16 +12,10 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
-
-import static java.lang.Thread.sleep;
 
 public class MarkovSingleClickAndLoginGenerator {
 
@@ -36,7 +30,6 @@ public class MarkovSingleClickAndLoginGenerator {
         int sessionId = random.nextInt(1, 100000 + 1);
         String user = "Kilian";
         logins.add(new Session(String.valueOf(sessionId), user));
-
 
 
         final Properties properties = new Properties();
@@ -61,31 +54,31 @@ public class MarkovSingleClickAndLoginGenerator {
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(logins.get(0).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "login.html",
             UrlRating.RISK_LEVEL_MEDIUM,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(logins.get(0).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(logins.get(0).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "start.html",
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
         clicks.add(new Click(logins.get(0).getSessionUUID(),
             String.valueOf(random.nextInt()),
             "xxx.html",
             UrlRating.RISK_LEVEL_HIGH,
             Date.from(
-                Instant.now())));
+                Instant.now()), false));
 
 
         for (Session login : logins) {

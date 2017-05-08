@@ -20,21 +20,32 @@ public class MarkovChainTest extends TestCase {
         super.setUp();
         trainingSet = new ArrayList<>();
         List<Click> clicks = new ArrayList<>();
-        clicks.add(new Click("97572", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks.add(new Click("97572", "2", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks.add(new Click("97572", "3", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks.add(new Click("97572", "4", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks.add(new Click("97572", "5", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks.add(new Click("97572", "6", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+        clicks.add(new Click("97572", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks.add(new Click("97572", "2", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks.add(new Click("97572", "3", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks.add(new Click("97572", "4", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks.add(new Click("97572", "5", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks.add(new Click("97572", "6", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
         trainingSet.add(new ClickStream("Kilian", "97572", clicks));
         List<Click> clicks2 = new ArrayList<>();
-        clicks2.add(new Click("97573", "7", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks2.add(new Click("97573", "8", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+        clicks2.add(new Click("97573", "7", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks2.add(new Click("97573", "8", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
         trainingSet.add(new ClickStream("Kilian", "97573", clicks2));
         List<Click> clicks3 = new ArrayList<>();
-        clicks3.add(new Click("97574", "9", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks3.add(new Click("97574", "10", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L))));
-        clicks3.add(new Click("97574", "11", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+        clicks3.add(new Click("97574", "9", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks3.add(new Click("97574", "10", "news.html", 0, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
+        clicks3.add(new Click("97574", "11", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)),
+            false));
         trainingSet.add(new ClickStream("Kilian", "97574", clicks3));
     }
 
@@ -73,17 +84,17 @@ public class MarkovChainTest extends TestCase {
             "logout.html");
         double newsIndexProbabilityWithClick = train.getProbabilityForClick(new Click("1", "1",
                 "news.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+                Date.from(Instant.ofEpochMilli(1491390672752L)), false),
+            new Click("1", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)), false));
 
         double newsNewsProbabilityWithClick = train.getProbabilityForClick(new Click("1", "1",
                 "news.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "news.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+                Date.from(Instant.ofEpochMilli(1491390672752L)), false),
+            new Click("1", "1", "news.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)), false));
         double newsLogoutProbabilityWithClick = train.getProbabilityForClick(new Click("1", "1",
                 "news.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+                Date.from(Instant.ofEpochMilli(1491390672752L)), false),
+            new Click("1", "1", "logout.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)), false));
         assertEquals(newsIndexProbabilityWithClick, newsIndexProbability, 1e-3);
         assertEquals(newsNewsProbabilityWithClick, newsNewsProbability, 1e-3);
         assertEquals(newsLogoutProbabilityWithClick, newsLogoutProbability, 1e-3);
@@ -96,12 +107,12 @@ public class MarkovChainTest extends TestCase {
 
         double indexNewsProbability = train.getProbabilityForClick(new Click("1", "1",
                 "index.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "news.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+                Date.from(Instant.ofEpochMilli(1491390672752L)), false),
+            new Click("1", "1", "news.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)), false));
         double newsIndexProbability = train.getProbabilityForClick(new Click("1", "2",
                 "news.html", 1,
-                Date.from(Instant.ofEpochMilli(1491390672752L))),
-            new Click("1", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L))));
+                Date.from(Instant.ofEpochMilli(1491390672752L)), false),
+            new Click("1", "1", "index.html", 1, Date.from(Instant.ofEpochMilli(1491390672752L)), false));
 
         assertEquals(0d, indexNewsProbability, 1e-3);
         assertEquals(0d, newsIndexProbability, 1e-3);
