@@ -88,7 +88,7 @@ public class MarkovShieldAnalyser {
 
     private static FlinkKafkaProducer010<ValidatedClickStream> getKafkaValidatedClickStreamProducer() {
         return new FlinkKafkaProducer010<>(
-            "broker:9092",
+            BROKER,
             MARKOV_VALIDATED_CLICK_STREAMS,
             new ValidatedClickStreamSerializationSchema(MARKOV_VALIDATED_CLICK_STREAMS));
     }

@@ -1,6 +1,7 @@
 package ch.hsr.markovshield.models;
 
 import ch.hsr.markovshield.ml.FrequencyMatrix;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @JsonIgnoreProperties (ignoreUnknown = true)
+@JsonAutoDetect (fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class MatrixFrequencyModel implements FrequencyModel {
 
     private final FrequencyMatrix frequencyMatrix;

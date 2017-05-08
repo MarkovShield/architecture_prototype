@@ -1,8 +1,8 @@
 package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.ml.FrequencyMatrix;
+import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
-import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.UrlStore;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
@@ -14,8 +14,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
 import java.io.IOException;
-import java.sql.Date;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,18 +37,12 @@ public class MarkovModelGenerator {
         users.add("Philip");
         users.add("Matthias");
         users.add("Ivan");
-        users.add("Kilian");
 
-        ThreadLocalRandom random = ThreadLocalRandom.current();
+        IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
         for (String user : users) {
-            int transisitionModelRating = random.nextInt(1, 100);
-            int frequencyModelRating = random.nextInt(1, 100);
-            FrequencyMatrix frequencyMatrix = null;
-            UrlStore urlStore = null;
             UserModel userModel = new UserModel(user,
                 MarkovChainWithMatrix.train(Collections.emptyList()),
-                new MatrixFrequencyModel(frequencyMatrix, urlStore, Date.from(
-                    Instant.now())));
+                iqrFrequencyAnalysis.train(Collections.emptyList()));
             userModels.add(userModel);
         }
 
@@ -60,20 +52,16 @@ public class MarkovModelGenerator {
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerde.class);
 
-        properties.put("schema.registry.url", "http://localhost:8081");
-
-
-        SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 100);
 
         final KafkaProducer<String, UserModel> modelProducer = new KafkaProducer<String, UserModel>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<UserModel>(UserModel.class).serializer());
+            new JsonPOJOSerde<>(UserModel.class).serializer());
 
         final String modelTopic = "MarkovUserModels";
 
         sleep(1000);
         for (UserModel userModel : userModels) {
-            modelProducer.send(new ProducerRecord<String, UserModel>(modelTopic,
+            modelProducer.send(new ProducerRecord<>(modelTopic,
                 userModel.getUserId().toString(),
                 userModel));
             modelProducer.flush();

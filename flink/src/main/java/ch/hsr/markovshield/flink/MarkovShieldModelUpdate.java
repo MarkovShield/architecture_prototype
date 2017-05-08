@@ -1,11 +1,9 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.ml.FrequencyMatrix;
+import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.MarkovRating;
-import ch.hsr.markovshield.models.UrlStore;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -65,7 +63,6 @@ public class MarkovShieldModelUpdate {
     }
 
     private static void recreateUserModel(String key, TimeWindow timeWindow, Iterable<ValidatedClickStream> iterable, Collector<UserModel> collector) {
-        UserModel model = null;
         List<ClickStream> filteredClicks = new ArrayList<>();
 
         for (ValidatedClickStream clickStream : iterable) {
@@ -74,13 +71,11 @@ public class MarkovShieldModelUpdate {
                 filteredClicks.add(clickStream);
             }
         }
-        //Do freqency Analysis
 
-
-        FrequencyMatrix frequencyMatrix = null;
-        UrlStore urlStore = null;
-        model = new UserModel(key, MarkovChainWithMatrix.train(filteredClicks), new MatrixFrequencyModel(frequencyMatrix,
-            urlStore));
+        IQRFrequencyAnalysis frequencyAnalysis = new IQRFrequencyAnalysis();
+        UserModel model = new UserModel(key,
+            MarkovChainWithMatrix.train(filteredClicks),
+            frequencyAnalysis.train(filteredClicks));
         collector.collect(model);
 
     }
