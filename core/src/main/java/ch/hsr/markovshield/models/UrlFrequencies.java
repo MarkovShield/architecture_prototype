@@ -3,8 +3,8 @@ package ch.hsr.markovshield.models;
 public class UrlFrequencies {
 
     private final String url;
-    private int frequencyCounter;
     private final int urlRiskLevel;
+    private int frequencyCounter;
 
     public UrlFrequencies(String url, int frequencyCounter, int urlRiskLevel) {
         this.url = url;

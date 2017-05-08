@@ -1,13 +1,10 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.ClickStreamValidation;
 import ch.hsr.markovshield.models.MarkovRating;
-import ch.hsr.markovshield.models.MatrixFrequencyModel;
-import ch.hsr.markovshield.models.TransitionModel;
-import ch.hsr.markovshield.models.UrlFrequencies;
+import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -20,9 +17,6 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.streaming.connectors.redis.RedisSink;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 
@@ -96,10 +90,12 @@ public class MarkovShieldAnalyser {
     private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {
         if (clickStream.lastClick().map(Click::isValidationRequired).orElse(false)) {
             double score = 0;
-            if (clickStream.getUserModel() != null) {
-                double frequencyValue = getFrequencyScore(clickStream);
-                double transitionValue = getTransitionScore(clickStream);
-                score = frequencyValue + transitionValue;
+            UserModel userModel = clickStream.getUserModel();
+            if (userModel != null) {
+                score = userModel.getClickStreamModels()
+                    .stream()
+                    .mapToDouble(clickStreamModel -> clickStreamModel.clickStreamScore(clickStream))
+                    .sum();
             }
             MarkovRating rating = calculateMarkovFraudLevel(score);
             ClickStreamValidation clickStreamValidation = new ClickStreamValidation(clickStream.getUserName(),
@@ -118,54 +114,6 @@ public class MarkovShieldAnalyser {
                 clickStream.getClicks());
         }
     }
-
-    private static double getTransitionScore(ValidationClickStream clickStream) {
-        double transitionScore = 0;
-        TransitionModel transitionModel = clickStream.getUserModel().getTransitionModel();
-        List<Click> clicks = clickStream.getClicks();
-        for (int i = 0; i < clicks.size(); i++) {
-            double probabilityForClick;
-            if (i == clicks.size() - 1) {
-                probabilityForClick = transitionModel.getProbabilityForClick(clicks.get(i).getUrl(),
-                    MarkovChainWithMatrix.END_OF_CLICK_STREAM);
-            } else {
-                probabilityForClick = transitionModel.getProbabilityForClick(clicks.get(i), clicks.get(i + 1));
-            }
-            transitionScore += (1 - probabilityForClick) * clicks.get(i).getUrlRiskLevel();
-        }
-        return transitionScore;
-    }
-
-    private static double getFrequencyScore(ValidationClickStream clickStream) {
-        double frequencyScore = 0;
-        HashMap<String, UrlFrequencies> frequencies = getFrequencies(clickStream);
-        MatrixFrequencyModel frequencyModel = clickStream.getUserModel()
-            .getFrequencyModel();
-        for (Map.Entry<String, UrlFrequencies> entry : frequencies.entrySet()
-            ) {
-            Integer currentFrequencies = entry.getValue().getFrequencyCounter();
-            String currentUrl = entry.getKey();
-            if (frequencyModel.getFrequencyLowerBound(currentUrl) < currentFrequencies || frequencyModel.getFrequencyUpperBound(
-                currentUrl) > currentFrequencies) {
-                frequencyScore += entry.getValue().getUrlRiskLevel() + 1;
-            }
-        }
-        return frequencyScore;
-    }
-
-    private static HashMap<String, UrlFrequencies> getFrequencies(ValidationClickStream clickStream) {
-        HashMap<String, UrlFrequencies> frequencyMap = new HashMap<>();
-        for (Click click : clickStream.getClicks()) {
-            String url = click.getUrl();
-            if (frequencyMap.containsKey(url)) {
-                frequencyMap.get(url).increaseFrequencyCounter();
-            } else {
-                frequencyMap.put(url, new UrlFrequencies(url, 1, click.getUrlRiskLevel()));
-            }
-        }
-        return frequencyMap;
-    }
-
 
     private static MarkovRating calculateMarkovFraudLevel(double rating) {
         if (rating < 100) {

@@ -44,6 +44,23 @@ public class NormalDistributionFrequencyAnalysis implements FrequencyAnalysis {
         }
     }
 
+    private static void updateClickCount(HashMap<String, HashMap<String, Double>> clickCountMatrix, Click click) {
+        String sessionUUID = click.getSessionUUID();
+        String url = click.getUrl();
+        if (!clickCountMatrix.containsKey(url)) {
+            HashMap<String, Double> frequencyMap = new HashMap<>();
+            frequencyMap.put(sessionUUID, 1.0);
+            clickCountMatrix.put(url, frequencyMap);
+        } else {
+            HashMap<String, Double> frequencyMap = clickCountMatrix.get(url);
+            if (frequencyMap.containsKey(sessionUUID)) {
+                frequencyMap.put(sessionUUID, frequencyMap.get(sessionUUID) + 1);
+            } else {
+                frequencyMap.put(sessionUUID, 1.0);
+            }
+        }
+    }
+
     private static FrequencyMatrix calculateFrequencies(double[][] data, Map<String, Integer> urlMap) {
         FrequencyMatrix clickFrequencyMatrix = new FrequencyMatrix(urlMap.size());
         for (Map.Entry<String, Integer> entry : urlMap.entrySet()
@@ -76,23 +93,6 @@ public class NormalDistributionFrequencyAnalysis implements FrequencyAnalysis {
     private static int getIndexByUrl(Map<String, Integer> urlMap, String url) {
         Integer integer = urlMap.get(url);
         return integer;
-    }
-
-    private static void updateClickCount(HashMap<String, HashMap<String, Double>> clickCountMatrix, Click click) {
-        String sessionUUID = click.getSessionUUID();
-        String url = click.getUrl();
-        if (!clickCountMatrix.containsKey(url)) {
-            HashMap<String, Double> frequencyMap = new HashMap<>();
-            frequencyMap.put(sessionUUID, 1.0);
-            clickCountMatrix.put(url, frequencyMap);
-        } else {
-            HashMap<String, Double> frequencyMap = clickCountMatrix.get(url);
-            if (frequencyMap.containsKey(sessionUUID)) {
-                frequencyMap.put(sessionUUID, frequencyMap.get(sessionUUID) + 1);
-            } else {
-                frequencyMap.put(sessionUUID, 1.0);
-            }
-        }
     }
 
 }

@@ -1,10 +1,10 @@
 package ch.hsr.markovshield.ml;
 
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.FrequencyModel;
+import ch.hsr.markovshield.models.ClickStreamModel;
 
 
 public interface FrequencyAnalysis {
 
-    FrequencyModel train(Iterable<ClickStream> stream);
+    ClickStreamModel train(Iterable<ClickStream> stream);
 }

@@ -36,5 +36,4 @@ public class ValidatedClickStream extends ClickStream {
 
     }
 
-
 }

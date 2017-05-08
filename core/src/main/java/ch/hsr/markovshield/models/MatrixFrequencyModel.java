@@ -7,12 +7,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 @JsonIgnoreProperties (ignoreUnknown = true)
 @JsonAutoDetect (fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public class MatrixFrequencyModel implements FrequencyModel {
+public class MatrixFrequencyModel implements ClickStreamModel {
 
     private final FrequencyMatrix frequencyMatrix;
     private final UrlStore urlStore;
@@ -47,11 +49,6 @@ public class MatrixFrequencyModel implements FrequencyModel {
     }
 
     @Override
-    public int frequencyRating(ClickStream clickStream) {
-        return 0;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -74,10 +71,6 @@ public class MatrixFrequencyModel implements FrequencyModel {
         return getFrequencyLowerBound(currentClick.getUrl());
     }
 
-    private Optional<Integer> getIndexByUrl(String url) {
-        return this.urlStore.get(url);
-    }
-
     public double getFrequencyLowerBound(String currentUrl) {
         Optional<Integer> sourceIndex = getIndexByUrl(currentUrl);
         double lowerBound;
@@ -89,8 +82,28 @@ public class MatrixFrequencyModel implements FrequencyModel {
         return lowerBound;
     }
 
+    private Optional<Integer> getIndexByUrl(String url) {
+        return this.urlStore.get(url);
+    }
+
     public double getFrequencyUpperBound(Click currentClick) {
         return getFrequencyLowerBound(currentClick.getUrl());
+    }
+
+    @Override
+    public double clickStreamScore(ClickStream clickStream) {
+        double frequencyScore = 0;
+        HashMap<String, UrlFrequencies> frequencies = getFrequencies(clickStream);
+        for (Map.Entry<String, UrlFrequencies> entry : frequencies.entrySet()
+            ) {
+            Integer currentFrequencies = entry.getValue().getFrequencyCounter();
+            String currentUrl = entry.getKey();
+            if (getFrequencyLowerBound(currentUrl) < currentFrequencies || getFrequencyUpperBound(
+                currentUrl) > currentFrequencies) {
+                frequencyScore += entry.getValue().getUrlRiskLevel() + 1;
+            }
+        }
+        return frequencyScore;
     }
 
     public double getFrequencyUpperBound(String currentUrl) {
@@ -102,5 +115,18 @@ public class MatrixFrequencyModel implements FrequencyModel {
             lowerBound = 0;
         }
         return lowerBound;
+    }
+
+    private static HashMap<String, UrlFrequencies> getFrequencies(ClickStream clickStream) {
+        HashMap<String, UrlFrequencies> frequencyMap = new HashMap<>();
+        for (Click click : clickStream.getClicks()) {
+            String url = click.getUrl();
+            if (frequencyMap.containsKey(url)) {
+                frequencyMap.get(url).increaseFrequencyCounter();
+            } else {
+                frequencyMap.put(url, new UrlFrequencies(url, 1, click.getUrlRiskLevel()));
+            }
+        }
+        return frequencyMap;
     }
 }

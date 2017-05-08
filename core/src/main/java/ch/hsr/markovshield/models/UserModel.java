@@ -2,46 +2,63 @@ package ch.hsr.markovshield.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 
 public class UserModel {
 
     private final String userId;
-    private final TransitionModel transitionModel;
-    private final MatrixFrequencyModel frequencyModel;
+    private final List<ClickStreamModel> clickStreamModels;
 
     @JsonCreator
-    public UserModel(
+    private UserModel(
         @JsonProperty ("userId") String userId,
-        @JsonProperty ("transitionModel") TransitionModel transitionModel,
-        @JsonProperty ("frequencyModel") MatrixFrequencyModel frequencyModel) {
+        @JsonProperty ("clickStreamModels") List<ClickStreamModel> clickStreamModels
+    ) {
         this.userId = userId;
-        this.transitionModel = transitionModel;
-        this.frequencyModel = frequencyModel;
+        this.clickStreamModels = clickStreamModels;
     }
 
+    public UserModel(String userId, ClickStreamModel... models) {
+        this.userId = userId;
+        this.clickStreamModels = new ArrayList<>();
+        for (ClickStreamModel model : models
+            ) {
+            clickStreamModels.add(model);
+        }
+    }
+
+    public UserModel(String userId, TransitionModel transitionModel, MatrixFrequencyModel frequencyModel) {
+        this.userId = userId;
+        this.clickStreamModels = new ArrayList<>();
+        this.clickStreamModels.add(transitionModel);
+        this.clickStreamModels.add(frequencyModel);
+    }
 
     public String getUserId() {
         return userId;
     }
 
-
-    public TransitionModel getTransitionModel() {
-        return transitionModel;
-    }
-
-
-    public MatrixFrequencyModel getFrequencyModel() {
-        return frequencyModel;
+    public List<ClickStreamModel> getClickStreamModels() {
+        return clickStreamModels;
     }
 
     public Date timeCreated() {
-        if (this.frequencyModel.getTimeCreated().before(this.transitionModel.getTimeCreated())) {
-            return this.frequencyModel.getTimeCreated();
-        }
-        return this.transitionModel.getTimeCreated();
+        return this.clickStreamModels.stream()
+            .map(ClickStreamModel::getTimeCreated)
+            .max(Date::compareTo)
+            .orElse(new Date());
+    }
+
+    @Override
+    public String toString() {
+        return "UserModel{" +
+            "userId='" + userId + '\'' +
+            ", clickStreamModels=" + clickStreamModels +
+            '}';
     }
 
     @Override
@@ -54,21 +71,11 @@ public class UserModel {
         }
         UserModel userModel = (UserModel) o;
         return Objects.equals(userId, userModel.userId) &&
-            Objects.equals(transitionModel, userModel.transitionModel) &&
-            Objects.equals(frequencyModel, userModel.frequencyModel);
+            Objects.equals(clickStreamModels, userModel.clickStreamModels);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, transitionModel, frequencyModel);
-    }
-
-    @Override
-    public String toString() {
-        return "UserModel{" +
-            "userId='" + userId + '\'' +
-            ", transitionModel=" + transitionModel +
-            ", frequencyModel=" + frequencyModel +
-            '}';
+        return Objects.hash(userId, clickStreamModels);
     }
 }

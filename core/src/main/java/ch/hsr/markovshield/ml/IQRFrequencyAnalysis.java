@@ -5,14 +5,22 @@ import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.UrlStore;
-import org.apache.commons.math3.distribution.LogNormalDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import java.util.HashMap;
 import java.util.Map;
 
 public class IQRFrequencyAnalysis implements FrequencyAnalysis {
 
+
+    private static Map<String, Integer> getMappings(HashMap<String, HashMap<String, Double>> clickCountMatrix) {
+        HashMap<String, Integer> urlMapping = new HashMap<>();
+        int urlCount = 0;
+        for (String url : clickCountMatrix.keySet()) {
+            urlMapping.put(url, urlCount++);
+        }
+        urlMapping.put("endOfClickStream", urlCount);
+        return urlMapping;
+    }
 
     public MatrixFrequencyModel train(Iterable<ClickStream> stream) {
         HashMap<String, HashMap<String, Double>> clickCountMatrix = new HashMap<>();
@@ -40,16 +48,6 @@ public class IQRFrequencyAnalysis implements FrequencyAnalysis {
         }
         FrequencyMatrix clickProbabilityMatrix = calculateFrequencies(clicks, urlMap);
         return new MatrixFrequencyModel(clickProbabilityMatrix, new UrlStore(urlMap));
-    }
-
-    private static Map<String, Integer> getMappings(HashMap<String, HashMap<String, Double>> clickCountMatrix) {
-        HashMap<String, Integer> urlMapping = new HashMap<>();
-        int urlCount = 0;
-        for (String url : clickCountMatrix.keySet()) {
-            urlMapping.put(url, urlCount++);
-        }
-        urlMapping.put("endOfClickStream", urlCount);
-        return urlMapping;
     }
 
     private static FrequencyMatrix calculateFrequencies(double[][] data, Map<String, Integer> urlMap) {
