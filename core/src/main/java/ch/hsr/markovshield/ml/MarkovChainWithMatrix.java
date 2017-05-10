@@ -11,6 +11,8 @@ import java.util.Map;
 public class MarkovChainWithMatrix {
 
 
+    public static final String END_OF_CLICK_STREAM = "endOfClickStream";
+
     public static TransitionModel train(Iterable<ClickStream> stream) {
 
         HashMap<String, HashMap<String, Integer>> clickCountMatrix = new HashMap<>();
@@ -19,7 +21,7 @@ public class MarkovChainWithMatrix {
             Click[] clicks = clickStream.getClicks().toArray(new Click[]{});
             for (int i = 0; i <= clicks.length - 1; i++) {
                 if (i == clicks.length - 1) {
-                    updateClickCount(clickCountMatrix, clicks[i].getUrl(), "endOfClickStream");
+                    updateClickCount(clickCountMatrix, clicks[i].getUrl(), END_OF_CLICK_STREAM);
                 } else {
                     updateClickCount(clickCountMatrix, clicks[i].getUrl(), clicks[i + 1].getUrl());
                 }

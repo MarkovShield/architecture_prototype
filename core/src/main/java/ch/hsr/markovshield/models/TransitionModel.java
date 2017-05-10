@@ -1,16 +1,18 @@
 package ch.hsr.markovshield.models;
 
+import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.ml.TransitionMatrix;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @JsonAutoDetect (fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public class TransitionModel {
+public class TransitionModel implements ClickStreamModel {
 
     private final TransitionMatrix transitionMatrix;
     private final UrlStore urlStore;
@@ -44,26 +46,6 @@ public class TransitionModel {
         return timeCreated;
     }
 
-    public double getProbabilityForClick(Click currentClick, Click newClick) {
-        return getProbabilityForClick(currentClick.getUrl(), newClick.getUrl());
-    }
-
-    public double getProbabilityForClick(String currentUrl, String newUrl) {
-        Optional<Integer> sourceIndex = getIndexByUrl(currentUrl);
-        Optional<Integer> targetIndex = getIndexByUrl(newUrl);
-        double transistionProbability;
-        if (sourceIndex.isPresent() && targetIndex.isPresent()) {
-            transistionProbability = transitionMatrix.get(sourceIndex.get(), targetIndex.get());
-        } else {
-            transistionProbability = 0;
-        }
-        return transistionProbability;
-    }
-
-    private Optional<Integer> getIndexByUrl(String url) {
-        return this.urlStore.get(url);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -90,5 +72,42 @@ public class TransitionModel {
             ", urlStore=" + urlStore +
             ", timeCreated=" + timeCreated +
             '}';
+    }
+
+    @Override
+    public double clickStreamScore(ClickStream clickStream) {
+        double transitionScore = 0;
+        List<Click> clicks = clickStream.getClicks();
+        for (int i = 0; i < clicks.size(); i++) {
+            double probabilityForClick;
+            if (i == clicks.size() - 1) {
+                probabilityForClick = getProbabilityForClick(clicks.get(i).getUrl(),
+                    MarkovChainWithMatrix.END_OF_CLICK_STREAM);
+            } else {
+                probabilityForClick = getProbabilityForClick(clicks.get(i), clicks.get(i + 1));
+            }
+            transitionScore += (1 - probabilityForClick) * clicks.get(i).getUrlRiskLevel();
+        }
+        return transitionScore;
+    }
+
+    public double getProbabilityForClick(Click currentClick, Click newClick) {
+        return getProbabilityForClick(currentClick.getUrl(), newClick.getUrl());
+    }
+
+    public double getProbabilityForClick(String currentUrl, String newUrl) {
+        Optional<Integer> sourceIndex = getIndexByUrl(currentUrl);
+        Optional<Integer> targetIndex = getIndexByUrl(newUrl);
+        double transistionProbability;
+        if (sourceIndex.isPresent() && targetIndex.isPresent()) {
+            transistionProbability = transitionMatrix.get(sourceIndex.get(), targetIndex.get());
+        } else {
+            transistionProbability = 0;
+        }
+        return transistionProbability;
+    }
+
+    private Optional<Integer> getIndexByUrl(String url) {
+        return this.urlStore.get(url);
     }
 }

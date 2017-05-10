@@ -39,6 +39,7 @@ public class ClickStream {
         return clicks.stream().map(Click::getTimeStamp).max(Date::compareTo).orElse(new Date(0));
     }
 
+
     public Optional<Click> lastClick() {
         if (clicks.size() == 0) {
             return Optional.empty();
