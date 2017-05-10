@@ -58,7 +58,7 @@ public class MarkovShieldClickstreams {
         streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1000);
-        streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "kafka-state");
+        streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "kafka-store");
         streamsConfiguration.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
         return streamsConfiguration;
     }

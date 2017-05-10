@@ -4,4 +4,4 @@ target
 deployment/zk-data
 deployment/zk-txt-logs
 deployment/kafka-data
-deployment/kafka-store
+kafka-store
