@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -93,12 +94,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
         //
         // Step 2: Produce some input data to the input topic.
         //
-        Properties producerConfig = new Properties();
-        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
-        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
-        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        Properties producerConfig = getProducerProperties();
 
         String session1 = "1";
         String session2 = "2";
@@ -187,13 +183,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
         //
         // Step 3: Verify the application's output data.
         //
-        Properties consumerConfig = new Properties();
-        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
-            "markov-chlick-stream-processing-integration-test-standard-consumer");
-        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
+        Properties consumerConfig = getConsumerProperties();
         ArrayList<KeyValue<String, ValidationClickStream>> expectedClickStreams = new ArrayList<>();
         expectedClickStreams.add(new KeyValue<>(user1,
             new ValidationClickStream(user1,
@@ -246,6 +236,17 @@ public class MarkovClickStreamProcessingIntegrationTest {
         assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
     }
 
+    private Properties getConsumerProperties() {
+        Properties consumerConfig = new Properties();
+        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
+        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
+            "markov-chlick-stream-processing-integration-test-standard-consumer");
+        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
+        return consumerConfig;
+    }
+
     @Test
     public void shouldAggregateClicksToValidationClickStreamTopicWithLateLogin() throws Exception {
 
@@ -259,12 +260,10 @@ public class MarkovClickStreamProcessingIntegrationTest {
         //
         // Step 2: Produce some input data to the input topic.
         //
-        Properties producerConfig = new Properties();
-        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
-        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
-        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        Properties producerConfig = getProducerProperties();
+
+
+        Properties consumerConfig = getConsumerProperties();
 
         String session1 = "1";
         String session2 = "2";
@@ -313,8 +312,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
             producerConfig,
             stringSerde.serializer(),
             clickSerde.serializer());
-
-
+        sleep(10000);
         List<Session> logins = new ArrayList<>();
         Session login1 = new Session(session1, user1);
         logins.add(login1);
@@ -356,13 +354,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
         //
         // Step 3: Verify the application's output data.
         //
-        Properties consumerConfig = new Properties();
-        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG,
-            "markov-chlick-stream-processing-integration-test-standard-consumer");
-        consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
+
         ArrayList<KeyValue<String, ValidationClickStream>> expectedClickStreams = new ArrayList<>();
         String UNKOWN_USER = "--------------------NOT FOUND---------------------------";
         expectedClickStreams.add(new KeyValue<>(UNKOWN_USER,
@@ -404,6 +396,16 @@ public class MarkovClickStreamProcessingIntegrationTest {
         assertThat(actualClickStreams, hasSize(4));
         assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
 
+    }
+
+    private Properties getProducerProperties() {
+        Properties producerConfig = new Properties();
+        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
+        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
+        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
+        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return producerConfig;
     }
 
 }
