@@ -36,7 +36,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -336,7 +335,6 @@ public class MarkovClickStreamProcessingIntegrationTest {
         assertThat(intermediateClickStreams, hasSize(2));
 
 
-
         List<Session> logins = new ArrayList<>();
         Session login1 = new Session(session1, user1);
         logins.add(login1);
@@ -373,8 +371,6 @@ public class MarkovClickStreamProcessingIntegrationTest {
             producerConfig,
             stringSerde.serializer(),
             clickSerde.serializer());
-
-
 
 
         //
