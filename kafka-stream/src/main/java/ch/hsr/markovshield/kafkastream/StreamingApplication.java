@@ -2,6 +2,7 @@ package ch.hsr.markovshield.kafkastream;
 
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
+import org.apache.kafka.streams.state.HostInfo;
 import java.util.Properties;
 
 /**
@@ -18,15 +19,38 @@ public class StreamingApplication {
         this.builder = builder;
     }
 
-    public void startStreamingApp() {
+    public void startStreamingApp() throws Exception {
         final KafkaStreams streams = new KafkaStreams(builder, streamConfiguration);
         streams.cleanUp();
         streams.start();
+
+        final int restEndpointPort = Integer.valueOf("7777");
+        final String restEndpointHostname = "localhost";
+        final HostInfo restEndpoint = new HostInfo(restEndpointHostname, restEndpointPort);
+
+        System.out.println("REST endpoint at http://" + restEndpointHostname + ":" + restEndpointPort);
+        final MarkovRestService restService = startRestProxy(streams, restEndpoint);
+
         // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        addShutdown(streams);
+        addShutdown(streams, restService);
     }
 
-    private static void addShutdown(KafkaStreams streams) {
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    private static void addShutdown(KafkaStreams streams, MarkovRestService restService) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                restService.stop();
+                streams.close();
+            } catch (Exception e) {
+                // ignored
+            }
+        }));
+    }
+
+    static MarkovRestService startRestProxy(final KafkaStreams streams, final HostInfo hostInfo)
+        throws Exception {
+        final MarkovRestService
+            interactiveQueriesRestService = new MarkovRestService(streams, hostInfo);
+        interactiveQueriesRestService.start();
+        return interactiveQueriesRestService;
     }
 }

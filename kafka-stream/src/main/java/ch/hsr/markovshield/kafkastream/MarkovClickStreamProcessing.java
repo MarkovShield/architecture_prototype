@@ -32,6 +32,8 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     public static final JsonPOJOSerde<Session> sessionSerde = new JsonPOJOSerde<>(Session.class);
     public static final JsonPOJOSerde<UserModel> userModelSerde = new JsonPOJOSerde<>(UserModel.class);
     public static final JsonPOJOSerde<ClickStream> clickStreamSerde = new JsonPOJOSerde<>(ClickStream.class);
+    public static final String MARKOV_LOGIN_STORE = "MarkovLoginStore";
+    public static final String MARKOV_USER_MODEL_STORE = "MarkovUserModelStore";
 
     private static ClickStream getInitialClickStream(Click click, Session session) {
         System.out.println("---------------------");
@@ -80,14 +82,6 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
 
         outputClickstreamsForAnalysis(clickStreamsWithModel);
 
-        stringValidationClickStreamKStream.print();
-        /*
-        userModels.foreach((key, value) -> System.out.println("UserModel: " + key + " " + value.toString()));
-        sessions.foreach((key, value) -> System.out.println("Session: " + key + " " + value.toString()));
-        */
-        views.foreach((key, value) -> System.out.println("Click: " + key + " " + value.toString()));
-        clickStreamsWithModel.print();
-
         return builder;
     }
 
@@ -133,14 +127,14 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
             .globalTable(stringSerde,
                 userModelSerde,
                 MARKOV_USER_MODEL_TOPIC,
-                "MarkovUserModelStore");
+                MARKOV_USER_MODEL_STORE);
     }
 
     private static GlobalKTable<String, Session> getSessionTable(KStreamBuilder builder) {
         return builder.globalTable(stringSerde,
             sessionSerde,
             MARKOV_LOGIN_TOPIC,
-            "MarkovLoginStore");
+            MARKOV_LOGIN_STORE);
     }
 
 }
