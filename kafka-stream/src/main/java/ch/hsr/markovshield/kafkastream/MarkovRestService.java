@@ -152,7 +152,7 @@ public class MarkovRestService {
             ) {
             if (!thisHost(info)) {
                 List<T> list = fetchValueFromOtherHost(info, path);
-                allModels.addAll(list)
+                allModels.addAll(list);
             }
         }
         return allModels;
