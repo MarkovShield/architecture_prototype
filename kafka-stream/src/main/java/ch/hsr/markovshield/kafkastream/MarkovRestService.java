@@ -151,8 +151,8 @@ public class MarkovRestService {
         for (HostStoreInfo info : hostStoreInfos
             ) {
             if (!thisHost(info)) {
-                List<UserModel> list = fetchValueFromOtherHost(info, path);
-                allModels.addAll(allModels);
+                List<T> list = fetchValueFromOtherHost(info, path);
+                allModels.addAll(list)
             }
         }
         return allModels;
