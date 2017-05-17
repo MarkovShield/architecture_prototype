@@ -322,7 +322,21 @@ public class MarkovClickStreamProcessingIntegrationTest {
             producerConfig,
             stringSerde.serializer(),
             clickSerde.serializer());
-        sleep(10000);
+
+
+        List<KeyValue<String, ValidationClickStream>> intermediateClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
+            consumerConfig,
+            analysisTopic,
+            2,
+            30 * 1000L,
+
+            new StringDeserializer(),
+            clickStreamValidationSerde.deserializer()
+        );
+        assertThat(intermediateClickStreams, hasSize(2));
+
+
+
         List<Session> logins = new ArrayList<>();
         Session login1 = new Session(session1, user1);
         logins.add(login1);
@@ -361,6 +375,8 @@ public class MarkovClickStreamProcessingIntegrationTest {
             clickSerde.serializer());
 
 
+
+
         //
         // Step 3: Verify the application's output data.
         //
@@ -396,12 +412,13 @@ public class MarkovClickStreamProcessingIntegrationTest {
         List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
             analysisTopic,
-            4,
+            2,
             30 * 1000L,
 
             new StringDeserializer(),
             clickStreamValidationSerde.deserializer()
         );
+        actualClickStreams.addAll(intermediateClickStreams);
         streams.close();
         assertThat(actualClickStreams, hasSize(4));
         assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
