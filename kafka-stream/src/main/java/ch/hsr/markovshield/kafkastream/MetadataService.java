@@ -37,6 +37,7 @@ public class MetadataService {
 
     /**
      * Get the metadata for all of the instances of this Kafka Streams application
+     *
      * @return List of {@link HostStoreInfo}
      */
     public List<HostStoreInfo> streamsMetadata() {
@@ -53,10 +54,17 @@ public class MetadataService {
             .collect(Collectors.toList());
     }
 
+    public List<HostStoreInfo> streamsMetadata(String storeName) {
+        // Get metadata for all of the instances of this Kafka Streams application
+        final Collection<StreamsMetadata> metadata = streams.allMetadataForStore(storeName);
+        return mapInstancesToHostStoreInfo(metadata);
+    }
+
     /**
      * Get the metadata for all instances of this Kafka Streams application that currently
      * has the provided store.
-     * @param store   The store to locate
+     *
+     * @param store The store to locate
      * @return List of {@link HostStoreInfo}
      */
     public List<HostStoreInfo> streamsMetadataForStore(final String store) {
@@ -68,8 +76,9 @@ public class MetadataService {
     /**
      * Find the metadata for the instance of this Kafka Streams Application that has the given
      * store and would have the given key if it exists.
-     * @param store   Store to find
-     * @param key     The key to find
+     *
+     * @param store Store to find
+     * @param key   The key to find
      * @return {@link HostStoreInfo}
      */
     public <K> HostStoreInfo streamsMetadataForStoreAndKey(final String store,
@@ -77,6 +86,7 @@ public class MetadataService {
                                                            final Serializer<K> serializer) {
         // Get metadata for the instances of this Kafka Streams application hosting the store and
         // potentially the value for key
+
         final StreamsMetadata metadata = streams.metadataForKey(store, key, serializer);
         if (metadata == null) {
             throw new NotFoundException();

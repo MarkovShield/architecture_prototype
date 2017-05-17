@@ -18,7 +18,7 @@ import java.util.Set;
 /**
  * A simple bean that can be JSON serialized via Jersey. Represents a KafkaStreams instance
  * that has a set of state stores. See {@link WordCountInteractiveQueriesRestService} for how it is used.
- *
+ * <p>
  * We use this JavaBean based approach as it fits nicely with JSON serialization provided by
  * jax-rs/jersey
  */

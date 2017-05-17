@@ -9,7 +9,9 @@ import ch.hsr.markovshield.models.UserModel;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.state.HostInfo;
+import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.eclipse.jetty.server.Server;
@@ -27,6 +29,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.List;
 
 @Path ("markovShield")
@@ -69,13 +72,13 @@ public class MarkovRestService {
 
 
     @GET
-    @Path ("/usermodel/{user}")
+    @Path ("/usermodels/{user}")
     @Produces (MediaType.APPLICATION_JSON)
     public UserModel getUserModelByUser(@PathParam ("user") final String user) {
 
         // The genre might be hosted on another instance. We need to find which instance it is on
         // and then perform a remote lookup if necessary.
-        return getValueFromAnyStore(user, MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE, "usermodel/" + user);
+        return getValueFromAnyStore(user, MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE, "usermodels/" + user);
 
     }
 
@@ -122,7 +125,65 @@ public class MarkovRestService {
     }
 
     @GET
-    @Path ("/session/{sessionId}")
+    @Path ("/usermodels")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<UserModel> getAllUserModels() {
+
+        // The genre might be hosted on another instance. We need to find which instance it is on
+        // and then perform a remote lookup if necessary.
+        List<UserModel> allValuesFromOtherStores = getAllValuesFromAllStores(
+            MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE,
+            "/local/usermodels");
+        return allValuesFromOtherStores;
+
+    }
+
+    private <T> List<T> getAllValuesFromAllStores(String store, String path) {
+        List<T> allValuesFromOtherStores = getAllValuesFromOtherStores(store,
+            path);
+        allValuesFromOtherStores.addAll(getAllValuesFromLocalStore(store));
+        return allValuesFromOtherStores;
+    }
+
+    private <T> List<T> getAllValuesFromOtherStores(String markovUserModelStore, String path) {
+        List<HostStoreInfo> hostStoreInfos = metadataService.streamsMetadata(markovUserModelStore);
+        List<T> allModels = new ArrayList<>();
+        for (HostStoreInfo info : hostStoreInfos
+            ) {
+            if (!thisHost(info)) {
+                List<UserModel> list = fetchValueFromOtherHost(info, path);
+                allModels.addAll(allModels);
+            }
+        }
+        return allModels;
+    }
+
+    private <T> List<T> getAllValuesFromLocalStore(final String storeName) {
+        final ReadOnlyKeyValueStore<String, T> userModels =
+            streams.store(storeName, QueryableStoreTypes.<String, T>keyValueStore());
+
+        List<T> allValues = new ArrayList<>();
+        KeyValueIterator<String, T> all = userModels.all();
+        for (KeyValueIterator<String, T> it = all; it.hasNext(); ) {
+            KeyValue<String, T> x = it.next();
+            allValues.add(x.value);
+        }
+        return allValues;
+    }
+
+    @GET
+    @Path ("/local/usermodels")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<UserModel> getAllLocalUserModels() {
+
+        // The genre might be hosted on another instance. We need to find which instance it is on
+        // and then perform a remote lookup if necessary.
+        return getAllValuesFromLocalStore(MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE);
+
+    }
+
+    @GET
+    @Path ("/sessions/{sessionId}")
     @Produces (MediaType.APPLICATION_JSON)
     public Session getSession(@PathParam ("sessionId") final String sessionId) {
 
@@ -130,8 +191,19 @@ public class MarkovRestService {
         // and then perform a remote lookup if necessary.
         return getValueFromAnyStore(sessionId,
             MarkovClickStreamProcessing.MARKOV_LOGIN_STORE,
-            "session/" + sessionId);
+            "sessions/" + sessionId);
 
+    }
+
+    @GET
+    @Path ("/sessions")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<Session> getAllSession() {
+
+        // The genre might be hosted on another instance. We need to find which instance it is on
+        // and then perform a remote lookup if necessary.
+
+        return getAllValuesFromAllStores(MarkovClickStreamProcessing.MARKOV_LOGIN_STORE, "/local/sessions");
     }
 
     /**
