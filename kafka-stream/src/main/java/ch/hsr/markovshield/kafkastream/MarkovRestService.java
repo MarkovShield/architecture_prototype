@@ -55,7 +55,7 @@ public class MarkovRestService {
      * demonstrate how a developer can use the Interactive Queries APIs exposed by Kafka Streams to
      * locate and query the State Stores within a Kafka Streams Application.
      */
-
+    private final String ROOT_PATH = "markovShield";
     private final KafkaStreams streams;
     private final MetadataService metadataService;
     private final HostInfo hostInfo;
@@ -78,11 +78,12 @@ public class MarkovRestService {
 
         // The genre might be hosted on another instance. We need to find which instance it is on
         // and then perform a remote lookup if necessary.
-        return getValueFromAnyStore(user, MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE, "usermodels/" + user);
+        return getValueFromAnyStore(user, MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE, "usermodels/" + user,
+            UserModel.class);
 
     }
 
-    private <T> T getValueFromAnyStore(String key, String markovLoginStore, String path) {
+    private <T> T getValueFromAnyStore(String key, String markovLoginStore, String path, Class<T> classType) {
         final HostStoreInfo
             host =
             metadataService.streamsMetadataForStoreAndKey(markovLoginStore, key, new
@@ -90,7 +91,7 @@ public class MarkovRestService {
 
         // genre is on another instance. call the other instance to fetch the data.
         if (!thisHost(host)) {
-            return fetchValueFromOtherHost(host, path);
+            return fetchValueFromOtherHost(host, path, new GenericType<>(classType));
         }
 
         // genre is on this instance
@@ -102,11 +103,12 @@ public class MarkovRestService {
             host.getPort() == hostInfo.port();
     }
 
-    private <T> T fetchValueFromOtherHost(final HostStoreInfo host, final String path) {
-        return client.target(String.format("http://%s:%d/%s", host.getHost(), host.getPort(), path))
+    private <T> T fetchValueFromOtherHost(final HostStoreInfo host, final String path, GenericType<T> classType) {
+        String formattedUrl = String.format("http://%s:%d/%s/%s", host.getHost(), host.getPort(), ROOT_PATH, path);
+        System.out.println(formattedUrl);
+        return client.target(formattedUrl)
             .request(MediaType.APPLICATION_JSON_TYPE)
-            .get(new GenericType<T>() {
-            });
+            .get(classType);
     }
 
     private <T> T getValueFromStore(final String key,
@@ -133,7 +135,7 @@ public class MarkovRestService {
         // and then perform a remote lookup if necessary.
         List<UserModel> allValuesFromOtherStores = getAllValuesFromAllStores(
             MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE,
-            "/local/usermodels");
+            "local/usermodels");
         return allValuesFromOtherStores;
 
     }
@@ -151,7 +153,9 @@ public class MarkovRestService {
         for (HostStoreInfo info : hostStoreInfos
             ) {
             if (!thisHost(info)) {
-                List<T> list = fetchValueFromOtherHost(info, path);
+                GenericType<List<T>> genericType = new GenericType<List<T>>() {
+                };
+                List<T> list = fetchValueFromOtherHost(info, path, genericType);
                 allModels.addAll(list);
             }
         }
@@ -191,7 +195,7 @@ public class MarkovRestService {
         // and then perform a remote lookup if necessary.
         return getValueFromAnyStore(sessionId,
             MarkovClickStreamProcessing.MARKOV_LOGIN_STORE,
-            "sessions/" + sessionId);
+            "sessions/" + sessionId, Session.class);
 
     }
 
@@ -203,7 +207,18 @@ public class MarkovRestService {
         // The genre might be hosted on another instance. We need to find which instance it is on
         // and then perform a remote lookup if necessary.
 
-        return getAllValuesFromAllStores(MarkovClickStreamProcessing.MARKOV_LOGIN_STORE, "/local/sessions");
+        return getAllValuesFromAllStores(MarkovClickStreamProcessing.MARKOV_LOGIN_STORE, "local/sessions");
+    }
+
+    @GET
+    @Path ("local/sessions")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<Session> getLocalSession() {
+
+        // The genre might be hosted on another instance. We need to find which instance it is on
+        // and then perform a remote lookup if necessary.
+
+        return getAllValuesFromLocalStore(MarkovClickStreamProcessing.MARKOV_LOGIN_STORE);
     }
 
     /**

@@ -19,16 +19,11 @@ public class StreamingApplication {
         this.builder = builder;
     }
 
-    public void startStreamingApp() throws Exception {
+    public void startStreamingApp(HostInfo restEndpoint) throws Exception {
         final KafkaStreams streams = new KafkaStreams(builder, streamConfiguration);
         streams.cleanUp();
         streams.start();
-
-        final int restEndpointPort = Integer.valueOf("7777");
-        final String restEndpointHostname = "localhost";
-        final HostInfo restEndpoint = new HostInfo(restEndpointHostname, restEndpointPort);
-
-        System.out.println("REST endpoint at http://" + restEndpointHostname + ":" + restEndpointPort);
+        System.out.println("REST endpoint at http://" + restEndpoint.host() + ":" + restEndpoint.port());
         final MarkovRestService restService = startRestProxy(streams, restEndpoint);
 
         // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
