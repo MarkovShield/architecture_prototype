@@ -1,5 +1,6 @@
 package ch.hsr.markovshield.kafkastream;
 
+import ch.hsr.markovshield.constants.MarkovTopics;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;

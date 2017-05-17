@@ -1,5 +1,6 @@
 package ch.hsr.markovshield.flink;
 
+import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.ClickStreamValidation;
@@ -25,8 +26,6 @@ public class MarkovShieldAnalyser {
     public static final String BROKER = "broker:9092";
     public static final String ZOOKEEPER = "zookeeper:2181";
     public static final String KAFKA_JOB_NAME = "MarkovShieldAnalyser";
-    public static final String MARKOV_CLICK_STREAM_ANALYSIS_TOPIC = "MarkovClickStreamAnalysis";
-    public static final String MARKOV_VALIDATED_CLICK_STREAMS = "MarkovValidatedClickStream";
     public static final String FLINK_JOB_NAME = "Read from kafka and deserialize";
     public static final String REDIS_HOST = "redis";
 
@@ -41,7 +40,7 @@ public class MarkovShieldAnalyser {
         properties.setProperty("group.id", KAFKA_JOB_NAME);
 
         DataStreamSource<ValidationClickStream> stream = env
-            .addSource(new FlinkKafkaConsumer010<>(MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
+            .addSource(new FlinkKafkaConsumer010<>(MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
                 new ValidationClickStreamDeserializationSchema(),
                 properties));
 
@@ -83,8 +82,8 @@ public class MarkovShieldAnalyser {
     private static FlinkKafkaProducer010<ValidatedClickStream> getKafkaValidatedClickStreamProducer() {
         return new FlinkKafkaProducer010<>(
             BROKER,
-            MARKOV_VALIDATED_CLICK_STREAMS,
-            new ValidatedClickStreamSerializationSchema(MARKOV_VALIDATED_CLICK_STREAMS));
+            MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
+            new ValidatedClickStreamSerializationSchema(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS));
     }
 
     private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {

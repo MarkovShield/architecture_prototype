@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream;
+package ch.hsr.markovshield.constants;
 
 /**
  * Created by maede on 03.05.2017.

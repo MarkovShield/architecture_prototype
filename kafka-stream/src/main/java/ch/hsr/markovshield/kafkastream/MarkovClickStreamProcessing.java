@@ -1,5 +1,6 @@
 package ch.hsr.markovshield.kafkastream;
 
+import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
@@ -15,10 +16,10 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
 
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_CLICK_TOPIC;
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_LOGIN_TOPIC;
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
 import static com.google.common.collect.Iterables.concat;
 
 
