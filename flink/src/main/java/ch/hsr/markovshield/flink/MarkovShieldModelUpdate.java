@@ -27,7 +27,7 @@ public class MarkovShieldModelUpdate {
 
     public static final int REEVALUATION_INTERVAL_MINUTES = 5;
     public static final int SLIDING_TIME_MINUTES = 20;
-    public static final String FLINK_JOB_NAME = "UpdateUserModels";
+    public static final String FLINK_JOB_NAME = "MarkovShieldModelUpdate";
     public static final String BROKER = "broker:9092";
     public static final String ZOOKEEPER = "zookeeper:2181";
     public static final String KAFKA_JOB_NAME = "MarkovShieldModelUpdate";

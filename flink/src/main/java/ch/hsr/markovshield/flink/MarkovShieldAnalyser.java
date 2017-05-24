@@ -24,7 +24,7 @@ public class MarkovShieldAnalyser {
     public static final String BROKER = "broker:9092";
     public static final String ZOOKEEPER = "zookeeper:2181";
     public static final String KAFKA_JOB_NAME = "MarkovShieldAnalyser";
-    public static final String FLINK_JOB_NAME = "Read from kafka and deserialize";
+    public static final String FLINK_JOB_NAME = "MarkovShieldAnalyser";
     public static final String REDIS_HOST = "redis";
 
     public static void main(final String[] args) throws Exception {
@@ -54,10 +54,8 @@ public class MarkovShieldAnalyser {
         FlinkKafkaProducer010<ValidatedClickStream> producer = getKafkaValidatedClickStreamProducer();
         reduce.addSink(producer);
 
-
         env.execute(FLINK_JOB_NAME);
     }
-
 
     private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink() {
         RedisMapper<ClickStreamValidation> redisMapper = new ClickStreamValidationRedisMapper();
