@@ -63,6 +63,21 @@ public class MarkovRestService {
     }
 
     @GET
+    @Path ("/users/{user}/sessions")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<Session> getSessionByUser(@PathParam ("user") final String user) {
+        return sessionService.getSessionByUser(user);
+    }
+
+    @GET
+    @Path ("/users/{user}/validatedclickstreams")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<ValidatedClickStream> getValidatedClickstreamsByUser(@PathParam ("user") final String user) {
+        return validatedClickstreamService.getValidatedClickstreamsByUser(user);
+
+    }
+
+    @GET
     @Path ("/validatedclickstreams/{sessionUUID}")
     @Produces (MediaType.APPLICATION_JSON)
     public ValidatedClickStream getValidatedClickstreamByUUID(@PathParam ("sessionUUID") final String uuid) {
@@ -84,7 +99,7 @@ public class MarkovRestService {
     }
 
     @GET
-    @Path ("/usermodels/{user}")
+    @Path ("/user/{user}/usermodel")
     @Produces (MediaType.APPLICATION_JSON)
     public UserModel getUserModelByUser(@PathParam ("user") final String user) {
         return userModelService.getUserModel(user);
@@ -96,9 +111,7 @@ public class MarkovRestService {
     @Produces (MediaType.APPLICATION_JSON)
     public List<UserModel> getAllUserModels() {
         return userModelService.getAllUserModels();
-
     }
-
 
     @GET
     @Path ("/sessions/{sessionId}")

@@ -11,14 +11,11 @@ import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by maede on 24.05.2017.
- */
 public class LocalKafkaStateRepository implements KafkaStateRepository {
 
     private final KafkaStreams streams;
 
-    public LocalKafkaStateRepository(KafkaStreams streams, MetadataService metadataService, HostInfo hostInfo) {
+    public LocalKafkaStateRepository(KafkaStreams streams) {
         this.streams = streams;
     }
 

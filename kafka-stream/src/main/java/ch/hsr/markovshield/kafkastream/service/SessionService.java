@@ -11,4 +11,6 @@ public interface SessionService {
     List<Session> getAllSessions();
 
     Session getSession(String sessionId);
+
+    List<Session> getSessionByUser(String user);
 }

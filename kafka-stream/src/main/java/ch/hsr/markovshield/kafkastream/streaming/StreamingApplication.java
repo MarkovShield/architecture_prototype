@@ -58,7 +58,7 @@ public class StreamingApplication {
         throws Exception {
 
         MetadataService metadataService = new DistributedMetadataService(streams);
-        KafkaStateRepository localStateRepository = new LocalKafkaStateRepository(streams, metadataService, hostInfo);
+        KafkaStateRepository localStateRepository = new LocalKafkaStateRepository(streams);
         SessionService sessionService = new LocalSessionService(localStateRepository);
         UserModelService userModelService = new LocalUserModelService(localStateRepository);
         DistributedKafkaStateRepository distributedStateRepository = new SimpleDistributedKafkaStateRepository(
@@ -67,7 +67,7 @@ public class StreamingApplication {
             hostInfo,
             "markovShield");
         ValidatedClickstreamService validatedClickstreamService = new DistributedValidatedClickstreamService(
-            distributedStateRepository);
+            distributedStateRepository, sessionService);
         final MarkovRestService
             interactiveQueriesRestService = new MarkovRestService(hostInfo, metadataService, sessionService,
             validatedClickstreamService,
