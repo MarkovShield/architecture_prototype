@@ -1,5 +1,7 @@
 package ch.hsr.markovshield.kafkastream;
 
+import ch.hsr.markovshield.constants.MarkovTopics;
+import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
 import ch.hsr.markovshield.ml.FrequencyMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.Click;
@@ -36,7 +38,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -247,6 +248,16 @@ public class MarkovClickStreamProcessingIntegrationTest {
         return consumerConfig;
     }
 
+    private Properties getProducerProperties() {
+        Properties producerConfig = new Properties();
+        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
+        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
+        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
+        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return producerConfig;
+    }
+
     @Test
     public void shouldAggregateClicksToValidationClickStreamTopicWithLateLogin() throws Exception {
 
@@ -312,7 +323,20 @@ public class MarkovClickStreamProcessingIntegrationTest {
             producerConfig,
             stringSerde.serializer(),
             clickSerde.serializer());
-        sleep(10000);
+
+
+        List<KeyValue<String, ValidationClickStream>> intermediateClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
+            consumerConfig,
+            analysisTopic,
+            2,
+            30 * 1000L,
+
+            new StringDeserializer(),
+            clickStreamValidationSerde.deserializer()
+        );
+        assertThat(intermediateClickStreams, hasSize(2));
+
+
         List<Session> logins = new ArrayList<>();
         Session login1 = new Session(session1, user1);
         logins.add(login1);
@@ -386,26 +410,17 @@ public class MarkovClickStreamProcessingIntegrationTest {
         List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
             analysisTopic,
-            4,
+            2,
             30 * 1000L,
 
             new StringDeserializer(),
             clickStreamValidationSerde.deserializer()
         );
+        actualClickStreams.addAll(intermediateClickStreams);
         streams.close();
         assertThat(actualClickStreams, hasSize(4));
         assertThat(actualClickStreams, containsInAnyOrder(expectedClickStreams.toArray()));
 
-    }
-
-    private Properties getProducerProperties() {
-        Properties producerConfig = new Properties();
-        producerConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cluster.bootstrapServers());
-        producerConfig.put(ProducerConfig.ACKS_CONFIG, "all");
-        producerConfig.put(ProducerConfig.RETRIES_CONFIG, 0);
-        producerConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        return producerConfig;
     }
 
 }

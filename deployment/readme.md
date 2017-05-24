@@ -22,6 +22,11 @@ kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partit
 ```bash
 kafka-console-consumer --zookeeper zookeeper:2181 --topic MarkovValidatedClickStream --from-beginning --property print.key=true
 ```
+### producer
+```bash
+echo '61631#{"sessionUUID":"61631","clickUUID":"1000","url":"my-secret-url","urlRiskLevel":2,"timeStamp":1495602498740,"validationRequired":true}' | kafka-console-producer --broker-list localhost:9092 --topic MarkovClicks --property "parse.key=true" --property "key.separator=#";
+```
+
 ### build jar
 ```bash
 mvn -am --projects kafka-stream clean install
@@ -34,9 +39,9 @@ FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
 ### run
 #### Windows
 ```bash
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovModelGenerator
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovModelGenerator
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovClickAndLoginGenerator
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 ```bash
 bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\flink\target\flink-1.0-SNAPSHOT-jar-with-dependencies.jar
@@ -45,9 +50,9 @@ bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdate --jobmanager 
 ```
 #### macOS/Linux
 ```bash
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovModelGenerator
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovModelGenerator
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovClickAndLoginGenerator
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 ```bash
 flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 flink/target/flink-1.0-SNAPSHOT-jar-with-dependencies.jar

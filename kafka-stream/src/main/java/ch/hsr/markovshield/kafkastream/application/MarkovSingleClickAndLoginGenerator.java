@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream;
+package ch.hsr.markovshield.kafkastream.application;
 
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.Session;

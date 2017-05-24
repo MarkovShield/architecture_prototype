@@ -1,9 +1,11 @@
-package ch.hsr.markovshield.kafkastream;
+package ch.hsr.markovshield.kafkastream.streaming;
 
+import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.UserModel;
+import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import com.google.common.collect.Lists;
@@ -15,10 +17,10 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
 import java.util.Collections;
 
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_CLICK_TOPIC;
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_LOGIN_TOPIC;
-import static ch.hsr.markovshield.kafkastream.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
+import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
 import static com.google.common.collect.Iterables.concat;
 
 
@@ -28,10 +30,15 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     public static final Serde<String> stringSerde = Serdes.String();
     public static final JsonPOJOSerde<ValidationClickStream> validationClickStreamSerde = new JsonPOJOSerde<>(
         ValidationClickStream.class);
+    public static final JsonPOJOSerde<ValidatedClickStream> validatedClickStreamSerde = new JsonPOJOSerde<>(
+        ValidatedClickStream.class);
     public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class);
     public static final JsonPOJOSerde<Session> sessionSerde = new JsonPOJOSerde<>(Session.class);
     public static final JsonPOJOSerde<UserModel> userModelSerde = new JsonPOJOSerde<>(UserModel.class);
     public static final JsonPOJOSerde<ClickStream> clickStreamSerde = new JsonPOJOSerde<>(ClickStream.class);
+    public static final String MARKOV_LOGIN_STORE = "MarkovLoginStore";
+    public static final String MARKOV_USER_MODEL_STORE = "MarkovUserModelStore";
+    public static final String MARKOV_VALIDATED_CLICKSTREAMS_STORE = "MarkovValidatedClickstreamsStore";
 
     private static ClickStream getInitialClickStream(Click click, Session session) {
         System.out.println("---------------------");
@@ -80,13 +87,7 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
 
         outputClickstreamsForAnalysis(clickStreamsWithModel);
 
-        stringValidationClickStreamKStream.print();
-        /*
-        userModels.foreach((key, value) -> System.out.println("UserModel: " + key + " " + value.toString()));
-        sessions.foreach((key, value) -> System.out.println("Session: " + key + " " + value.toString()));
-        */
-        views.foreach((key, value) -> System.out.println("Click: " + key + " " + value.toString()));
-        clickStreamsWithModel.print();
+        getValidatedClickstreams(builder);
 
         return builder;
     }
@@ -133,14 +134,21 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
             .globalTable(stringSerde,
                 userModelSerde,
                 MARKOV_USER_MODEL_TOPIC,
-                "MarkovUserModelStore");
+                MARKOV_USER_MODEL_STORE);
+    }
+
+    private static KTable<String, ValidatedClickStream> getValidatedClickstreams(KStreamBuilder builder) {
+        return builder.table(stringSerde,
+            validatedClickStreamSerde,
+            MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
+            MARKOV_VALIDATED_CLICKSTREAMS_STORE);
     }
 
     private static GlobalKTable<String, Session> getSessionTable(KStreamBuilder builder) {
         return builder.globalTable(stringSerde,
             sessionSerde,
             MARKOV_LOGIN_TOPIC,
-            "MarkovLoginStore");
+            MARKOV_LOGIN_STORE);
     }
 
 }

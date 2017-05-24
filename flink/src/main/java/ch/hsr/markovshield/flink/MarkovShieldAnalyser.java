@@ -1,5 +1,6 @@
 package ch.hsr.markovshield.flink;
 
+import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.ClickStreamValidation;
@@ -10,8 +11,6 @@ import ch.hsr.markovshield.models.ValidationClickStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.ProcessingTimeSessionWindows;
-import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.streaming.connectors.redis.RedisSink;
@@ -22,28 +21,20 @@ import java.util.Properties;
 
 public class MarkovShieldAnalyser {
 
-    public static final String BROKER = "broker:9092";
-    public static final String ZOOKEEPER = "zookeeper:2181";
     public static final String KAFKA_JOB_NAME = "MarkovShieldAnalyser";
-    public static final String MARKOV_CLICK_STREAM_ANALYSIS_TOPIC = "MarkovClickStreamAnalysis";
-    public static final String MARKOV_VALIDATED_CLICK_STREAMS = "MarkovValidatedClickStream";
-    public static final String FLINK_JOB_NAME = "Read from kafka and deserialize";
+    public static final String FLINK_JOB_NAME = "MarkovShieldAnalyser";
     public static final String REDIS_HOST = "redis";
 
     public static void main(final String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-
-        Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", BROKER);
-        properties.setProperty("zookeeper.connect", ZOOKEEPER);
-        properties.setProperty("group.id", KAFKA_JOB_NAME);
+        KafkaConfigurationHelper kafkaConfigurationHelper = new KafkaConfigurationHelper(KAFKA_JOB_NAME);
 
         DataStreamSource<ValidationClickStream> stream = env
-            .addSource(new FlinkKafkaConsumer010<>(MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
+            .addSource(new FlinkKafkaConsumer010<>(MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
                 new ValidationClickStreamDeserializationSchema(),
-                properties));
+                kafkaConfigurationHelper.getKafkaProperties()));
 
         SingleOutputStreamOperator<ValidatedClickStream> validationStream = stream.map(MarkovShieldAnalyser::validateSession);
         RedisSink<ClickStreamValidation> sinkFunction = getRedisClickStreamValidationSink();
@@ -53,23 +44,10 @@ public class MarkovShieldAnalyser {
 
 
         SingleOutputStreamOperator<ValidatedClickStream> reduce = validationStream.keyBy(ClickStream::getSessionUUID)
-            .window(
-                ProcessingTimeSessionWindows.withGap(Time.minutes(2)))
-            .reduce((clickStreamValidation, t1) -> {
-                if (t1.getClickStreamValidation()
-                    .getRating() == MarkovRating.UNEVALUDATED && clickStreamValidation.getClickStreamValidation()
-                    .getRating() != MarkovRating.UNEVALUDATED) {
-                    return new ValidatedClickStream(t1.getUserName(),
-                        t1.getSessionUUID(),
-                        t1.getClicks(),
-                        clickStreamValidation.getClickStreamValidation());
-                } else {
-                    return t1;
-                }
-            });
-        FlinkKafkaProducer010<ValidatedClickStream> producer = getKafkaValidatedClickStreamProducer();
+            .fold(null, ValidatedClickStreamHelper::foldValidationClickStream);
+        FlinkKafkaProducer010<ValidatedClickStream> producer = getKafkaValidatedClickStreamProducer(
+            kafkaConfigurationHelper.getBroker());
         reduce.addSink(producer);
-
 
         env.execute(FLINK_JOB_NAME);
     }
@@ -80,11 +58,11 @@ public class MarkovShieldAnalyser {
         return new RedisSink<>(conf, redisMapper);
     }
 
-    private static FlinkKafkaProducer010<ValidatedClickStream> getKafkaValidatedClickStreamProducer() {
+    private static FlinkKafkaProducer010<ValidatedClickStream> getKafkaValidatedClickStreamProducer(String broker) {
         return new FlinkKafkaProducer010<>(
-            BROKER,
-            MARKOV_VALIDATED_CLICK_STREAMS,
-            new ValidatedClickStreamSerializationSchema(MARKOV_VALIDATED_CLICK_STREAMS));
+            broker,
+            MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
+            new ValidatedClickStreamSerializationSchema(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS));
     }
 
     private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {
