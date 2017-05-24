@@ -22,6 +22,11 @@ kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partit
 ```bash
 kafka-console-consumer --zookeeper zookeeper:2181 --topic MarkovValidatedClickStream --from-beginning --property print.key=true
 ```
+### producer
+```bash
+echo '61631#{"sessionUUID":"61631","clickUUID":"1000","url":"my-secret-url","urlRiskLevel":2,"timeStamp":1495602498740,"validationRequired":true}' | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic MarkovClicks --property "parse.key=true" --property "key.separator=#";
+```
+
 ### build jar
 ```bash
 mvn -am --projects kafka-stream clean install

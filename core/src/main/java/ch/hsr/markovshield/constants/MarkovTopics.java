@@ -10,6 +10,7 @@ public class MarkovTopics {
     public static final String MARKOV_CLICK_TOPIC = "MarkovClicks";
     public static final String MARKOV_CLICK_STREAM_TOPIC = "MarkovClickStreams";
     public static final String MARKOV_CLICK_STREAM_ANALYSIS_TOPIC = "MarkovClickStreamAnalysis";
+    public static final String MARKOV_VALIDATED_CLICK_STREAMS = "MarkovValidatedClickStream";
 
     private MarkovTopics() {
     }

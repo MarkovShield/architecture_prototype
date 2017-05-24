@@ -5,6 +5,7 @@ import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.UserModel;
+import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import com.google.common.collect.Lists;
@@ -29,12 +30,15 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     public static final Serde<String> stringSerde = Serdes.String();
     public static final JsonPOJOSerde<ValidationClickStream> validationClickStreamSerde = new JsonPOJOSerde<>(
         ValidationClickStream.class);
+    public static final JsonPOJOSerde<ValidatedClickStream> validatedClickStreamSerde = new JsonPOJOSerde<>(
+        ValidatedClickStream.class);
     public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class);
     public static final JsonPOJOSerde<Session> sessionSerde = new JsonPOJOSerde<>(Session.class);
     public static final JsonPOJOSerde<UserModel> userModelSerde = new JsonPOJOSerde<>(UserModel.class);
     public static final JsonPOJOSerde<ClickStream> clickStreamSerde = new JsonPOJOSerde<>(ClickStream.class);
     public static final String MARKOV_LOGIN_STORE = "MarkovLoginStore";
     public static final String MARKOV_USER_MODEL_STORE = "MarkovUserModelStore";
+    public static final String MARKOV_VALIDATED_CLICKSTREAMS_STORE = "MarkovValidatedClickstreamsStore";
 
     private static ClickStream getInitialClickStream(Click click, Session session) {
         System.out.println("---------------------");
@@ -83,6 +87,8 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
 
         outputClickstreamsForAnalysis(clickStreamsWithModel);
 
+        getValidatedClickstreams(builder);
+
         return builder;
     }
 
@@ -129,6 +135,13 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 userModelSerde,
                 MARKOV_USER_MODEL_TOPIC,
                 MARKOV_USER_MODEL_STORE);
+    }
+
+    private static KTable<String, ValidatedClickStream> getValidatedClickstreams(KStreamBuilder builder) {
+        return builder.table(stringSerde,
+            validatedClickStreamSerde,
+            MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
+            MARKOV_VALIDATED_CLICKSTREAMS_STORE);
     }
 
     private static GlobalKTable<String, Session> getSessionTable(KStreamBuilder builder) {

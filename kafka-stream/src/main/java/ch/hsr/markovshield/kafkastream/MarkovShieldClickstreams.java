@@ -55,6 +55,7 @@ public class MarkovShieldClickstreams {
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_LOGIN_TOPIC);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_USER_MODEL_TOPIC);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_TOPIC);
+        createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS);
         kafkaTopicCreator.closeConnection();
     }
 

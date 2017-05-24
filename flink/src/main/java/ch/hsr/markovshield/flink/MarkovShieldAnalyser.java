@@ -11,8 +11,6 @@ import ch.hsr.markovshield.models.ValidationClickStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.ProcessingTimeSessionWindows;
-import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.streaming.connectors.redis.RedisSink;
@@ -52,18 +50,25 @@ public class MarkovShieldAnalyser {
 
 
         SingleOutputStreamOperator<ValidatedClickStream> reduce = validationStream.keyBy(ClickStream::getSessionUUID)
-            .window(
-                ProcessingTimeSessionWindows.withGap(Time.minutes(2)))
-            .reduce((clickStreamValidation, t1) -> {
-                if (t1.getClickStreamValidation()
-                    .getRating() == MarkovRating.UNEVALUDATED && clickStreamValidation.getClickStreamValidation()
-                    .getRating() != MarkovRating.UNEVALUDATED) {
-                    return new ValidatedClickStream(t1.getUserName(),
-                        t1.getSessionUUID(),
-                        t1.getClicks(),
-                        clickStreamValidation.getClickStreamValidation());
+            .fold(null, (acc, newClickStream) -> {
+                if (acc == null) {
+                    return newClickStream;
+                }
+                if (newClickStream == null) {
+                    return acc;
+                }
+                MarkovRating newRating = newClickStream.getClickStreamValidation().getRating();
+                MarkovRating accumulatedRating = acc.getClickStreamValidation().getRating();
+                if (newRating == accumulatedRating) {
+                    return newClickStream;
+                }
+                if (newRating.ordinal() < accumulatedRating.ordinal()) {
+                    return new ValidatedClickStream(newClickStream.getUserName(),
+                        newClickStream.getSessionUUID(),
+                        newClickStream.getClicks(),
+                        acc.getClickStreamValidation());
                 } else {
-                    return t1;
+                    return newClickStream;
                 }
             });
         FlinkKafkaProducer010<ValidatedClickStream> producer = getKafkaValidatedClickStreamProducer();

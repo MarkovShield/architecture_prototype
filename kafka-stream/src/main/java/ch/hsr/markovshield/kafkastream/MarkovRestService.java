@@ -6,6 +6,7 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.UserModel;
+import ch.hsr.markovshield.models.ValidatedClickStream;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
@@ -70,6 +71,30 @@ public class MarkovRestService {
         this.hostInfo = hostInfo;
     }
 
+    @GET
+    @Path ("/validatedclickstreams/{sessionUUID}")
+    @Produces (MediaType.APPLICATION_JSON)
+    public ValidatedClickStream getValidatedClickstreamByUUID(@PathParam ("sessionUUID") final String uuid) {
+        return getValueFromAnyStore(uuid,
+            MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
+            "validatedclickstream/" + uuid,
+            ValidatedClickStream.class);
+    }
+
+    @GET
+    @Path ("/local/validatedclickstreams")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<ValidatedClickStream> getLocalValidatedClickstreams() {
+        return getAllValuesFromLocalStore(MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE);
+    }
+
+    @GET
+    @Path ("/validatedclickstreams")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<ValidatedClickStream> getAllValidatedClickstreams() {
+        return getAllValuesFromAllStores(MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
+            "/local/validatedclickstreams");
+    }
 
     @GET
     @Path ("/usermodels/{user}")
