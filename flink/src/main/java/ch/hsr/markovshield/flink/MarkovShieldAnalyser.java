@@ -50,33 +50,14 @@ public class MarkovShieldAnalyser {
 
 
         SingleOutputStreamOperator<ValidatedClickStream> reduce = validationStream.keyBy(ClickStream::getSessionUUID)
-            .fold(null, (acc, newClickStream) -> {
-                if (acc == null) {
-                    return newClickStream;
-                }
-                if (newClickStream == null) {
-                    return acc;
-                }
-                MarkovRating newRating = newClickStream.getClickStreamValidation().getRating();
-                MarkovRating accumulatedRating = acc.getClickStreamValidation().getRating();
-                if (newRating == accumulatedRating) {
-                    return newClickStream;
-                }
-                if (newRating.ordinal() < accumulatedRating.ordinal()) {
-                    return new ValidatedClickStream(newClickStream.getUserName(),
-                        newClickStream.getSessionUUID(),
-                        newClickStream.getClicks(),
-                        acc.getClickStreamValidation());
-                } else {
-                    return newClickStream;
-                }
-            });
+            .fold(null, ValidatedClickStreamHelper::foldValidationClickStream);
         FlinkKafkaProducer010<ValidatedClickStream> producer = getKafkaValidatedClickStreamProducer();
         reduce.addSink(producer);
 
 
         env.execute(FLINK_JOB_NAME);
     }
+
 
     private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink() {
         RedisMapper<ClickStreamValidation> redisMapper = new ClickStreamValidationRedisMapper();

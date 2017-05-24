@@ -50,24 +50,7 @@ public class MarkovShieldModelUpdate {
         SingleOutputStreamOperator<ValidatedClickStream> reduce = stream.keyBy(ClickStream::getSessionUUID)
             .window(
                 ProcessingTimeSessionWindows.withGap(Time.minutes(2)))
-            .fold(null, (acc, newClickStream) -> {
-                if (acc == null) {
-                    return newClickStream;
-                }
-                MarkovRating newRating = newClickStream.getClickStreamValidation().getRating();
-                MarkovRating accumulatedRating = acc.getClickStreamValidation().getRating();
-                if (newRating == accumulatedRating) {
-                    return newClickStream;
-                }
-                if (newRating.ordinal() < accumulatedRating.ordinal()) {
-                    return new ValidatedClickStream(newClickStream.getUserName(),
-                        newClickStream.getSessionUUID(),
-                        newClickStream.getClicks(),
-                        acc.getClickStreamValidation());
-                } else {
-                    return newClickStream;
-                }
-            });
+            .reduce(ValidatedClickStreamHelper::foldValidationClickStream);
         WindowedStream<ValidatedClickStream, String, TimeWindow> windowedStream = reduce
             .keyBy(ClickStream::getUserName)
             .timeWindow(Time.minutes(SLIDING_TIME_MINUTES), Time.minutes(REEVALUATION_INTERVAL_MINUTES));
