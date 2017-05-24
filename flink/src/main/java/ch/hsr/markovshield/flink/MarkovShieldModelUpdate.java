@@ -20,7 +20,6 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 
 public class MarkovShieldModelUpdate {
@@ -28,24 +27,18 @@ public class MarkovShieldModelUpdate {
     public static final int REEVALUATION_INTERVAL_MINUTES = 5;
     public static final int SLIDING_TIME_MINUTES = 20;
     public static final String FLINK_JOB_NAME = "MarkovShieldModelUpdate";
-    public static final String BROKER = "broker:9092";
-    public static final String ZOOKEEPER = "zookeeper:2181";
     public static final String KAFKA_JOB_NAME = "MarkovShieldModelUpdate";
 
     public static void main(final String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
-        Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", BROKER);
-        properties.setProperty("zookeeper.connect", ZOOKEEPER);
-        properties.setProperty("group.id", KAFKA_JOB_NAME);
-
+        KafkaConfigurationHelper config = new KafkaConfigurationHelper(KAFKA_JOB_NAME);
 
         DataStreamSource<ValidatedClickStream> stream = env
             .addSource(new FlinkKafkaConsumer010<ValidatedClickStream>(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
                 new ValidatedClickStreamDeserializationSchema(),
-                properties));
+                config.getKafkaProperties()));
 
         SingleOutputStreamOperator<ValidatedClickStream> reduce = stream.keyBy(ClickStream::getSessionUUID)
             .window(
@@ -58,7 +51,7 @@ public class MarkovShieldModelUpdate {
         SingleOutputStreamOperator<UserModel> userModelStream = windowedStream.apply(MarkovShieldModelUpdate::recreateUserModel);
 
         FlinkKafkaProducer010<UserModel> producer = new FlinkKafkaProducer010<UserModel>(
-            BROKER,
+            config.getBroker(),
             MarkovTopics.MARKOV_USER_MODEL_TOPIC,
             new UserModelSerializationSchema(MarkovTopics.MARKOV_USER_MODEL_TOPIC));
         userModelStream.print();
@@ -69,7 +62,6 @@ public class MarkovShieldModelUpdate {
 
     private static void recreateUserModel(String key, TimeWindow timeWindow, Iterable<ValidatedClickStream> iterable, Collector<UserModel> collector) {
         List<ClickStream> filteredClicks = new ArrayList<>();
-
         for (ValidatedClickStream clickStream : iterable) {
             MarkovRating rating = clickStream.getClickStreamValidation().getRating();
             if (rating == MarkovRating.UNEVALUDATED || rating == MarkovRating.OK) {
