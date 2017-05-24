@@ -39,9 +39,9 @@ FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
 ### run
 #### Windows
 ```bash
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovModelGenerator
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovModelGenerator
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovClickAndLoginGenerator
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 ```bash
 bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\flink\target\flink-1.0-SNAPSHOT-jar-with-dependencies.jar
@@ -50,9 +50,9 @@ bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdate --jobmanager 
 ```
 #### macOS/Linux
 ```bash
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovModelGenerator
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovClickAndLoginGenerator
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovModelGenerator
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovClickAndLoginGenerator
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 ```bash
 flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 flink/target/flink-1.0-SNAPSHOT-jar-with-dependencies.jar

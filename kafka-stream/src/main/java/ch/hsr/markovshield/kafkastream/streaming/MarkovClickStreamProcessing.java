@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream;
+package ch.hsr.markovshield.kafkastream.streaming;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.models.Click;

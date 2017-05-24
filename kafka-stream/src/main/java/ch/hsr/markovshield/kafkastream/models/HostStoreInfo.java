@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream; /**
+package ch.hsr.markovshield.kafkastream.models; /**
  * Copyright 2016 Confluent Inc.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -17,8 +17,7 @@ import java.util.Set;
 
 /**
  * A simple bean that can be JSON serialized via Jersey. Represents a KafkaStreams instance
- * that has a set of state stores. See {@link WordCountInteractiveQueriesRestService} for how it is used.
- * <p>
+ * that has a set of state stores.
  * We use this JavaBean based approach as it fits nicely with JSON serialization provided by
  * jax-rs/jersey
  */

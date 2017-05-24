@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream;
+package ch.hsr.markovshield.kafkastream.streaming;
 
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;

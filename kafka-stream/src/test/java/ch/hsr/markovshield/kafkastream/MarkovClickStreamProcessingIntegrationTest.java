@@ -1,6 +1,7 @@
 package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
+import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
 import ch.hsr.markovshield.ml.FrequencyMatrix;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.Click;

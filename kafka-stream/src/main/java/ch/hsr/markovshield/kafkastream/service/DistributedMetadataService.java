@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream; /**
+package ch.hsr.markovshield.kafkastream.service; /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,10 @@ package ch.hsr.markovshield.kafkastream; /**
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/**
+ * Changed by Matthias Gabriel 2017
+ */
+import ch.hsr.markovshield.kafkastream.models.HostStoreInfo;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.StreamsMetadata;
@@ -27,11 +30,11 @@ import java.util.stream.Collectors;
  * Looks up StreamsMetadata from KafkaStreams and converts the results
  * into Beans that can be JSON serialized via Jersey.
  */
-public class MetadataService {
+public class DistributedMetadataService implements MetadataService {
 
     private final KafkaStreams streams;
 
-    public MetadataService(final KafkaStreams streams) {
+    public DistributedMetadataService(final KafkaStreams streams) {
         this.streams = streams;
     }
 
@@ -54,7 +57,7 @@ public class MetadataService {
             .collect(Collectors.toList());
     }
 
-    public List<HostStoreInfo> streamsMetadata(String storeName) {
+    public List<HostStoreInfo> streamsMetadata(final String storeName) {
         // Get metadata for all of the instances of this Kafka Streams application
         final Collection<StreamsMetadata> metadata = streams.allMetadataForStore(storeName);
         return mapInstancesToHostStoreInfo(metadata);

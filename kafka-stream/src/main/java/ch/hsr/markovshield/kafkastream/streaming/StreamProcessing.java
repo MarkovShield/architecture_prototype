@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream;
+package ch.hsr.markovshield.kafkastream.streaming;
 
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 

@@ -173,7 +173,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams</mainClass>
+                            <mainClass>ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

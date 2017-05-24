@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.kafkastream;
+package ch.hsr.markovshield.kafkastream.application;
 
 import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
