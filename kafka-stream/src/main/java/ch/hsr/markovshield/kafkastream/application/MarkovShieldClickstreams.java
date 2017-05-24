@@ -6,6 +6,13 @@ import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
 import ch.hsr.markovshield.kafkastream.streaming.StreamProcessing;
 import ch.hsr.markovshield.kafkastream.streaming.StreamingApplication;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.Serde;
@@ -15,6 +22,7 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.apache.kafka.streams.state.HostInfo;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 public class MarkovShieldClickstreams {
@@ -27,24 +35,61 @@ public class MarkovShieldClickstreams {
     private static final int DEFAULT_REST_ENDPOINT_PORT = 7777;
 
     public static void main(final String[] args) throws Exception {
-        if (args.length == 0 || args.length > 4) {
-            throw new IllegalArgumentException("usage: ... <portForRestEndpoint> " +
-                "[<bootstrap.servers> (optional, default: " + DEFAULT_BOOTSTRAP_SERVERS + ")] " +
-                "[<schema.registry.url> (optional, default: " + DEFAULT_SCHEMA_REGISTRY_URL + ")] " +
-                "[<hostnameForRestEndPoint> (optional, default: " + DEFAULT_REST_ENDPOINT_HOSTNAME + ")]");
-        }
-        final int restEndpointPort = args.length > 0 ? Integer.valueOf(args[0]) : DEFAULT_REST_ENDPOINT_PORT;
-        final String bootstrapServers = args.length > 1 ? args[1] : "localhost:9092";
-        final String schemaRegistryUrl = args.length > 2 ? args[2] : "http://localhost:8081";
-        final String restEndpointHostname = args.length > 3 ? args[3] : DEFAULT_REST_ENDPOINT_HOSTNAME;
-        final HostInfo restEndpoint = new HostInfo(restEndpointHostname, restEndpointPort);
+        Options options = new Options();
 
-        final Properties streamsConfiguration = getStreamConfiguration(restEndpoint);
-        setUpKafka(streamsConfiguration);
-        StreamProcessing streamProcessing = new MarkovClickStreamProcessing();
-        KStreamBuilder streamBuilder = streamProcessing.getStreamBuilder();
-        StreamingApplication streamingApplication = new StreamingApplication(streamsConfiguration, streamBuilder);
-        streamingApplication.startStreamingApp(restEndpoint);
+        Option help = new Option("help", "print this message");
+        Option zookeeper = OptionBuilder.withArgName("zookeeper")
+            .hasArg()
+            .withDescription("address of the zookeeper")
+            .create("zookeeper");
+        Option schemaregistry = OptionBuilder.withArgName("schemaregistry")
+            .hasArg()
+            .withDescription("address of the schemaregistry")
+            .create("schemaregistry");
+        Option bootstrap = OptionBuilder.withArgName("bootstrap")
+            .hasArg()
+            .withDescription("address of the kafka bootstrap")
+            .create("bootstrap");
+        Option resthostname = OptionBuilder.withArgName("resthostname")
+            .hasArg()
+            .withDescription("port of the REST endpoint")
+            .create("resthostname");
+        Option restport = OptionBuilder.withArgName("restport")
+            .hasArg()
+            .withDescription("hostname of the REST endpoint")
+            .create("restport");
+        options.addOption(help);
+        options.addOption(zookeeper);
+        options.addOption(schemaregistry);
+        options.addOption(bootstrap);
+        options.addOption(resthostname);
+        options.addOption(restport);
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse(options, args);
+        if (cmd.hasOption("help")) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("ant", options);
+        } else {
+            final int restEndpointPort = getOption(cmd, "restport").map(s -> Integer.valueOf(s))
+                .orElse(DEFAULT_REST_ENDPOINT_PORT);
+            final String restEndpointHostname = getOption(cmd, "resthostname").orElse(DEFAULT_REST_ENDPOINT_HOSTNAME);
+            final HostInfo restEndpoint = new HostInfo(restEndpointHostname, restEndpointPort);
+            final Properties streamsConfiguration = getStreamConfiguration(restEndpoint, cmd);
+            setUpKafka(streamsConfiguration);
+            StreamProcessing streamProcessing = new MarkovClickStreamProcessing();
+            KStreamBuilder streamBuilder = streamProcessing.getStreamBuilder();
+            StreamingApplication streamingApplication = new StreamingApplication(streamsConfiguration, streamBuilder);
+            streamingApplication.startStreamingApp(restEndpoint);
+        }
+
+    }
+
+    private static Optional<String> getOption(CommandLine commandLine, String option) {
+        if (commandLine.hasOption(option)) {
+            return Optional.ofNullable(commandLine.getOptionValue(option));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private static void setUpKafka(Properties streamsConfiguration) {
@@ -69,12 +114,14 @@ public class MarkovShieldClickstreams {
         }
     }
 
-    private static Properties getStreamConfiguration(HostInfo restEndpoint) {
+    private static Properties getStreamConfiguration(HostInfo restEndpoint, CommandLine cmd) {
+        final String bootstrapServers = getOption(cmd, "bootstrap").orElse(DEFAULT_BOOTSTRAP_SERVERS);
+        final String schemaRegistryUrl = getOption(cmd, "schemaregistry").orElse(DEFAULT_SCHEMA_REGISTRY_URL);
         final Serde<String> stringSerde = Serdes.String();
         final Properties streamsConfiguration = new Properties();
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, KAFKA_JOB_NAME);
-        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
-        streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY_URL);
+        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
