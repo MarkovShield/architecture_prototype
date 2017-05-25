@@ -43,15 +43,7 @@ public class KafkaTopicCreator {
             return;
         }
 
-        Properties topicConfig = new Properties(); // add per-topic configurations settings here
-
-        // Note: You must initialize the ZkClient with ZKStringSerializer.  If you don't, then
-        // createTopic() will only seem to work (it will return without error).  The topic will exist in
-        // only ZooKeeper and will be returned when listing topics, but Kafka itself does not create the
-        // topic.
-
-        // Security for Kafka was added in Kafka 0.9.0.0
-
+        Properties topicConfig = new Properties();
         AdminUtils.createTopic(zkUtils, topic, partitions, replication, topicConfig, RackAwareMode.Enforced$.MODULE$);
     }
 
