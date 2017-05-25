@@ -1,6 +1,5 @@
 package ch.hsr.markovshield.ml;
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

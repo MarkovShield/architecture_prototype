@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Created by maede on 24.05.2017.
- */
 public class DistributedValidatedClickstreamService implements ValidatedClickstreamService {
 
     private final DistributedKafkaStateRepository kafkaRepository;

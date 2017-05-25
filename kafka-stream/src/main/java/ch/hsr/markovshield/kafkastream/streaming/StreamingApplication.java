@@ -18,9 +18,7 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.state.HostInfo;
 import java.util.Properties;
 
-/**
- * Created by maede on 19.04.2017.
- */
+
 public class StreamingApplication {
 
 
@@ -39,7 +37,6 @@ public class StreamingApplication {
         System.out.println("REST endpoint at http://" + restEndpoint.host() + ":" + restEndpoint.port());
         final MarkovRestService restService = startRestProxy(streams, restEndpoint);
 
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
         addShutdown(streams, restService);
     }
 

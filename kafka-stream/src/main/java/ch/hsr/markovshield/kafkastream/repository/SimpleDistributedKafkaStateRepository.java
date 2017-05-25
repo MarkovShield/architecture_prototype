@@ -12,9 +12,6 @@ import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by maede on 24.05.2017.
- */
 public class SimpleDistributedKafkaStateRepository implements DistributedKafkaStateRepository {
 
     private final KafkaStateRepository localKafkaStateRepository;

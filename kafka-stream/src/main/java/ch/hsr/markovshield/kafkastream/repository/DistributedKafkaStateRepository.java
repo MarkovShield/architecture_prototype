@@ -2,9 +2,6 @@ package ch.hsr.markovshield.kafkastream.repository;
 
 import java.util.List;
 
-/**
- * Created by maede on 24.05.2017.
- */
 public interface DistributedKafkaStateRepository {
 
     <T> List<T> getAllLocalValues(String storeName);

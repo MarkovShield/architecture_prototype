@@ -21,7 +21,6 @@ import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class MarkovShieldModelUpdate {
 
     public static final int REEVALUATION_INTERVAL_MINUTES = 5;

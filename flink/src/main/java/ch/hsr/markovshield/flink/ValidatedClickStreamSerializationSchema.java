@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
 
-
 public class ValidatedClickStreamSerializationSchema implements KeyedSerializationSchema<ValidatedClickStream> {
 
     private final ObjectMapper mapper;

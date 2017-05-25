@@ -17,7 +17,6 @@ import org.apache.flink.streaming.connectors.redis.RedisSink;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 
-
 public class MarkovShieldAnalyser {
 
     public static final String KAFKA_JOB_NAME = "MarkovShieldAnalyser";

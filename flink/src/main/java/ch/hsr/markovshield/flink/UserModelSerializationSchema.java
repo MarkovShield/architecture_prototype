@@ -5,9 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
 
-/**
- * Created by maede on 24.04.2017.
- */
 public class UserModelSerializationSchema implements KeyedSerializationSchema<UserModel> {
 
     private final String topic;

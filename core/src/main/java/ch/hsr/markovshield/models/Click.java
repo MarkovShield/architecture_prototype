@@ -1,6 +1,5 @@
 package ch.hsr.markovshield.models;
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;

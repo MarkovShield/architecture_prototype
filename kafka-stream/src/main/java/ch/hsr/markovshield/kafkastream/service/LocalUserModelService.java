@@ -6,9 +6,6 @@ import ch.hsr.markovshield.models.UserModel;
 import javax.inject.Inject;
 import java.util.List;
 
-/**
- * Created by maede on 24.05.2017.
- */
 public class LocalUserModelService implements UserModelService {
 
     private final KafkaStateRepository kafkaStateRepository;

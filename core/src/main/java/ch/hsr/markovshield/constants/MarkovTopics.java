@@ -1,8 +1,5 @@
 package ch.hsr.markovshield.constants;
 
-/**
- * Created by maede on 03.05.2017.
- */
 public class MarkovTopics {
 
     public static final String MARKOV_LOGIN_TOPIC = "MarkovLogins";

@@ -15,6 +15,8 @@ package ch.hsr.markovshield.kafkastream.service; /**
  * limitations under the License.
  * <p>
  * Changed by Matthias Gabriel 2017
+ * <p>
+ * Changed by Matthias Gabriel 2017
  */
 /**
  * Changed by Matthias Gabriel 2017

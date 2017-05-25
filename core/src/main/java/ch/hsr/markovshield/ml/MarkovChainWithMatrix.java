@@ -1,6 +1,5 @@
 package ch.hsr.markovshield.ml;
 
-
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.TransitionModel;

@@ -7,7 +7,6 @@ import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.util.serialization.KeyedDeserializationSchema;
 import java.io.IOException;
 
-
 public class ValidatedClickStreamDeserializationSchema implements KeyedDeserializationSchema<ValidatedClickStream> {
 
     private final ObjectMapper mapper;

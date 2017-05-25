@@ -9,8 +9,6 @@ import java.util.Objects;
 @JsonAutoDetect (getterVisibility = JsonAutoDetect.Visibility.NON_PRIVATE)
 public class DoubleMatrix {
 
-    private static final int DEFAULT_COLS = 10;
-    private static final int DEFAULT_ROWS = 10;
     private double[] data;
     private int rows;
     private int columns;
@@ -20,10 +18,6 @@ public class DoubleMatrix {
         this.rows = rows;
         this.columns = columns;
         this.data = data;
-    }
-
-    public DoubleMatrix() {
-        this(DEFAULT_COLS, DEFAULT_ROWS);
     }
 
     public DoubleMatrix(int initialCols, int initialRows) {
@@ -44,30 +38,8 @@ public class DoubleMatrix {
         data[getIndex(col, row, columns)] = value;
     }
 
-    public void resize(int cols, int rows) {
-        double[] newData = new double[cols * rows];
-        int colsToCopy = Math.min(cols, this.columns);
-        int rowsToCopy = Math.min(rows, this.rows);
-        for (int i = 0; i < rowsToCopy; ++i) {
-            int oldRowStart = getIndex(0, i, this.columns);
-            int newRowStart = getIndex(0, i, cols);
-            System.arraycopy(data, oldRowStart, newData, newRowStart,
-                colsToCopy
-            );
-        }
-        data = newData;
-    }
-
     double[] getData() {
         return data;
-    }
-
-    int getRows() {
-        return rows;
-    }
-
-    int getColumns() {
-        return columns;
     }
 
     @Override

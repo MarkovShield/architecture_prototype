@@ -23,7 +23,6 @@ import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
 import static com.google.common.collect.Iterables.concat;
 
-
 public class MarkovClickStreamProcessing implements StreamProcessing {
 
     public static final String USER_NOT_FOUND = "--------------------NOT FOUND---------------------------";
