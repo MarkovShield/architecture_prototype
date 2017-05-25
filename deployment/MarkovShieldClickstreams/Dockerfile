@@ -1,4 +1,4 @@
-FROM openjdk:8u121-jre-alpine
+FROM openjdk:8u131-jre
 
 MAINTAINER Philip Schmid
 
@@ -7,4 +7,10 @@ WORKDIR /opt
 COPY deployment/MarkovShieldClickstreams/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar /opt/
 
 # Start the apache service
-CMD ["java", "-cp", "kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar", "ch.hsr.markovshield.kafkastream.MarkovShieldClickstreams"]
+CMD java -cp kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar \
+  ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams \
+  -bootstrap $BOOTSTRAP \
+  -resthostname $RESTHOSTNAME \
+  -restport $RESTPORT \
+  -schemaregistry $SCHEMAREGISTRY \
+  -zookeeper $ZOOKEEPER
