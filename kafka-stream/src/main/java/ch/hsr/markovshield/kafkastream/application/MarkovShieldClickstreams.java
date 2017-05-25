@@ -11,8 +11,8 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.Serde;
@@ -28,53 +28,21 @@ import java.util.Properties;
 public class MarkovShieldClickstreams {
 
     public static final String KAFKA_JOB_NAME = "MarkovShieldClickstreams";
-    public static final String DEFAULT_BOOTSTRAP_SERVERS = "localhost:9092";
-    public static final String DEFAULT_SCHEMA_REGISTRY_URL = "http://localhost:8081";
+    public static final String DEFAULT_BOOTSTRAP_SERVERS = "broker:9092";
+    public static final String DEFAULT_SCHEMA_REGISTRY_URL = "http://schemaregistry:8081";
     private static final String ZOOKEEPER = "zookeeper:2181";
     private static final String DEFAULT_REST_ENDPOINT_HOSTNAME = "localhost";
     private static final int DEFAULT_REST_ENDPOINT_PORT = 7777;
 
     public static void main(final String[] args) throws Exception {
-        Options options = new Options();
-
-        Option help = new Option("help", "print this message");
-        Option zookeeper = OptionBuilder.withArgName("zookeeper")
-            .hasArg()
-            .withDescription("address of the zookeeper")
-            .create("zookeeper");
-        Option schemaregistry = OptionBuilder.withArgName("schemaregistry")
-            .hasArg()
-            .withDescription("address of the schemaregistry")
-            .create("schemaregistry");
-        Option bootstrap = OptionBuilder.withArgName("bootstrap")
-            .hasArg()
-            .withDescription("address of the kafka bootstrap")
-            .create("bootstrap");
-        Option resthostname = OptionBuilder.withArgName("resthostname")
-            .hasArg()
-            .withDescription("port of the REST endpoint")
-            .create("resthostname");
-        Option restport = OptionBuilder.withArgName("restport")
-            .hasArg()
-            .withDescription("hostname of the REST endpoint")
-            .create("restport");
-        options.addOption(help);
-        options.addOption(zookeeper);
-        options.addOption(schemaregistry);
-        options.addOption(bootstrap);
-        options.addOption(resthostname);
-        options.addOption(restport);
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options, args);
-        if (cmd.hasOption("help")) {
+        Options options = getOptions();
+        CommandLine commandLineArguments = getParsedArguments(args, options);
+        if (commandLineArguments.hasOption("help")) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("ant", options);
+            formatter.printHelp("gnu", options);
         } else {
-            final int restEndpointPort = getOption(cmd, "restport").map(s -> Integer.valueOf(s))
-                .orElse(DEFAULT_REST_ENDPOINT_PORT);
-            final String restEndpointHostname = getOption(cmd, "resthostname").orElse(DEFAULT_REST_ENDPOINT_HOSTNAME);
-            final HostInfo restEndpoint = new HostInfo(restEndpointHostname, restEndpointPort);
-            final Properties streamsConfiguration = getStreamConfiguration(restEndpoint, cmd);
+            final HostInfo restEndpoint = parseHostInformation(commandLineArguments);
+            final Properties streamsConfiguration = getStreamConfiguration(restEndpoint, commandLineArguments);
             setUpKafka(streamsConfiguration);
             StreamProcessing streamProcessing = new MarkovClickStreamProcessing();
             KStreamBuilder streamBuilder = streamProcessing.getStreamBuilder();
@@ -82,6 +50,60 @@ public class MarkovShieldClickstreams {
             streamingApplication.startStreamingApp(restEndpoint);
         }
 
+    }
+
+    private static HostInfo parseHostInformation(CommandLine cmd) {
+        final int restEndpointPort = getOption(cmd, "restport").map(s -> Integer.valueOf(s))
+            .orElse(DEFAULT_REST_ENDPOINT_PORT);
+        final String restEndpointHostname = getOption(cmd, "resthostname").orElse(DEFAULT_REST_ENDPOINT_HOSTNAME);
+        return new HostInfo(restEndpointHostname, restEndpointPort);
+    }
+
+    private static CommandLine getParsedArguments(String[] args, Options options) throws ParseException {
+        CommandLineParser parser = new DefaultParser();
+        return parser.parse(options, args);
+    }
+
+    private static Options getOptions() {
+        Options options = new Options();
+        Option help = Option.builder("h").longOpt("help").desc("print this message").build();
+        Option zookeeper = Option.builder()
+            .longOpt("zookeeper")
+            .hasArg()
+            .numberOfArgs(1)
+            .desc("address of the zookeeper")
+            .build();
+        Option schemaregistry = Option.builder()
+            .longOpt("schemaregistry")
+            .hasArg()
+            .numberOfArgs(1)
+            .desc("address of the schemaregistry")
+            .build();
+        Option bootstrap = Option.builder()
+            .longOpt("bootstrap")
+            .hasArg()
+            .numberOfArgs(1)
+            .desc("address of the kafka bootstrap")
+            .build();
+        Option resthostname = Option.builder()
+            .longOpt("resthostname")
+            .hasArg()
+            .numberOfArgs(1)
+            .desc("port of the REST endpoint")
+            .build();
+        Option restport = Option.builder()
+            .longOpt("restport")
+            .hasArg()
+            .numberOfArgs(1)
+            .desc("hostname of the REST endpoint")
+            .build();
+        options.addOption(help);
+        options.addOption(zookeeper);
+        options.addOption(schemaregistry);
+        options.addOption(bootstrap);
+        options.addOption(resthostname);
+        options.addOption(restport);
+        return options;
     }
 
     private static Optional<String> getOption(CommandLine commandLine, String option) {
