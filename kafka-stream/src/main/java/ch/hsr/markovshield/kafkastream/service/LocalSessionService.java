@@ -21,11 +21,6 @@ public class LocalSessionService implements SessionService {
     }
 
     @Override
-    public List<Session> getAllSessions() {
-        return kafkaStateRepository.getAllValues(MarkovClickStreamProcessing.MARKOV_LOGIN_STORE);
-    }
-
-    @Override
     public Session getSession(String sessionId) {
         return kafkaStateRepository.getValue(sessionId,
             MarkovClickStreamProcessing.MARKOV_LOGIN_STORE);
@@ -37,5 +32,10 @@ public class LocalSessionService implements SessionService {
             .stream()
             .filter(session -> session.getUserName().equals(user));
         return sessionStream.collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Session> getAllSessions() {
+        return kafkaStateRepository.getAllValues(MarkovClickStreamProcessing.MARKOV_LOGIN_STORE);
     }
 }

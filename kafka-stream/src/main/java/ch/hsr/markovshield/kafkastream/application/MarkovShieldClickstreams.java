@@ -59,6 +59,14 @@ public class MarkovShieldClickstreams {
         return new HostInfo(restEndpointHostname, restEndpointPort);
     }
 
+    private static Optional<String> getOption(CommandLine commandLine, String option) {
+        if (commandLine.hasOption(option)) {
+            return Optional.ofNullable(commandLine.getOptionValue(option));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private static CommandLine getParsedArguments(String[] args, Options options) throws ParseException {
         CommandLineParser parser = new DefaultParser();
         return parser.parse(options, args);
@@ -104,14 +112,6 @@ public class MarkovShieldClickstreams {
         options.addOption(resthostname);
         options.addOption(restport);
         return options;
-    }
-
-    private static Optional<String> getOption(CommandLine commandLine, String option) {
-        if (commandLine.hasOption(option)) {
-            return Optional.ofNullable(commandLine.getOptionValue(option));
-        } else {
-            return Optional.empty();
-        }
     }
 
     private static void setUpKafka(Properties streamsConfiguration) {

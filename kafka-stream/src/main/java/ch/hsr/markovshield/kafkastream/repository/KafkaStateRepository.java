@@ -1,6 +1,5 @@
 package ch.hsr.markovshield.kafkastream.repository;
 
-import ch.hsr.markovshield.models.Session;
 import java.util.List;
 
 /**

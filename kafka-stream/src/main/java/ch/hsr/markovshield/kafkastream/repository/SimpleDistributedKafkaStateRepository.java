@@ -32,17 +32,22 @@ public class SimpleDistributedKafkaStateRepository implements DistributedKafkaSt
         client = ClientBuilder.newBuilder().register(JacksonFeature.class).build();
     }
 
-    private boolean thisHost(final HostStoreInfo host) {
-        return host.getHost().equals(hostInfo.host()) &&
-            host.getPort() == hostInfo.port();
+    @Override
+    public <T> List<T> getAllLocalValues(String storeName) {
+        return localKafkaStateRepository.getAllValues(storeName);
     }
 
-    public <T> T fetchValueFromOtherHost(final HostStoreInfo host, final String path, GenericType<T> classType) {
-        String formattedUrl = String.format("http://%s:%d/%s/%s", host.getHost(), host.getPort(), lookupRoot, path);
-        System.out.println(formattedUrl);
-        return client.target(formattedUrl)
-            .request(MediaType.APPLICATION_JSON_TYPE)
-            .get(classType);
+    @Override
+    public <T> List<T> getLocalValue(String key, String storeName) {
+        return localKafkaStateRepository.getValue(key, storeName);
+    }
+
+    @Override
+    public <T> List<T> getAllValues(String storeName, String path) {
+        List<T> allValuesFromOtherStores = getAllValuesFromOtherStores(storeName,
+            path);
+        allValuesFromOtherStores.addAll(localKafkaStateRepository.getAllValues(storeName));
+        return allValuesFromOtherStores;
     }
 
     private <T> List<T> getAllValuesFromOtherStores(String markovUserModelStore, String path) {
@@ -60,22 +65,17 @@ public class SimpleDistributedKafkaStateRepository implements DistributedKafkaSt
         return allModels;
     }
 
-    @Override
-    public <T> List<T> getAllLocalValues(String storeName) {
-        return localKafkaStateRepository.getAllValues(storeName);
+    private boolean thisHost(final HostStoreInfo host) {
+        return host.getHost().equals(hostInfo.host()) &&
+            host.getPort() == hostInfo.port();
     }
 
-    @Override
-    public <T> List<T> getLocalValue(String key, String storeName) {
-        return localKafkaStateRepository.getValue(key, storeName);
-    }
-
-    @Override
-    public <T> List<T> getAllValues(String storeName, String path) {
-        List<T> allValuesFromOtherStores = getAllValuesFromOtherStores(storeName,
-            path);
-        allValuesFromOtherStores.addAll(localKafkaStateRepository.getAllValues(storeName));
-        return allValuesFromOtherStores;
+    public <T> T fetchValueFromOtherHost(final HostStoreInfo host, final String path, GenericType<T> classType) {
+        String formattedUrl = String.format("http://%s:%d/%s/%s", host.getHost(), host.getPort(), lookupRoot, path);
+        System.out.println(formattedUrl);
+        return client.target(formattedUrl)
+            .request(MediaType.APPLICATION_JSON_TYPE)
+            .get(classType);
     }
 
     @Override

@@ -1,9 +1,7 @@
 package ch.hsr.markovshield.kafkastream.repository;
 
-import ch.hsr.markovshield.kafkastream.service.MetadataService;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.state.HostInfo;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;

@@ -10,18 +10,6 @@ public class KafkaConfigurationHelper {
     private final String zookeeper;
     private final String jobName;
 
-    public String getBroker() {
-        return broker;
-    }
-
-    public String getZookeeper() {
-        return zookeeper;
-    }
-
-    public String getJobName() {
-        return jobName;
-    }
-
     public KafkaConfigurationHelper(String broker, String zookeeper, String jobName) {
         this.broker = broker;
         this.zookeeper = zookeeper;
@@ -32,6 +20,18 @@ public class KafkaConfigurationHelper {
         this.jobName = jobName;
         this.broker = DEFAULT_BROKER;
         this.zookeeper = DEFAULT_ZOOKEEPER;
+    }
+
+    public String getBroker() {
+        return broker;
+    }
+
+    public String getZookeeper() {
+        return zookeeper;
+    }
+
+    public String getJobName() {
+        return jobName;
     }
 
     public Properties getKafkaProperties() {

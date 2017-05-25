@@ -2,7 +2,6 @@ package ch.hsr.markovshield.kafkastream.service;
 
 import ch.hsr.markovshield.kafkastream.repository.DistributedKafkaStateRepository;
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
-import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,19 +33,19 @@ public class DistributedValidatedClickstreamService implements ValidatedClickstr
     }
 
     @Override
-    public ValidatedClickStream getValidatedClickstream(String uuid) {
-        return kafkaRepository.getValue(uuid,
-            MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
-            "validatedclickstream/" + uuid,
-            ValidatedClickStream.class);
-    }
-
-    @Override
     public List<ValidatedClickStream> getValidatedClickstreamsByUser(String user) {
         Stream<ValidatedClickStream> validatedClickStreamStream = localSessionService.getSessionByUser(user)
             .stream()
             .map(session -> getValidatedClickstream(
                 session.getSessionUUID()));
         return validatedClickStreamStream.collect(Collectors.toList());
+    }
+
+    @Override
+    public ValidatedClickStream getValidatedClickstream(String uuid) {
+        return kafkaRepository.getValue(uuid,
+            MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
+            "validatedclickstream/" + uuid,
+            ValidatedClickStream.class);
     }
 }
