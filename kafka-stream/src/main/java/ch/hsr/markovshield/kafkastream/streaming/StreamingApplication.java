@@ -51,8 +51,7 @@ public class StreamingApplication {
         }));
     }
 
-    static MarkovRestService startRestProxy(final KafkaStreams streams, final HostInfo hostInfo)
-        throws Exception {
+    static MarkovRestService startRestProxy(final KafkaStreams streams, final HostInfo hostInfo) throws Exception {
 
         MetadataService metadataService = new DistributedMetadataService(streams);
         KafkaStateRepository localStateRepository = new LocalKafkaStateRepository(streams);
