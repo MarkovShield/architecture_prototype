@@ -105,10 +105,6 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
         KStream<String, ValidationClickStream> stringRVKStream = stringValidationClickStreamKStream1.leftJoin(userModels,
             (s, clickStream) -> clickStream.getUserName(),
             (clickStream, userModel) -> {
-                System.out.println("---------------------------------------------");
-                System.out.println("---------------------------------------------");
-                System.out.println(clickStream.getUserName() + " " + userModel);
-                clickStream.setUserModel(userModel);
                 clickStream.setUserModel(userModel);
                 return clickStream;
             });

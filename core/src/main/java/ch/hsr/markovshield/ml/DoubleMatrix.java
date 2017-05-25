@@ -39,7 +39,7 @@ public class DoubleMatrix {
     public void set(int col, int row, double value) {
         data[getIndex(col, row, columns)] = value;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

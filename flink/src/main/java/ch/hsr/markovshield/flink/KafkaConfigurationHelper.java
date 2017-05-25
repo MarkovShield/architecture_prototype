@@ -1,6 +1,11 @@
 package ch.hsr.markovshield.flink;
 
+import ch.hsr.markovshield.utils.OptionHelper;
+import org.apache.commons.cli.CommandLine;
 import java.util.Properties;
+
+import static ch.hsr.markovshield.utils.OptionHelper.BOOTSTRAP_ARGUMENT_NAME;
+import static ch.hsr.markovshield.utils.OptionHelper.ZOOKEEPER_ARGUMENT_NAME;
 
 public class KafkaConfigurationHelper {
 
@@ -10,16 +15,10 @@ public class KafkaConfigurationHelper {
     private final String zookeeper;
     private final String jobName;
 
-    public KafkaConfigurationHelper(String broker, String zookeeper, String jobName) {
-        this.broker = broker;
-        this.zookeeper = zookeeper;
+    public KafkaConfigurationHelper(String jobName, CommandLine commandLineArguments) {
         this.jobName = jobName;
-    }
-
-    public KafkaConfigurationHelper(String jobName) {
-        this.jobName = jobName;
-        this.broker = DEFAULT_BROKER;
-        this.zookeeper = DEFAULT_ZOOKEEPER;
+        this.broker = OptionHelper.getOption(commandLineArguments, BOOTSTRAP_ARGUMENT_NAME).orElse(DEFAULT_BROKER);
+        this.zookeeper = OptionHelper.getOption(commandLineArguments, ZOOKEEPER_ARGUMENT_NAME).orElse(DEFAULT_ZOOKEEPER);
     }
 
     public String getBroker() {

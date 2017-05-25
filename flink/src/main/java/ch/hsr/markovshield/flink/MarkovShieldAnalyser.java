@@ -10,7 +10,6 @@ import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.OptionHelper;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -38,13 +37,14 @@ public class MarkovShieldAnalyser {
                     e.printStackTrace();
                 }
             });
-
     }
+
 
     private static void executeAnalysis(CommandLine commandLineArguments) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        KafkaConfigurationHelper kafkaConfigurationHelper = new KafkaConfigurationHelper(KAFKA_JOB_NAME);
+        KafkaConfigurationHelper kafkaConfigurationHelper = new KafkaConfigurationHelper(KAFKA_JOB_NAME,
+            commandLineArguments);
 
         DataStreamSource<ValidationClickStream> stream = env
             .addSource(new FlinkKafkaConsumer010<>(MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
@@ -78,6 +78,10 @@ public class MarkovShieldAnalyser {
             broker,
             MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
             new ValidatedClickStreamSerializationSchema(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS));
+    }
+
+    private static Options getOptions() {
+        return OptionHelper.getBasicKafkaOptions();
     }
 
     private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {
@@ -116,48 +120,6 @@ public class MarkovShieldAnalyser {
             return MarkovRating.SUSPICIOUS;
         }
         return MarkovRating.FRAUD;
-    }
-
-    private static Options getOptions() {
-        Options options = new Options();
-        Option help = Option.builder("h").longOpt("help").desc("print this message").build();
-        Option zookeeper = Option.builder()
-            .longOpt("zookeeper")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("address of the zookeeper")
-            .build();
-        Option schemaregistry = Option.builder()
-            .longOpt("schemaregistry")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("address of the schemaregistry")
-            .build();
-        Option bootstrap = Option.builder()
-            .longOpt("bootstrap")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("address of the kafka bootstrap")
-            .build();
-        Option resthostname = Option.builder()
-            .longOpt("resthostname")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("port of the REST endpoint")
-            .build();
-        Option restport = Option.builder()
-            .longOpt("restport")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("hostname of the REST endpoint")
-            .build();
-        options.addOption(help);
-        options.addOption(zookeeper);
-        options.addOption(schemaregistry);
-        options.addOption(bootstrap);
-        options.addOption(resthostname);
-        options.addOption(restport);
-        return options;
     }
 }
 

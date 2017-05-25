@@ -21,14 +21,18 @@ import org.apache.kafka.streams.state.HostInfo;
 import java.util.Map;
 import java.util.Properties;
 
+import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_BOOTSTRAP_SERVERS;
+import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_SCHEMA_REGISTRY_URL;
+import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_ZOOKEEPER;
+
 public class MarkovShieldClickstreams {
 
     public static final String KAFKA_JOB_NAME = "MarkovShieldClickstreams";
-    public static final String DEFAULT_BOOTSTRAP_SERVERS = "broker:9092";
-    public static final String DEFAULT_SCHEMA_REGISTRY_URL = "http://schemaregistry:8081";
-    private static final String ZOOKEEPER = "zookeeper:2181";
     private static final String DEFAULT_REST_ENDPOINT_HOSTNAME = "localhost";
     private static final int DEFAULT_REST_ENDPOINT_PORT = 7777;
+    private static final String SCHEMA_REGISTRY_ARGUMENT = "schemaregistry";
+    private static final String RESTHOSTNAME_ARGUMENT = "resthostname";
+    private static final String RESTPORT_ARGUMENT = "restport";
 
     public static void main(final String[] args) throws Exception {
         Options options = getOptions();
@@ -54,9 +58,9 @@ public class MarkovShieldClickstreams {
     }
 
     private static HostInfo parseHostInformation(CommandLine cmd) {
-        final int restEndpointPort = OptionHelper.getOption(cmd, "restport").map(s -> Integer.valueOf(s))
+        final int restEndpointPort = OptionHelper.getOption(cmd, RESTPORT_ARGUMENT).map(s -> Integer.valueOf(s))
             .orElse(DEFAULT_REST_ENDPOINT_PORT);
-        final String restEndpointHostname = OptionHelper.getOption(cmd, "resthostname")
+        final String restEndpointHostname = OptionHelper.getOption(cmd, RESTHOSTNAME_ARGUMENT)
             .orElse(DEFAULT_REST_ENDPOINT_HOSTNAME);
         return new HostInfo(restEndpointHostname, restEndpointPort);
     }
@@ -67,7 +71,7 @@ public class MarkovShieldClickstreams {
         topicCreatorProperties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         KafkaConsumer consumer = new KafkaConsumer(topicCreatorProperties);
         Map map = consumer.listTopics();
-        KafkaTopicCreator kafkaTopicCreator = new KafkaTopicCreator(ZOOKEEPER);
+        KafkaTopicCreator kafkaTopicCreator = new KafkaTopicCreator(DEFAULT_ZOOKEEPER);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_STREAM_TOPIC);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_LOGIN_TOPIC);
@@ -84,8 +88,8 @@ public class MarkovShieldClickstreams {
     }
 
     private static Properties getStreamConfiguration(HostInfo restEndpoint, CommandLine cmd) {
-        final String bootstrapServers = OptionHelper.getOption(cmd, "bootstrap").orElse(DEFAULT_BOOTSTRAP_SERVERS);
-        final String schemaRegistryUrl = OptionHelper.getOption(cmd, "schemaregistry")
+        final String bootstrapServers = OptionHelper.getOption(cmd, OptionHelper.BOOTSTRAP_ARGUMENT_NAME).orElse(DEFAULT_BOOTSTRAP_SERVERS);
+        final String schemaRegistryUrl = OptionHelper.getOption(cmd, SCHEMA_REGISTRY_ARGUMENT)
             .orElse(DEFAULT_SCHEMA_REGISTRY_URL);
         final Serde<String> stringSerde = Serdes.String();
         final Properties streamsConfiguration = new Properties();
@@ -104,42 +108,26 @@ public class MarkovShieldClickstreams {
     }
 
     private static Options getOptions() {
-        Options options = new Options();
-        Option help = Option.builder("h").longOpt("help").desc("print this message").build();
-        Option zookeeper = Option.builder()
-            .longOpt("zookeeper")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("address of the zookeeper")
-            .build();
+        Options options = OptionHelper.getBasicKafkaOptions();
         Option schemaregistry = Option.builder()
-            .longOpt("schemaregistry")
+            .longOpt(MarkovShieldClickstreams.SCHEMA_REGISTRY_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("address of the schemaregistry")
-            .build();
-        Option bootstrap = Option.builder()
-            .longOpt("bootstrap")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("address of the kafka bootstrap")
+            .desc("address of the SCHEMA_REGISTRY_ARGUMENT, it's default is:" + DEFAULT_SCHEMA_REGISTRY_URL)
             .build();
         Option resthostname = Option.builder()
-            .longOpt("resthostname")
+            .longOpt(MarkovShieldClickstreams.RESTHOSTNAME_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("port of the REST endpoint")
+            .desc("port of the REST endpoint, it's default is:" + DEFAULT_REST_ENDPOINT_HOSTNAME)
             .build();
         Option restport = Option.builder()
-            .longOpt("restport")
+            .longOpt(MarkovShieldClickstreams.RESTPORT_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("hostname of the REST endpoint")
+            .desc("hostname of the REST endpoint, it's default is:" + DEFAULT_REST_ENDPOINT_PORT)
             .build();
-        options.addOption(help);
-        options.addOption(zookeeper);
         options.addOption(schemaregistry);
-        options.addOption(bootstrap);
         options.addOption(resthostname);
         options.addOption(restport);
         return options;
