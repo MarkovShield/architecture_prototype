@@ -1,9 +1,5 @@
 package ch.hsr.markovshield.kafkastream.web;
 
-/**
- * Created by maede on 17.05.2017.
- */
-
 import ch.hsr.markovshield.kafkastream.models.HostStoreInfo;
 import ch.hsr.markovshield.kafkastream.service.MetadataService;
 import ch.hsr.markovshield.kafkastream.service.SessionService;
