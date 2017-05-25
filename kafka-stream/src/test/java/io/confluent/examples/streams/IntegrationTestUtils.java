@@ -62,7 +62,11 @@ public class IntegrationTestUtils {
      * @param maxMessages    Maximum number of messages to read via the consumer
      * @return The KeyValue elements retrieved via the consumer
      */
-    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig, int maxMessages, Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
+    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic,
+                                                            Properties consumerConfig,
+                                                            int maxMessages,
+                                                            Deserializer<K> keyDeserializer,
+                                                            Deserializer<V> valueDeserializer) {
         KafkaConsumer<K, V> consumer;
         if (keyDeserializer == null && valueDeserializer == null) {
             consumer = new KafkaConsumer<>(consumerConfig);
@@ -97,7 +101,11 @@ public class IntegrationTestUtils {
      * @param <V>            Value type of the data records
      */
     public static <K, V> void produceKeyValuesSynchronously(
-        String topic, Collection<KeyValue<K, V>> records, Properties producerConfig, Serializer<K> keySerializer, Serializer<V> valueSerializer)
+        String topic,
+        Collection<KeyValue<K, V>> records,
+        Properties producerConfig,
+        Serializer<K> keySerializer,
+        Serializer<V> valueSerializer)
         throws ExecutionException, InterruptedException {
         Producer<K, V> producer = new KafkaProducer<>(producerConfig, keySerializer, valueSerializer);
         for (KeyValue<K, V> record : records) {
@@ -191,7 +199,10 @@ public class IntegrationTestUtils {
      * @param consumerConfig Kafka consumer configuration
      * @return The KeyValue elements retrieved via the consumer.
      */
-    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic, Properties consumerConfig, Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
+    public static <K, V> List<KeyValue<K, V>> readKeyValues(String topic,
+                                                            Properties consumerConfig,
+                                                            Deserializer<K> keyDeserializer,
+                                                            Deserializer<V> valueDeserializer) {
         return readKeyValues(topic, consumerConfig, UNLIMITED_MESSAGES, keyDeserializer, valueDeserializer);
     }
 

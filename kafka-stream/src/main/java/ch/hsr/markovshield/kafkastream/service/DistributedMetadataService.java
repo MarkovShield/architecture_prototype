@@ -17,6 +17,8 @@ package ch.hsr.markovshield.kafkastream.service; /**
  * Changed by Matthias Gabriel 2017
  * <p>
  * Changed by Matthias Gabriel 2017
+ * <p>
+ * Changed by Matthias Gabriel 2017
  */
 /**
  * Changed by Matthias Gabriel 2017

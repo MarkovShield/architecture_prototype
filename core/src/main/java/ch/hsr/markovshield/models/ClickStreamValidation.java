@@ -15,7 +15,11 @@ public class ClickStreamValidation {
     private final MarkovRating rating;
     private final Date timeCreated;
 
-    public ClickStreamValidation(String userName, String sessionUUID, String clickUUID, double validationScore, MarkovRating rating) {
+    public ClickStreamValidation(String userName,
+                                 String sessionUUID,
+                                 String clickUUID,
+                                 double validationScore,
+                                 MarkovRating rating) {
         this.userName = userName;
         this.sessionUUID = sessionUUID;
         this.clickUUID = clickUUID;

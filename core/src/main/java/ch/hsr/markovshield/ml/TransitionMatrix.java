@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class TransitionMatrix extends DoubleMatrix {
 
     @JsonCreator
-    private TransitionMatrix(@JsonProperty ("rows") int rows, @JsonProperty ("columns") int columns, @JsonProperty ("data") double[] data) {
+    private TransitionMatrix(@JsonProperty ("rows") int rows,
+                             @JsonProperty ("columns") int columns,
+                             @JsonProperty ("data") double[] data) {
         super(rows, columns, data);
     }
 

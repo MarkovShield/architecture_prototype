@@ -98,7 +98,8 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
     }
 
-    private static KStream<String, ValidationClickStream> addModelToClickStreams(GlobalKTable<String, UserModel> userModels, KStream<String, ClickStream> stringValidationClickStreamKStream) {
+    private static KStream<String, ValidationClickStream> addModelToClickStreams(GlobalKTable<String, UserModel> userModels,
+                                                                                 KStream<String, ClickStream> stringValidationClickStreamKStream) {
         KStream<String, ValidationClickStream> stringValidationClickStreamKStream1 = stringValidationClickStreamKStream.mapValues(
             ValidationClickStream::fromClickStream);
         KStream<String, ValidationClickStream> stringRVKStream = stringValidationClickStreamKStream1.leftJoin(userModels,
@@ -114,7 +115,8 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
         return stringRVKStream;
     }
 
-    private static KTable<String, ClickStream> aggregateClicks(GlobalKTable<String, Session> sessions, KStream<String, Click> clicks) {
+    private static KTable<String, ClickStream> aggregateClicks(GlobalKTable<String, Session> sessions,
+                                                               KStream<String, Click> clicks) {
         return clicks.leftJoin(sessions,
             (s, click) -> click.getSessionUUID(),
             MarkovClickStreamProcessing::getInitialClickStream).groupByKey(stringSerde,

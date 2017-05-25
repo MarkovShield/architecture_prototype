@@ -9,7 +9,8 @@ public class ValidatedClickStreamHelper {
 
     }
 
-    public static ValidatedClickStream foldValidationClickStream(ValidatedClickStream acc, ValidatedClickStream newClickStream) {
+    public static ValidatedClickStream foldValidationClickStream(ValidatedClickStream acc,
+                                                                 ValidatedClickStream newClickStream) {
         if (acc == null) {
             return newClickStream;
         }

@@ -14,7 +14,9 @@ public class DoubleMatrix {
     private int columns;
 
     @JsonCreator
-    protected DoubleMatrix(@JsonProperty ("rows") int rows, @JsonProperty ("columns") int columns, @JsonProperty ("data") double[] data) {
+    protected DoubleMatrix(@JsonProperty ("rows") int rows,
+                           @JsonProperty ("columns") int columns,
+                           @JsonProperty ("data") double[] data) {
         this.rows = rows;
         this.columns = columns;
         this.data = data;

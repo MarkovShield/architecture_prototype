@@ -53,7 +53,11 @@ public class MarkovRestService {
     private final HostInfo hostInfo;
     private Server jettyServer;
 
-    public MarkovRestService(HostInfo hostInfo, MetadataService metadataService, SessionService sessionService, ValidatedClickstreamService validatedClickstreamService, UserModelService userModelService) {
+    public MarkovRestService(HostInfo hostInfo,
+                             MetadataService metadataService,
+                             SessionService sessionService,
+                             ValidatedClickstreamService validatedClickstreamService,
+                             UserModelService userModelService) {
         this.metadataService = metadataService;
         this.sessionService = sessionService;
         this.validatedClickstreamService = validatedClickstreamService;

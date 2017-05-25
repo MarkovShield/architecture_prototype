@@ -33,7 +33,9 @@ public class NormalDistributionFrequencyAnalysis implements FrequencyAnalysis {
         return new MatrixFrequencyModel(clickProbabilityMatrix, new UrlStore(urlMap));
     }
 
-    private void frequency(HashMap<String, HashMap<String, Double>> clickCountMatrix, Map<String, Integer> urlMap, ClickStream clickStream) {
+    private void frequency(HashMap<String, HashMap<String, Double>> clickCountMatrix,
+                           Map<String, Integer> urlMap,
+                           ClickStream clickStream) {
         for (Click click :
             clickStream.getClicks()) {
             if (!urlMap.containsKey(click.getUrl())) {
@@ -83,7 +85,11 @@ public class NormalDistributionFrequencyAnalysis implements FrequencyAnalysis {
         return clickFrequencyMatrix;
     }
 
-    private static void addToFrequencyMatrix(FrequencyMatrix clickProbabilityMatrix, String url, double lowerBound, double upperBound, Map<String, Integer> urlMap) {
+    private static void addToFrequencyMatrix(FrequencyMatrix clickProbabilityMatrix,
+                                             String url,
+                                             double lowerBound,
+                                             double upperBound,
+                                             Map<String, Integer> urlMap) {
         int sourceIndex = getIndexByUrl(urlMap, url);
         clickProbabilityMatrix.set(sourceIndex, 0, lowerBound);
         clickProbabilityMatrix.set(sourceIndex, 1, upperBound);

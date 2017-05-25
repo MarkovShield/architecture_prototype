@@ -21,7 +21,10 @@ public class SimpleDistributedKafkaStateRepository implements DistributedKafkaSt
     private final String lookupRoot;
 
 
-    public SimpleDistributedKafkaStateRepository(KafkaStateRepository localKafkaStateRepository, MetadataService metadataService, HostInfo hostInfo, String lookupRoot) {
+    public SimpleDistributedKafkaStateRepository(KafkaStateRepository localKafkaStateRepository,
+                                                 MetadataService metadataService,
+                                                 HostInfo hostInfo,
+                                                 String lookupRoot) {
         this.localKafkaStateRepository = localKafkaStateRepository;
         this.metadataService = metadataService;
         this.hostInfo = hostInfo;

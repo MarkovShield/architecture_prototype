@@ -41,7 +41,8 @@ public class MarkovChainWithMatrix {
         return urlMapping;
     }
 
-    private static TransitionMatrix calculateProbilities(HashMap<String, HashMap<String, Integer>> clickCountMatrix, Map<String, Integer> urlMap) {
+    private static TransitionMatrix calculateProbilities(HashMap<String, HashMap<String, Integer>> clickCountMatrix,
+                                                         Map<String, Integer> urlMap) {
         TransitionMatrix clickProbabilityMatrix = new TransitionMatrix(urlMap.size());
         clickCountMatrix.forEach((s, stringIntegerHashMap) -> {
             Double sum = (double) stringIntegerHashMap.values().stream().mapToInt(Integer::intValue).sum();
@@ -54,7 +55,11 @@ public class MarkovChainWithMatrix {
         return clickProbabilityMatrix;
     }
 
-    private static void addToProbabilityMatrix(TransitionMatrix clickProbabilityMatrix, String source, String target, double probability, Map<String, Integer> urlMap) {
+    private static void addToProbabilityMatrix(TransitionMatrix clickProbabilityMatrix,
+                                               String source,
+                                               String target,
+                                               double probability,
+                                               Map<String, Integer> urlMap) {
         int sourceIndex = getIndexByUrl(urlMap, source);
         int targetIndex = getIndexByUrl(urlMap, target);
         clickProbabilityMatrix.set(sourceIndex, targetIndex, probability);
@@ -65,7 +70,9 @@ public class MarkovChainWithMatrix {
         return integer;
     }
 
-    private static void updateClickCount(HashMap<String, HashMap<String, Integer>> clickCountMatrix, String sourceUrl, String targetUrl) {
+    private static void updateClickCount(HashMap<String, HashMap<String, Integer>> clickCountMatrix,
+                                         String sourceUrl,
+                                         String targetUrl) {
         if (!clickCountMatrix.containsKey(sourceUrl)) {
             HashMap<String, Integer> targetMap = new HashMap<>();
             targetMap.put(targetUrl, 1);

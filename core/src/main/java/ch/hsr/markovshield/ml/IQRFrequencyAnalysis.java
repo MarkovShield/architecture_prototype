@@ -69,7 +69,11 @@ public class IQRFrequencyAnalysis implements FrequencyAnalysis {
         return clickFrequencyMatrix;
     }
 
-    private static void addToFrequencyMatrix(FrequencyMatrix clickProbabilityMatrix, String url, double lowerBound, double upperBound, Map<String, Integer> urlMap) {
+    private static void addToFrequencyMatrix(FrequencyMatrix clickProbabilityMatrix,
+                                             String url,
+                                             double lowerBound,
+                                             double upperBound,
+                                             Map<String, Integer> urlMap) {
         int sourceIndex = getIndexByUrl(urlMap, url);
         clickProbabilityMatrix.set(sourceIndex, 0, lowerBound);
         clickProbabilityMatrix.set(sourceIndex, 1, upperBound);

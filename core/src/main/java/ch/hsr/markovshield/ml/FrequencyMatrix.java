@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class FrequencyMatrix extends DoubleMatrix {
 
     @JsonCreator
-    private FrequencyMatrix(@JsonProperty ("rows") int rows, @JsonProperty ("columns") int columns, @JsonProperty ("data") double[] data) {
+    private FrequencyMatrix(@JsonProperty ("rows") int rows,
+                            @JsonProperty ("columns") int columns,
+                            @JsonProperty ("data") double[] data) {
         super(rows, columns, data);
     }
 

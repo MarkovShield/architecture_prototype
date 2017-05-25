@@ -59,7 +59,10 @@ public class MarkovShieldModelUpdate {
         env.execute(FLINK_JOB_NAME);
     }
 
-    private static void recreateUserModel(String key, TimeWindow timeWindow, Iterable<ValidatedClickStream> iterable, Collector<UserModel> collector) {
+    private static void recreateUserModel(String key,
+                                          TimeWindow timeWindow,
+                                          Iterable<ValidatedClickStream> iterable,
+                                          Collector<UserModel> collector) {
         List<ClickStream> filteredClicks = new ArrayList<>();
         for (ValidatedClickStream clickStream : iterable) {
             MarkovRating rating = clickStream.getClickStreamValidation().getRating();

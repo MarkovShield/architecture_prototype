@@ -12,7 +12,8 @@ public class DistributedValidatedClickstreamService implements ValidatedClickstr
     private final DistributedKafkaStateRepository kafkaRepository;
     private final SessionService localSessionService;
 
-    public DistributedValidatedClickstreamService(DistributedKafkaStateRepository kafkaRepository, SessionService localSessionService) {
+    public DistributedValidatedClickstreamService(DistributedKafkaStateRepository kafkaRepository,
+                                                  SessionService localSessionService) {
         this.kafkaRepository = kafkaRepository;
         this.localSessionService = localSessionService;
     }
