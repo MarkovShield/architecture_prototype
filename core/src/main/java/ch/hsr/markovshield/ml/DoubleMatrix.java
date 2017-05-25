@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.Objects;
 
-@JsonAutoDetect (getterVisibility = JsonAutoDetect.Visibility.NON_PRIVATE)
+@JsonAutoDetect (fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class DoubleMatrix {
 
     private double[] data;
@@ -39,11 +39,7 @@ public class DoubleMatrix {
     public void set(int col, int row, double value) {
         data[getIndex(col, row, columns)] = value;
     }
-
-    double[] getData() {
-        return data;
-    }
-
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) {
