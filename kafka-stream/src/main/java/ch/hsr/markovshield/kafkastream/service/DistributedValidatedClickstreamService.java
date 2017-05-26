@@ -3,6 +3,8 @@ package ch.hsr.markovshield.kafkastream.service;
 import ch.hsr.markovshield.kafkastream.repository.DistributedKafkaStateRepository;
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
 import ch.hsr.markovshield.models.ValidatedClickStream;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,6 +39,13 @@ public class DistributedValidatedClickstreamService implements ValidatedClickstr
             .map(session -> getValidatedClickstream(
                 session.getSessionUUID()));
         return validatedClickStreamStream.collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ValidatedClickStream> getValidatedClickstreamAfterTimeStamp(Long timestamp) {
+        return getAllValidatedClickstreams().stream()
+            .filter(clickStream -> clickStream.timeStampOfLastClick().after(Date.from(Instant.ofEpochMilli(timestamp))))
+            .collect(Collectors.toList());
     }
 
     @Override

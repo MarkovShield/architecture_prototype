@@ -82,6 +82,12 @@ public class MarkovRestEndpoint {
     public UserModel getUserModelByUser(@PathParam ("user") final String user) {
         return userModelService.getUserModel(user);
     }
+    @GET
+    @Path ("/validatedclickstreams/after/{timestamp}")
+    @Produces (MediaType.APPLICATION_JSON)
+    public List<ValidatedClickStream> getValidatedClickstreamAfterTimeStamp(@PathParam ("timestamp") final Long timestamp) {
+        return validatedClickstreamService.getValidatedClickstreamAfterTimeStamp(timestamp);
+    }
 
     @GET
     @Path ("/validatedclickstreams/{sessionUUID}")
