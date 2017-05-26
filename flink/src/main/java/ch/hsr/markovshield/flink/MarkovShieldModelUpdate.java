@@ -75,9 +75,7 @@ public class MarkovShieldModelUpdate implements Serializable {
             config.getBroker(),
             MarkovTopics.MARKOV_USER_MODEL_TOPIC,
             new UserModelSerializationSchema(MarkovTopics.MARKOV_USER_MODEL_TOPIC));
-        userModelStream.print();
         userModelStream.addSink(producer);
-
         env.execute(FLINK_JOB_NAME);
     }
 
@@ -85,6 +83,11 @@ public class MarkovShieldModelUpdate implements Serializable {
                                    TimeWindow timeWindow,
                                    Iterable<ValidatedClickStream> iterable,
                                    Collector<UserModel> collector) {
+        int count = 0;
+        for (ValidatedClickStream validatedClickStream : iterable) {
+            count++;
+        }
+        System.out.println("recreate usermodel for " + userId + "with " + count);
         List<ClickStream> filteredClicks = new ArrayList<>();
         for (ValidatedClickStream clickStream : iterable) {
             MarkovRating rating = clickStream.getClickStreamValidation().getRating();
@@ -95,6 +98,7 @@ public class MarkovShieldModelUpdate implements Serializable {
 
         List<ClickStreamModel> clickStreamModels = userModelFactory.trainAllModels(filteredClicks);
         UserModel model = new UserModel(userId, clickStreamModels);
+        System.out.println(model);
         collector.collect(model);
 
     }

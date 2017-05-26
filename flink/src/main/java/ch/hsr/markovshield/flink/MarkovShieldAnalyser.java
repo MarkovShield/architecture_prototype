@@ -32,7 +32,7 @@ public class MarkovShieldAnalyser {
 
     public static void main(final String[] args) throws Exception {
 
-        Options options = getOptions();
+        final Options options = getOptions();
         OptionHelper.displayHelpOrExecute(options, args,
             commandLineArguments -> {
                 try {
@@ -44,7 +44,7 @@ public class MarkovShieldAnalyser {
     }
 
 
-    private static void executeAnalysis(CommandLine commandLineArguments) throws Exception {
+    private static void executeAnalysis(final CommandLine commandLineArguments) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         KafkaConfigurationHelper kafkaConfigurationHelper = new KafkaConfigurationHelper(KAFKA_JOB_NAME,
@@ -78,13 +78,13 @@ public class MarkovShieldAnalyser {
         env.execute(FLINK_JOB_NAME);
     }
 
-    private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink(String redisHost, int redisPort) {
+    private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink(final String redisHost, final int redisPort) {
         RedisMapper<ClickStreamValidation> redisMapper = new ClickStreamValidationRedisMapper();
         FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost(redisHost).setPort(redisPort).build();
         return new RedisSink<>(conf, redisMapper);
     }
 
-    private static FlinkKafkaProducer010<ValidatedClickStream> getKafkaValidatedClickStreamProducer(String broker) {
+    private static FlinkKafkaProducer010<ValidatedClickStream> getKafkaValidatedClickStreamProducer(final String broker) {
         return new FlinkKafkaProducer010<>(
             broker,
             MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
@@ -92,7 +92,7 @@ public class MarkovShieldAnalyser {
     }
 
     private static Options getOptions() {
-        Options options = OptionHelper.getBasicKafkaOptions();
+        final Options options = OptionHelper.getBasicKafkaOptions();
         Option redisHost = Option.builder()
             .longOpt(REDIS_HOST_ARGUMENT_NAME)
             .hasArg()
@@ -110,7 +110,7 @@ public class MarkovShieldAnalyser {
         return options;
     }
 
-    private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {
+    private static ValidatedClickStream validateSession(final ValidationClickStream clickStream) {
         if (clickStream.lastClick().map(Click::isValidationRequired).orElse(false)) {
             double score = 0;
             UserModel userModel = clickStream.getUserModel();
@@ -118,9 +118,10 @@ public class MarkovShieldAnalyser {
                 score = userModel.getClickStreamModels()
                     .stream()
                     .mapToDouble(clickStreamModel -> clickStreamModel.clickStreamScore(clickStream))
-                    .sum();
+                    .average()
+                    .orElse(0);
             }
-            MarkovRating rating = calculateMarkovFraudLevel(score);
+            final MarkovRating rating = calculateMarkovFraudLevel(score);
             ClickStreamValidation clickStreamValidation = new ClickStreamValidation(clickStream.getUserName(),
                 clickStream.getSessionUUID(),
                 clickStream.lastClick().map(Click::getClickUUID).orElse(null),
@@ -138,11 +139,11 @@ public class MarkovShieldAnalyser {
         }
     }
 
-    private static MarkovRating calculateMarkovFraudLevel(double rating) {
-        if (rating < 100) {
+    private static MarkovRating calculateMarkovFraudLevel(final double rating) {
+        if (rating <= 50) {
             return MarkovRating.OK;
         }
-        if (rating < 150) {
+        if (rating <= 75) {
             return MarkovRating.SUSPICIOUS;
         }
         return MarkovRating.FRAUD;
