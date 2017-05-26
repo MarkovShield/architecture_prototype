@@ -23,7 +23,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Path ("markovShield")
-public class MarkovRestService {
+public class MarkovRestEndpoint {
 
     /**
      * Copyright 2016 Confluent Inc.
@@ -49,11 +49,11 @@ public class MarkovRestService {
     private final HostInfo hostInfo;
     private Server jettyServer;
 
-    public MarkovRestService(HostInfo hostInfo,
-                             MetadataService metadataService,
-                             SessionService sessionService,
-                             ValidatedClickstreamService validatedClickstreamService,
-                             UserModelService userModelService) {
+    public MarkovRestEndpoint(HostInfo hostInfo,
+                              MetadataService metadataService,
+                              SessionService sessionService,
+                              ValidatedClickstreamService validatedClickstreamService,
+                              UserModelService userModelService) {
         this.metadataService = metadataService;
         this.sessionService = sessionService;
         this.validatedClickstreamService = validatedClickstreamService;
@@ -74,7 +74,13 @@ public class MarkovRestService {
     @Produces (MediaType.APPLICATION_JSON)
     public List<ValidatedClickStream> getValidatedClickstreamsByUser(@PathParam ("user") final String user) {
         return validatedClickstreamService.getValidatedClickstreamsByUser(user);
+    }
 
+    @GET
+    @Path ("/users/{user}/usermodel")
+    @Produces (MediaType.APPLICATION_JSON)
+    public UserModel getUserModelByUser(@PathParam ("user") final String user) {
+        return userModelService.getUserModel(user);
     }
 
     @GET
@@ -97,14 +103,6 @@ public class MarkovRestService {
     public List<ValidatedClickStream> getAllValidatedClickstreams() {
         return validatedClickstreamService.getAllValidatedClickstreams();
     }
-
-    @GET
-    @Path ("/user/{user}/usermodel")
-    @Produces (MediaType.APPLICATION_JSON)
-    public UserModel getUserModelByUser(@PathParam ("user") final String user) {
-        return userModelService.getUserModel(user);
-    }
-
 
     @GET
     @Path ("/usermodels")

@@ -12,7 +12,7 @@ import ch.hsr.markovshield.kafkastream.service.MetadataService;
 import ch.hsr.markovshield.kafkastream.service.SessionService;
 import ch.hsr.markovshield.kafkastream.service.UserModelService;
 import ch.hsr.markovshield.kafkastream.service.ValidatedClickstreamService;
-import ch.hsr.markovshield.kafkastream.web.MarkovRestService;
+import ch.hsr.markovshield.kafkastream.web.MarkovRestEndpoint;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.state.HostInfo;
@@ -35,12 +35,12 @@ public class StreamingApplication {
         streams.cleanUp();
         streams.start();
         System.out.println("REST endpoint at http://" + restEndpoint.host() + ":" + restEndpoint.port());
-        final MarkovRestService restService = startRestProxy(streams, restEndpoint);
+        final MarkovRestEndpoint restService = startRestProxy(streams, restEndpoint);
 
         addShutdown(streams, restService);
     }
 
-    private static void addShutdown(KafkaStreams streams, MarkovRestService restService) {
+    private static void addShutdown(KafkaStreams streams, MarkovRestEndpoint restService) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 restService.stop();
@@ -51,7 +51,7 @@ public class StreamingApplication {
         }));
     }
 
-    static MarkovRestService startRestProxy(final KafkaStreams streams, final HostInfo hostInfo) throws Exception {
+    static MarkovRestEndpoint startRestProxy(final KafkaStreams streams, final HostInfo hostInfo) throws Exception {
 
         MetadataService metadataService = new DistributedMetadataService(streams);
         KafkaStateRepository localStateRepository = new LocalKafkaStateRepository(streams);
@@ -64,8 +64,8 @@ public class StreamingApplication {
             "markovShield");
         ValidatedClickstreamService validatedClickstreamService = new DistributedValidatedClickstreamService(
             distributedStateRepository, sessionService);
-        final MarkovRestService
-            interactiveQueriesRestService = new MarkovRestService(hostInfo, metadataService, sessionService,
+        final MarkovRestEndpoint
+            interactiveQueriesRestService = new MarkovRestEndpoint(hostInfo, metadataService, sessionService,
             validatedClickstreamService,
             userModelService);
         interactiveQueriesRestService.start();
