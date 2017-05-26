@@ -8,8 +8,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NormalDistributionFrequencyAnalysis implements FrequencyAnalysis {
-
+public class NormalDistributionFrequencyAnalysis implements ModelBuilder {
 
     public MatrixFrequencyModel train(Iterable<ClickStream> stream) {
         HashMap<String, HashMap<String, Double>> clickCountMatrix = new HashMap<>();

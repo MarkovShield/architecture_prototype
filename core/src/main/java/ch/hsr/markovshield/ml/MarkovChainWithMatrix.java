@@ -7,7 +7,7 @@ import ch.hsr.markovshield.models.UrlStore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MarkovChainWithMatrix {
+public class MarkovChainWithMatrix implements ModelBuilder {
 
 
     public static final String END_OF_CLICK_STREAM = "endOfClickStream";

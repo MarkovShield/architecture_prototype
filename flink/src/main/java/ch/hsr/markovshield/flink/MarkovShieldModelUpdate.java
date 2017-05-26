@@ -4,8 +4,11 @@ import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.ClickStream;
+import ch.hsr.markovshield.models.ClickStreamModel;
 import ch.hsr.markovshield.models.MarkovRating;
+import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.models.UserModel;
+import ch.hsr.markovshield.models.UserModelFactory;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.utils.OptionHelper;
 import org.apache.commons.cli.CommandLine;
@@ -37,11 +40,13 @@ public class MarkovShieldModelUpdate {
     private static final int DEFAULT_SESSION_TIME_MINUTES = 60;
 
     public static void main(final String[] args) throws Exception {
+        UserModelFactory userModelFactory = new SimpleUserModelFactory(new IQRFrequencyAnalysis(),
+            new MarkovChainWithMatrix());
         Options options = getOptions();
         OptionHelper.displayHelpOrExecute(options, args,
             commandLineArguments -> {
                 try {
-                    executeModelUpdate(commandLineArguments);
+                    executeModelUpdate(commandLineArguments, userModelFactory);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -49,7 +54,8 @@ public class MarkovShieldModelUpdate {
 
     }
 
-    private static void executeModelUpdate(CommandLine commandLineArguments) throws Exception {
+    private static void executeModelUpdate(CommandLine commandLineArguments,
+                                           UserModelFactory userModelFactory) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
         KafkaConfigurationHelper config = new KafkaConfigurationHelper(KAFKA_JOB_NAME, commandLineArguments);
@@ -77,7 +83,8 @@ public class MarkovShieldModelUpdate {
             .keyBy(ClickStream::getUserName)
             .timeWindow(Time.minutes(slidingtime), Time.minutes(reevaluationIntervalMinutes));
 
-        SingleOutputStreamOperator<UserModel> userModelStream = windowedStream.apply(MarkovShieldModelUpdate::recreateUserModel);
+        SingleOutputStreamOperator<UserModel> userModelStream = windowedStream.apply((s, timeWindow, iterable, collector) -> MarkovShieldModelUpdate
+            .recreateUserModel(s, timeWindow, iterable, collector, userModelFactory));
 
         FlinkKafkaProducer010<UserModel> producer = new FlinkKafkaProducer010<>(
             config.getBroker(),
@@ -87,6 +94,25 @@ public class MarkovShieldModelUpdate {
         userModelStream.addSink(producer);
 
         env.execute(FLINK_JOB_NAME);
+    }
+
+    private static void recreateUserModel(String userId,
+                                          TimeWindow timeWindow,
+                                          Iterable<ValidatedClickStream> iterable,
+                                          Collector<UserModel> collector,
+                                          UserModelFactory userModelFactory) {
+        List<ClickStream> filteredClicks = new ArrayList<>();
+        for (ValidatedClickStream clickStream : iterable) {
+            MarkovRating rating = clickStream.getClickStreamValidation().getRating();
+            if (rating == MarkovRating.UNEVALUDATED || rating == MarkovRating.OK) {
+                filteredClicks.add(clickStream);
+            }
+        }
+
+        List<ClickStreamModel> clickStreamModels = userModelFactory.trainAllModels(filteredClicks);
+        UserModel model = new UserModel(userId, clickStreamModels);
+        collector.collect(model);
+
     }
 
     public static Options getOptions() {
@@ -114,27 +140,6 @@ public class MarkovShieldModelUpdate {
         options.addOption(slidingtime);
         options.addOption(sessiontime);
         return options;
-    }
-
-    private static void recreateUserModel(String key,
-                                          TimeWindow timeWindow,
-                                          Iterable<ValidatedClickStream> iterable,
-                                          Collector<UserModel> collector) {
-        List<ClickStream> filteredClicks = new ArrayList<>();
-        for (ValidatedClickStream clickStream : iterable) {
-            MarkovRating rating = clickStream.getClickStreamValidation().getRating();
-            if (rating == MarkovRating.UNEVALUDATED || rating == MarkovRating.OK) {
-                filteredClicks.add(clickStream);
-            }
-        }
-
-        IQRFrequencyAnalysis frequencyAnalysis = new IQRFrequencyAnalysis();
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        UserModel model = new UserModel(key,
-            markovChainWithMatrix.train(filteredClicks),
-            frequencyAnalysis.train(filteredClicks));
-        collector.collect(model);
-
     }
 }
 

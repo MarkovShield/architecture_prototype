@@ -2,15 +2,15 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
-import ch.hsr.markovshield.ml.FrequencyMatrix;
+import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.Session;
+import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.models.UrlRating;
-import ch.hsr.markovshield.models.UrlStore;
 import ch.hsr.markovshield.models.UserModel;
+import ch.hsr.markovshield.models.UserModelFactory;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import io.confluent.examples.streams.kafka.EmbeddedSingleNodeKafkaCluster;
@@ -112,22 +112,19 @@ public class MarkovClickStreamProcessingIntegrationTest {
             producerConfig,
             stringSerde.serializer(),
             sessionSerde.serializer());
-        List<UserModel> userModels = new ArrayList<>();
-        FrequencyMatrix frequencyMatrix = null;
-        UrlStore urlStore = null;
+
+        IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
         MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        UserModel user1Model = new UserModel(user1,
-            markovChainWithMatrix.train(Collections.emptyList()),
-            new MatrixFrequencyModel(frequencyMatrix, urlStore));
-        userModels.add(user1Model);
-        UserModel user2Model = new UserModel(user2,
-            markovChainWithMatrix.train(Collections.emptyList()),
-            new MatrixFrequencyModel(frequencyMatrix, urlStore));
-        userModels.add(user2Model);
+        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainWithMatrix);
+
+        List<UserModel> userModels = logins.stream()
+            .map(Session::getUserName)
+            .map(s -> new UserModel(s, factory.trainAllModels(Collections.emptyList()))).collect(Collectors.toList());
+
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
-            .collect(
-                Collectors.toList());
+            .collect(Collectors.toList());
+
         IntegrationTestUtils.produceKeyValuesSynchronously(modelTopic,
             userModelsKeyValue,
             producerConfig,
@@ -191,37 +188,37 @@ public class MarkovClickStreamProcessingIntegrationTest {
                 session1,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 1),
-                user1Model)));
+                userModels.get(0))));
         expectedClickStreams.add(new KeyValue<>(user1,
             new ValidationClickStream(user1,
                 session1,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 2),
-                user1Model)));
+                userModels.get(0))));
         expectedClickStreams.add(new KeyValue<>(user2,
             new ValidationClickStream(user2,
                 session2,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
                     Collectors.toList()).subList(0, 1),
-                user2Model)));
+                userModels.get(1))));
         expectedClickStreams.add(new KeyValue<>(user2,
             new ValidationClickStream(user2,
                 session2,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
                     Collectors.toList()).subList(0, 2),
-                user2Model)));
+                userModels.get(1))));
         expectedClickStreams.add(new KeyValue<>(user1,
             new ValidationClickStream(user1,
                 session1,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 3),
-                user1Model)));
+                userModels.get(0))));
         expectedClickStreams.add(new KeyValue<>(user1,
             new ValidationClickStream(user1,
                 session1,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 4),
-                user1Model)));
+                userModels.get(0))));
 
         List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,
@@ -281,22 +278,25 @@ public class MarkovClickStreamProcessingIntegrationTest {
         String user1 = "user1";
         String user2 = "user2";
 
-        List<UserModel> userModels = new ArrayList<>();
-        FrequencyMatrix frequencyMatrix = null;
+        List<Session> logins = new ArrayList<>();
+        Session login1 = new Session(session1, user1);
+        logins.add(login1);
+        Session login2 = new Session(session2, user2);
+        logins.add(login2);
+
+        IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
         MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        UrlStore urlStore = null;
-        UserModel user1Model = new UserModel(user1,
-            markovChainWithMatrix.train(Collections.emptyList()),
-            new MatrixFrequencyModel(frequencyMatrix, urlStore));
-        userModels.add(user1Model);
-        UserModel user2Model = new UserModel(user2,
-            markovChainWithMatrix.train(Collections.emptyList()),
-            new MatrixFrequencyModel(frequencyMatrix, urlStore));
-        userModels.add(user2Model);
+        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainWithMatrix);
+
+        List<UserModel> userModels = logins.stream()
+            .map(Session::getUserName)
+            .map(s -> new UserModel(s, factory.trainAllModels(Collections.emptyList()))).collect(Collectors.toList());
+
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
-            .collect(
-                Collectors.toList());
+            .collect(Collectors.toList());
+
+
         IntegrationTestUtils.produceKeyValuesSynchronously(modelTopic,
             userModelsKeyValue,
             producerConfig,
@@ -317,10 +317,10 @@ public class MarkovClickStreamProcessingIntegrationTest {
             UrlRating.RISK_LEVEL_LOW,
             Date.from(
                 Instant.now()), false));
-        List collect = clicks.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
+        List clickKeyValues = clicks.stream().map(click -> new KeyValue(click.getSessionUUID(), click)).collect(
             Collectors.toList());
         IntegrationTestUtils.produceKeyValuesSynchronously(clickTopic,
-            collect,
+            clickKeyValues,
             producerConfig,
             stringSerde.serializer(),
             clickSerde.serializer());
@@ -338,11 +338,6 @@ public class MarkovClickStreamProcessingIntegrationTest {
         assertThat(intermediateClickStreams, hasSize(2));
 
 
-        List<Session> logins = new ArrayList<>();
-        Session login1 = new Session(session1, user1);
-        logins.add(login1);
-        Session login2 = new Session(session2, user2);
-        logins.add(login2);
         List sessionKeyValues = logins.stream().map(session -> new KeyValue(session.getSessionUUID(), session)).collect(
             Collectors.toList());
         IntegrationTestUtils.produceKeyValuesSynchronously(loginTopic,
@@ -400,13 +395,13 @@ public class MarkovClickStreamProcessingIntegrationTest {
                 session1,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session1)).collect(
                     Collectors.toList()).subList(0, 2),
-                user1Model)));
+                userModels.get(0))));
         expectedClickStreams.add(new KeyValue<>(user2,
             new ValidationClickStream(user2,
                 session2,
                 clicks.stream().filter(click -> Objects.equals(click.getSessionUUID(), session2)).collect(
                     Collectors.toList()).subList(0, 2),
-                user2Model)));
+                userModels.get(1))));
 
         List<KeyValue<String, ValidationClickStream>> actualClickStreams = IntegrationTestUtils.waitUntilMinKeyValueRecordsReceived(
             consumerConfig,

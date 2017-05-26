@@ -1,8 +1,12 @@
 package ch.hsr.markovshield.kafkastream.application;
 
+import ch.hsr.markovshield.constants.KafkaConnectionDefaults;
+import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
+import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.models.UserModel;
+import ch.hsr.markovshield.models.UserModelFactory;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -14,6 +18,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
 
@@ -24,10 +29,8 @@ public class MarkovModelGenerator {
     }
 
     private static void produceInputs() throws IOException, InterruptedException {
-        final List<UserModel> userModels = new LinkedList<>();
 
-
-        final List<String> users = new LinkedList<String>();
+        final List<String> users = new LinkedList<>();
         users.add("Kilian");
         users.add("Philip");
         users.add("Matthias");
@@ -35,34 +38,29 @@ public class MarkovModelGenerator {
 
         IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
         MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        for (String user : users) {
-            UserModel userModel = new UserModel(user,
-                markovChainWithMatrix.train(Collections.emptyList()),
-                iqrFrequencyAnalysis.train(Collections.emptyList()));
-            userModels.add(userModel);
-        }
-
+        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainWithMatrix);
+        List<UserModel> userModels = users.stream()
+            .map(user -> new UserModel(user, factory.trainAllModels(Collections.emptyList())))
+            .collect(Collectors.toList());
 
         final Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConnectionDefaults.DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerde.class);
 
 
-        final KafkaProducer<String, UserModel> modelProducer = new KafkaProducer<String, UserModel>(properties,
+        final KafkaProducer<String, UserModel> modelProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
             new JsonPOJOSerde<>(UserModel.class).serializer());
 
-        final String modelTopic = "MarkovUserModels";
-
         sleep(1000);
-        for (UserModel userModel : userModels) {
-            modelProducer.send(new ProducerRecord<>(modelTopic,
+
+        userModels.stream().forEach(userModel -> {
+            modelProducer.send(new ProducerRecord<>(MarkovTopics.MARKOV_USER_MODEL_TOPIC,
                 userModel.getUserId().toString(),
                 userModel));
             modelProducer.flush();
-        }
-
+        });
     }
 
 }

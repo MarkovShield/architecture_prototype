@@ -13,28 +13,11 @@ public class UserModel {
     private final List<ClickStreamModel> clickStreamModels;
 
     @JsonCreator
-    private UserModel(
+    public UserModel(
         @JsonProperty ("userId") String userId,
-        @JsonProperty ("clickStreamModels") List<ClickStreamModel> clickStreamModels
-    ) {
+        @JsonProperty ("clickStreamModels") List<ClickStreamModel> clickStreamModels) {
         this.userId = userId;
-        this.clickStreamModels = clickStreamModels;
-    }
-
-    public UserModel(String userId, ClickStreamModel... models) {
-        this.userId = userId;
-        this.clickStreamModels = new ArrayList<>();
-        for (ClickStreamModel model : models
-            ) {
-            clickStreamModels.add(model);
-        }
-    }
-
-    public UserModel(String userId, TransitionModel transitionModel, MatrixFrequencyModel frequencyModel) {
-        this.userId = userId;
-        this.clickStreamModels = new ArrayList<>();
-        this.clickStreamModels.add(transitionModel);
-        this.clickStreamModels.add(frequencyModel);
+        this.clickStreamModels = new ArrayList<>(clickStreamModels);
     }
 
     public String getUserId() {

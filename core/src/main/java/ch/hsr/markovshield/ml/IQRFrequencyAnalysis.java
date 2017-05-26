@@ -8,7 +8,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import java.util.HashMap;
 import java.util.Map;
 
-public class IQRFrequencyAnalysis implements FrequencyAnalysis {
+public class IQRFrequencyAnalysis implements ModelBuilder {
 
 
     private static Map<String, Integer> getMappings(HashMap<String, HashMap<String, Double>> clickCountMatrix) {
