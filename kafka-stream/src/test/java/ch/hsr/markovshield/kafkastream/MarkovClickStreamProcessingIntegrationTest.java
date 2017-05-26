@@ -115,12 +115,13 @@ public class MarkovClickStreamProcessingIntegrationTest {
         List<UserModel> userModels = new ArrayList<>();
         FrequencyMatrix frequencyMatrix = null;
         UrlStore urlStore = null;
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
         UserModel user1Model = new UserModel(user1,
-            MarkovChainWithMatrix.train(Collections.emptyList()),
+            markovChainWithMatrix.train(Collections.emptyList()),
             new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user1Model);
         UserModel user2Model = new UserModel(user2,
-            MarkovChainWithMatrix.train(Collections.emptyList()),
+            markovChainWithMatrix.train(Collections.emptyList()),
             new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user2Model);
         List userModelsKeyValue = userModels.stream()
@@ -282,13 +283,14 @@ public class MarkovClickStreamProcessingIntegrationTest {
 
         List<UserModel> userModels = new ArrayList<>();
         FrequencyMatrix frequencyMatrix = null;
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
         UrlStore urlStore = null;
         UserModel user1Model = new UserModel(user1,
-            MarkovChainWithMatrix.train(Collections.emptyList()),
+            markovChainWithMatrix.train(Collections.emptyList()),
             new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user1Model);
         UserModel user2Model = new UserModel(user2,
-            MarkovChainWithMatrix.train(Collections.emptyList()),
+            markovChainWithMatrix.train(Collections.emptyList()),
             new MatrixFrequencyModel(frequencyMatrix, urlStore));
         userModels.add(user2Model);
         List userModelsKeyValue = userModels.stream()

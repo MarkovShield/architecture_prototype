@@ -25,7 +25,8 @@ public class UserModelTest {
 
     @Test
     public void testSerialization() throws JsonProcessingException {
-        TransitionModel transitionModel = MarkovChainWithMatrix.train(Collections.emptyList());
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
+        TransitionModel transitionModel = markovChainWithMatrix.train(Collections.emptyList());
         MatrixFrequencyModel frequencyModel = (new IQRFrequencyAnalysis()).train(Collections.emptyList());
 
         UserModel model = new UserModel("Ivan", transitionModel, frequencyModel);
@@ -37,7 +38,8 @@ public class UserModelTest {
 
     @Test
     public void testSerializationAndDeserialization() throws IOException {
-        TransitionModel transitionModel = MarkovChainWithMatrix.train(Collections.emptyList());
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
+        TransitionModel transitionModel = markovChainWithMatrix.train(Collections.emptyList());
         MatrixFrequencyModel frequencyModel = (new IQRFrequencyAnalysis()).train(Collections.emptyList());
 
         UserModel model = new UserModel("Ivan", transitionModel, frequencyModel);

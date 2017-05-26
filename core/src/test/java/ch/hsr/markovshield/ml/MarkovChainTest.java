@@ -51,7 +51,9 @@ public class MarkovChainTest extends TestCase {
 
     @Test
     public void testMarkovChainWithMatrix() {
-        TransitionModel train = MarkovChainWithMatrix.train(trainingSet);
+
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
+        TransitionModel train = markovChainWithMatrix.train(trainingSet);
         double indexNewsProbability = train.getProbabilityForClick(
             "index.html",
             "news.html");
@@ -72,7 +74,8 @@ public class MarkovChainTest extends TestCase {
 
     @Test
     public void testMarkovChainWithClick() {
-        TransitionModel train = MarkovChainWithMatrix.train(trainingSet);
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
+        TransitionModel train = markovChainWithMatrix.train(trainingSet);
         double newsIndexProbability = train.getProbabilityForClick(
             "news.html",
             "index.html");
@@ -102,8 +105,9 @@ public class MarkovChainTest extends TestCase {
 
     @Test
     public void testMarkovChainWithMatrixEmptySet() {
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
         Iterable<ClickStream> x = Collections.emptyList();
-        TransitionModel train = MarkovChainWithMatrix.train(x);
+        TransitionModel train = markovChainWithMatrix.train(x);
 
         double indexNewsProbability = train.getProbabilityForClick(new Click("1", "1",
                 "index.html", 1,

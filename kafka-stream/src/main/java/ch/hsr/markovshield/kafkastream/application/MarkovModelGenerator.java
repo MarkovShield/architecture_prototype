@@ -34,9 +34,10 @@ public class MarkovModelGenerator {
         users.add("Ivan");
 
         IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
         for (String user : users) {
             UserModel userModel = new UserModel(user,
-                MarkovChainWithMatrix.train(Collections.emptyList()),
+                markovChainWithMatrix.train(Collections.emptyList()),
                 iqrFrequencyAnalysis.train(Collections.emptyList()));
             userModels.add(userModel);
         }

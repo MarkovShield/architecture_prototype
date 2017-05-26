@@ -12,7 +12,7 @@ public class MarkovChainWithMatrix {
 
     public static final String END_OF_CLICK_STREAM = "endOfClickStream";
 
-    public static TransitionModel train(Iterable<ClickStream> stream) {
+    public TransitionModel train(Iterable<ClickStream> stream) {
 
         HashMap<String, HashMap<String, Integer>> clickCountMatrix = new HashMap<>();
 

@@ -129,8 +129,9 @@ public class MarkovShieldModelUpdate {
         }
 
         IQRFrequencyAnalysis frequencyAnalysis = new IQRFrequencyAnalysis();
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
         UserModel model = new UserModel(key,
-            MarkovChainWithMatrix.train(filteredClicks),
+            markovChainWithMatrix.train(filteredClicks),
             frequencyAnalysis.train(filteredClicks));
         collector.collect(model);
 

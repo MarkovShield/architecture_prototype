@@ -24,7 +24,8 @@ public class TransitionModelTest {
 
     @Test
     public void testSerialization() throws JsonProcessingException {
-        TransitionModel model = MarkovChainWithMatrix.train(Collections.emptyList());
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
+        TransitionModel model = markovChainWithMatrix.train(Collections.emptyList());
         String json = mapper.writeValueAsString(model);
         assertThat(json, containsString("timeCreated"));
         assertThat(json, containsString("urlStore"));
@@ -33,7 +34,8 @@ public class TransitionModelTest {
 
     @Test
     public void testSerializationAndDeserialization() throws IOException {
-        TransitionModel model = MarkovChainWithMatrix.train(Collections.emptyList());
+        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
+        TransitionModel model = markovChainWithMatrix.train(Collections.emptyList());
         String json = mapper.writeValueAsString(model);
         TransitionModel deserializedModel = mapper.readValue(json, TransitionModel.class);
         assertThat(deserializedModel, equalTo(model));
