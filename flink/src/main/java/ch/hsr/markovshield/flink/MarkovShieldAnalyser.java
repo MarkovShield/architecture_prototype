@@ -10,6 +10,7 @@ import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.OptionHelper;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -24,7 +25,10 @@ public class MarkovShieldAnalyser {
 
     public static final String KAFKA_JOB_NAME = "MarkovShieldAnalyser";
     public static final String FLINK_JOB_NAME = "MarkovShieldAnalyser";
-    public static final String REDIS_HOST = "redis";
+    public static final String DEFAULT_REDIS_HOST = "redis";
+    private static final String REDIS_HOST_ARGUMENT_NAME = "redishost";
+    private static final int DEFAULT_REDIS_PORT = 6379;
+    private static final String REDIS_PORT_ARGUMENT_NAME = "redisport";
 
     public static void main(final String[] args) throws Exception {
 
@@ -52,7 +56,14 @@ public class MarkovShieldAnalyser {
                 kafkaConfigurationHelper.getKafkaProperties()));
 
         SingleOutputStreamOperator<ValidatedClickStream> validationStream = stream.map(MarkovShieldAnalyser::validateSession);
-        RedisSink<ClickStreamValidation> sinkFunction = getRedisClickStreamValidationSink();
+
+        String redisHost = OptionHelper.getOption(commandLineArguments, REDIS_HOST_ARGUMENT_NAME)
+            .orElse(DEFAULT_REDIS_HOST);
+        Integer redisPort = OptionHelper.getOption(commandLineArguments, REDIS_PORT_ARGUMENT_NAME)
+            .map(Integer::valueOf)
+            .orElse(DEFAULT_REDIS_PORT);
+
+        RedisSink<ClickStreamValidation> sinkFunction = getRedisClickStreamValidationSink(redisHost, redisPort);
         validationStream.map(ValidatedClickStream::getClickStreamValidation)
             .filter(clickStreamValidation -> clickStreamValidation.getRating() != MarkovRating.UNEVALUDATED)
             .addSink(sinkFunction);
@@ -67,9 +78,9 @@ public class MarkovShieldAnalyser {
         env.execute(FLINK_JOB_NAME);
     }
 
-    private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink() {
+    private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink(String redisHost, int redisPort) {
         RedisMapper<ClickStreamValidation> redisMapper = new ClickStreamValidationRedisMapper();
-        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost(REDIS_HOST).build();
+        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost(redisHost).setPort(redisPort).build();
         return new RedisSink<>(conf, redisMapper);
     }
 
@@ -81,7 +92,22 @@ public class MarkovShieldAnalyser {
     }
 
     private static Options getOptions() {
-        return OptionHelper.getBasicKafkaOptions();
+        Options options = OptionHelper.getBasicKafkaOptions();
+        Option redisHost = Option.builder()
+            .longOpt(REDIS_HOST_ARGUMENT_NAME)
+            .hasArg()
+            .numberOfArgs(1)
+            .desc("the hostname of redis, it's default is:" + DEFAULT_REDIS_HOST)
+            .build();
+        Option redisPort = Option.builder()
+            .longOpt(REDIS_PORT_ARGUMENT_NAME)
+            .hasArg()
+            .numberOfArgs(1)
+            .desc("the port of redis, it's default is:" + DEFAULT_REDIS_PORT)
+            .build();
+        options.addOption(redisHost);
+        options.addOption(redisPort);
+        return options;
     }
 
     private static ValidatedClickStream validateSession(ValidationClickStream clickStream) {

@@ -88,7 +88,8 @@ public class MarkovShieldClickstreams {
     }
 
     private static Properties getStreamConfiguration(HostInfo restEndpoint, CommandLine cmd) {
-        final String bootstrapServers = OptionHelper.getOption(cmd, OptionHelper.BOOTSTRAP_ARGUMENT_NAME).orElse(DEFAULT_BOOTSTRAP_SERVERS);
+        final String bootstrapServers = OptionHelper.getOption(cmd, OptionHelper.BOOTSTRAP_ARGUMENT_NAME)
+            .orElse(DEFAULT_BOOTSTRAP_SERVERS);
         final String schemaRegistryUrl = OptionHelper.getOption(cmd, SCHEMA_REGISTRY_ARGUMENT)
             .orElse(DEFAULT_SCHEMA_REGISTRY_URL);
         final Serde<String> stringSerde = Serdes.String();

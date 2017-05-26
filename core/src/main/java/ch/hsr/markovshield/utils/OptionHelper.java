@@ -14,6 +14,7 @@ import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_BOOT
 import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_ZOOKEEPER;
 
 public class OptionHelper {
+
     public static final String BOOTSTRAP_ARGUMENT_NAME = "bootstrap";
     public static final String ZOOKEEPER_ARGUMENT_NAME = "zookeeper";
 

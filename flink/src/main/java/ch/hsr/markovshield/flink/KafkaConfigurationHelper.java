@@ -18,7 +18,8 @@ public class KafkaConfigurationHelper {
     public KafkaConfigurationHelper(String jobName, CommandLine commandLineArguments) {
         this.jobName = jobName;
         this.broker = OptionHelper.getOption(commandLineArguments, BOOTSTRAP_ARGUMENT_NAME).orElse(DEFAULT_BROKER);
-        this.zookeeper = OptionHelper.getOption(commandLineArguments, ZOOKEEPER_ARGUMENT_NAME).orElse(DEFAULT_ZOOKEEPER);
+        this.zookeeper = OptionHelper.getOption(commandLineArguments, ZOOKEEPER_ARGUMENT_NAME)
+            .orElse(DEFAULT_ZOOKEEPER);
     }
 
     public String getBroker() {
