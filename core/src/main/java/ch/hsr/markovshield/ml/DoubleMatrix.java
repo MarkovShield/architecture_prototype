@@ -3,11 +3,12 @@ package ch.hsr.markovshield.ml;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
 @JsonAutoDetect (fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public class DoubleMatrix {
+public class DoubleMatrix implements Serializable {
 
     private double[] data;
     private int rows;

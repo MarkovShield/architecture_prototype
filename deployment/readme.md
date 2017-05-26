@@ -45,7 +45,7 @@ java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 ```bash
 bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\flink\target\flink-1.0-SNAPSHOT-jar-with-dependencies.jar
-bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdate --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\flink\target\flink-1.0-SNAPSHOT-jar-with-dependencies.jar
+bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager jobmanager:6123 C:\Users\maede\Documents\architecture_prototype\flink\target\flink-1.0-SNAPSHOT-jar-with-dependencies.jar
 
 ```
 #### macOS/Linux
@@ -56,7 +56,7 @@ java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 ```bash
 flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 flink/target/flink-1.0-SNAPSHOT-jar-with-dependencies.jar
-flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdate --jobmanager jobmanager:6123 flink/target/flink-1.0-SNAPSHOT-jar-with-dependencies.jar
+flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager jobmanager:6123 flink/target/flink-1.0-SNAPSHOT-jar-with-dependencies.jar
 
 ```
 #### build

@@ -8,7 +8,7 @@ COPY deployment/MarkovShieldModelUpdate/flink-1.0-SNAPSHOT-jar-with-dependencies
 
 # Start the apache service
 CMD sleep 60 && flink run \
-  -c ch.hsr.markovshield.flink.MarkovShieldModelUpdate \
+  -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater \
   --jobmanager $JOBMANAGER \
   flink-1.0-SNAPSHOT-jar-with-dependencies.jar \
   --bootstrap $BOOTSTRAP \
