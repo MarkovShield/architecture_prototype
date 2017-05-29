@@ -1,0 +1,7 @@
+{"namespace": "ch.hsr.markovshield.avro",
+ "type": "record",
+ "name": "UserModel2",
+ "fields": [
+     {"name": "userName", "type": "string"}
+     ]
+}

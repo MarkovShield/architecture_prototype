@@ -1,0 +1,13 @@
+{"namespace": "ch.hsr.markovshield.avro",
+ "type": "record",
+ "name": "Click2",
+ "fields": [
+     {"name": "sessionUUID", "type": "string"},
+     {"name": "clickUUID", "type": "string"},
+     {"name": "url", "type": "string"},
+     {"name": "urlRiskLevel", "type": "int"},
+     {"name": "timeStamp", "type": "long", "logicalType":"timestamp-millis"},
+     {"name": "validationRequired", "type": "boolean"},
+     {"name": "kafkaFirstProcessedDate", "type": "long", "logicalType":"timestamp-millis"}
+ ]
+}

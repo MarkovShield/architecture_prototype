@@ -1,14 +1,19 @@
 package ch.hsr.markovshield.kafkastream.application;
 
+import ch.hsr.markovshield.avro.Click2;
+import ch.hsr.markovshield.avro.Clickstream2;
+import ch.hsr.markovshield.avro.Session2;
+import ch.hsr.markovshield.avro.UserModel2;
+import ch.hsr.markovshield.avro.ValidationClickStream2;
 import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.models.Click;
-import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidatedClickStream;
-import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import com.google.common.collect.Lists;
+import io.confluent.examples.streams.utils.SpecificAvroSerde;
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -18,9 +23,11 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
 import java.io.IOException;
-import java.sql.Date;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
@@ -29,11 +36,7 @@ import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_USER_MODEL_TOPIC
 import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.MARKOV_LOGIN_STORE;
 import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.MARKOV_USER_MODEL_STORE;
 import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.USER_NOT_FOUND;
-import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.clickStreamSerde;
-import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.sessionSerde;
-import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.userModelSerde;
 import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.validatedClickStreamSerde;
-import static ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing.validationClickStreamSerde;
 import static com.google.common.collect.Iterables.concat;
 
 public class ExampleClickStreamsApp {
@@ -59,42 +62,54 @@ public class ExampleClickStreamsApp {
         }
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(StreamsConfig.ZOOKEEPER_CONNECT_CONFIG, "zookeeper:2181");
+        properties.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
+            "http://localhost:8081");
         properties.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, commitInterval);
         properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, threads);
-        properties.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        properties.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        properties.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        Serde<String> stringSerde = Serdes.String();
+        properties.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "ExampleClickStreams");
 
+
+        SchemaRegistryClient client = new CachedSchemaRegistryClient("http://localhost:8081", 1000);
+        Map<String, String> schemaProps = new HashMap<>();
+        schemaProps.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        final Serde<Click2> click2Serde = new SpecificAvroSerde<>(client, schemaProps);
+        final Serde<Session2> session2Serde = new SpecificAvroSerde<>(client, schemaProps);
+        final Serde<UserModel2> userModel2Serde = new SpecificAvroSerde<>(client, schemaProps);
+        final Serde<Clickstream2> clickStream2Serde = new SpecificAvroSerde<>(client, schemaProps);
+        final Serde<ValidationClickStream2> validationClickStreamSerde = new SpecificAvroSerde<>(client, schemaProps);
+
+
         KStreamBuilder builder = new KStreamBuilder();
-        KStream<String, Click> markovClicks = builder
-            .stream(stringSerde, clickSerde,
-                "MarkovClicks");
+        KStream<String, Click2> markovClicks = builder
+            .stream(stringSerde, click2Serde, "MarkovClicks2");
 
-      /*  markovClicks.mapValues(click -> {
+        final GlobalKTable<String, Session2> sessions = getSessionTable(builder, session2Serde);
+        final GlobalKTable<String, UserModel2> userModels = getUserModelTable(builder, userModel2Serde);
 
-            Instant l = Instant.now();
-            click.setKafkaFirstProcessedDate(Date.from(l));
-            return click;
-        }).print();*/
-        final GlobalKTable<String, Session> sessions = getSessionTable(builder);
-        final GlobalKTable<String, UserModel> userModels = getUserModelTable(builder);
-
-        KStream<String, ClickStream> markovClickStreamAggregation = markovClicks.groupByKey(stringSerde, clickSerde)
-            .aggregate(() -> new ClickStream(USER_NOT_FOUND, null, Collections.emptyList()),
+        KStream<String, Clickstream2> markovClickStreamAggregation = markovClicks
+            .groupByKey(stringSerde, click2Serde)
+            .aggregate(() -> new Clickstream2(USER_NOT_FOUND, null, Collections.emptyList()),
                 ExampleClickStreamsApp::aggregateClick,
-                clickStreamSerde,
-                "MarkovClickStreamAggregation").toStream();
-        KStream<String, ClickStream> clickStreamsWithSessions = addSessionToClickStream(sessions,
+                clickStream2Serde,
+                "MarkovClickStreamAggregation2")
+            .toStream();
+        KStream<String, Clickstream2> clickStreamsWithSessions = addSessionToClickStream(sessions,
             markovClickStreamAggregation);
         clickStreamsWithSessions.mapValues(clickStream -> {
                 System.out.println("reducedClickStreams: " + String.valueOf(Instant.now()
-                    .toEpochMilli() - clickStream.getClicks().get(0).getKafkaFirstProcessedDate().toInstant().toEpochMilli()));
+                    .toEpochMilli() - clickStream.getClicks()
+                    .get(0)
+                    .getKafkaFirstProcessedDate()
+                ));
                 return clickStream;
             }
         );
-        KStream<String, ValidationClickStream> clickStreamsWithModel = addModelToClickStreams(userModels,
+        KStream<String, ValidationClickStream2> clickStreamsWithModel = addModelToClickStreams(userModels,
             clickStreamsWithSessions);
-        outputClickstreamsForAnalysis(clickStreamsWithModel);
+        outputClickstreamsForAnalysis(clickStreamsWithModel, validationClickStreamSerde);
         getValidatedClickstreams(builder).mapValues(clickStream -> clickStream.timeStampOfLastClick()
             .toInstant()
             .toEpochMilli() - clickStream.getClickStreamValidation().getTimeCreated().toInstant().toEpochMilli());
@@ -105,10 +120,10 @@ public class ExampleClickStreamsApp {
 
     }
 
-    private static KStream<String, ClickStream> addSessionToClickStream(GlobalKTable<String, Session> sessions,
-                                                                        KStream<String, ClickStream> markovClickStreamAggregation) {
-        KStream<String, ClickStream> x = markovClickStreamAggregation.leftJoin(sessions,
-            (s, clickStream) -> clickStream.getSessionUUID(),
+    private static KStream<String, Clickstream2> addSessionToClickStream(GlobalKTable<String, Session2> sessions,
+                                                                         KStream<String, Clickstream2> markovClickStreamAggregation) {
+        KStream<String, Clickstream2> x = markovClickStreamAggregation.leftJoin(sessions,
+            (s, clickStream) -> String.valueOf(clickStream.getSessionUUID()),
             (clickStream, session) -> {
                 if (session != null) {
                     clickStream.setUserName(session.getUserName());
@@ -124,88 +139,103 @@ public class ExampleClickStreamsApp {
             MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS);
     }
 
-    private static void outputClickstreamsForAnalysis(KStream<String, ValidationClickStream> clickStreamsWithModel) {
+
+    private static void outputClickstreamsForAnalysis(KStream<String, ValidationClickStream2> clickStreamsWithModel,
+                                                      Serde<ValidationClickStream2> validationClickStreamSerde) {
         clickStreamsWithModel.mapValues(validationClickStream -> {
-            validationClickStream.setKafkaLeftDate(Date.from(Instant.now()));
             System.out.println("outputToKafka: " + String.valueOf(Instant.now()
-                .toEpochMilli() - validationClickStream.timeStampOfLastClick().toInstant().toEpochMilli()));
+                .toEpochMilli() - timeStampOfLastClick(validationClickStream)));
             return validationClickStream;
         })
-            .to(stringSerde,
-                validationClickStreamSerde,
-                MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
+            .to(stringSerde, validationClickStreamSerde, MARKOV_CLICK_STREAM_ANALYSIS_TOPIC + "2");
     }
 
-    private static GlobalKTable<String, UserModel> getUserModelTable(KStreamBuilder builder) {
+    private static long timeStampOfLastClick(ValidationClickStream2 clickstream2) {
+        return clickstream2.getClicks()
+            .get(clickstream2.getClicks().size() - 1)
+            .getTimeStamp();
+    }
+
+    private static long timeStampOfLastClick(Clickstream2 clickstream2) {
+        return clickstream2.getClicks()
+            .get(clickstream2.getClicks().size() - 1)
+            .getTimeStamp();
+    }
+
+    private static GlobalKTable<String, UserModel2> getUserModelTable(KStreamBuilder builder,
+                                                                      Serde<UserModel2> userModel2Serde) {
         return builder
-            .globalTable(stringSerde,
-                userModelSerde,
-                MARKOV_USER_MODEL_TOPIC,
-                MARKOV_USER_MODEL_STORE);
+            .globalTable(stringSerde, userModel2Serde, MARKOV_USER_MODEL_TOPIC + "2",
+                MARKOV_USER_MODEL_STORE + "2");
     }
 
 
-    private static KTable<String, ClickStream> aggregateClicks(GlobalKTable<String, Session> sessions,
-                                                               KStream<String, Click> clicks) {
+    private static KTable<String, Clickstream2> aggregateClicks(GlobalKTable<String, Session2> sessions,
+                                                                KStream<String, Click2> clicks) {
+        KStream<String, Clickstream2> stringRVKStream = clicks.leftJoin(sessions,
+            (s, click) -> String.valueOf(click.getSessionUUID()),
+            ExampleClickStreamsApp::getInitialClickStream);
 
-
-        return clicks.leftJoin(sessions,
-            (s, click) -> click.getSessionUUID(),
-            ExampleClickStreamsApp::getInitialClickStream).groupByKey(stringSerde,
-            clickStreamSerde).reduce(ExampleClickStreamsApp::reduceClickStreams, "MarkovClickStreamAggregation");
+        return stringRVKStream
+            .groupByKey()
+            .reduce(ExampleClickStreamsApp::reduceClickStreams, "MarkovClickStreamAggregation2");
     }
 
-    private static ClickStream aggregateClick(String sessionId, Click click, ClickStream clickStream) {
+    private static Clickstream2 aggregateClick(String sessionId, Click2 click, Clickstream2 clickStream) {
         if (clickStream.getSessionUUID() == null) {
             clickStream.setSessionUUID(click.getSessionUUID());
         }
-        clickStream.addToClicks(click);
+        ArrayList<Click2> click2s = new ArrayList<>(clickStream.getClicks());
+        click2s.add(click);
+        clickStream.setClicks(click2s);
         System.out.println("reduceClickStreams: " + String.valueOf(Instant.now()
-            .toEpochMilli() - clickStream.timeStampOfLastClick().toInstant().toEpochMilli()));
+            .toEpochMilli() - timeStampOfLastClick(clickStream)));
         return clickStream;
 
     }
 
-    private static GlobalKTable<String, Session> getSessionTable(KStreamBuilder builder) {
-        return builder.globalTable(stringSerde,
-            sessionSerde,
-            MARKOV_LOGIN_TOPIC,
-            MARKOV_LOGIN_STORE);
+    private static GlobalKTable<String, Session2> getSessionTable(KStreamBuilder builder,
+                                                                  Serde<Session2> session2Serde) {
+        return builder.globalTable(stringSerde, session2Serde, MARKOV_LOGIN_TOPIC + "2",
+            MARKOV_LOGIN_STORE + "2");
     }
 
-    private static ClickStream getInitialClickStream(Click click, Session session) {
-        String newUserName = session != null ? session.getUserName() : USER_NOT_FOUND;
-        return new ClickStream(newUserName, click.getSessionUUID(), Collections.singletonList(click));
+    private static Clickstream2 getInitialClickStream(Click2 click, Session2 session) {
+        String newUserName = session != null ? String.valueOf(session.getUserName()) : USER_NOT_FOUND;
+        return new Clickstream2(newUserName, click.getSessionUUID(), Collections.singletonList(click));
     }
 
-    private static ClickStream reduceClickStreams(ClickStream clickStream, ClickStream anotherClickStream) {
-        String userName = clickStream.getUserName();
+    private static Clickstream2 reduceClickStreams(Clickstream2 clickStream, Clickstream2 anotherClickStream) {
+        String userName = String.valueOf(clickStream.getUserName());
         if (isUserNameIsNotSet(clickStream, anotherClickStream)) {
-            userName = anotherClickStream.getUserName();
+            userName = String.valueOf(anotherClickStream.getUserName());
         }
         System.out.println("reduceClickStreams: " + String.valueOf(Instant.now()
-            .toEpochMilli() - clickStream.timeStampOfLastClick().toInstant().toEpochMilli()));
-        return new ClickStream(userName,
+            .toEpochMilli() - timeStampOfLastClick(clickStream)));
+        return new Clickstream2(userName,
             clickStream.getSessionUUID(),
             Lists.newLinkedList(concat(clickStream.getClicks(), anotherClickStream.getClicks())));
     }
 
-    private static boolean isUserNameIsNotSet(ClickStream clickStream, ClickStream anotherClickStream) {
-        return clickStream.getUserName().equals(USER_NOT_FOUND)
-            && !(clickStream.getUserName().equals(anotherClickStream.getUserName()));
+    private static boolean isUserNameIsNotSet(Clickstream2 clickStream, Clickstream2 anotherClickStream) {
+        return String.valueOf(clickStream.getUserName()).equals(USER_NOT_FOUND)
+            && !(String.valueOf(clickStream.getUserName()).equals(anotherClickStream.getUserName()));
     }
 
-    private static KStream<String, ValidationClickStream> addModelToClickStreams(GlobalKTable<String, UserModel> userModels,
-                                                                                 KStream<String, ClickStream> stringValidationClickStreamKStream) {
-        KStream<String, ValidationClickStream> stringValidationClickStreamKStream1 = stringValidationClickStreamKStream.mapValues(
-            ValidationClickStream::fromClickStream);
-        KStream<String, ValidationClickStream> stringRVKStream = stringValidationClickStreamKStream1.leftJoin(userModels,
-            (s, clickStream) -> clickStream.getUserName(),
+    private static KStream<String, ValidationClickStream2> addModelToClickStreams(GlobalKTable<String, UserModel2> userModels,
+                                                                                  KStream<String, Clickstream2> stringValidationClickStreamKStream) {
+        KStream<String, ValidationClickStream2> stringRVKStream = stringValidationClickStreamKStream.leftJoin(
+            userModels,
+            (s, clickStream) -> String.valueOf(clickStream.getUserName()),
             (clickStream, userModel) -> {
+                ValidationClickStream2 newClickStream = new ValidationClickStream2();
+                newClickStream.setClicks(clickStream.getClicks());
+                newClickStream.setSessionUUID(clickStream.getSessionUUID());
+                newClickStream.setUserName(clickStream.getUserName());
                 System.out.println("addUserModel: " + String.valueOf(Instant.now()
-                    .toEpochMilli() - clickStream.timeStampOfLastClick().toInstant().toEpochMilli()));
-                clickStream.setUserModel(userModel);
-                return clickStream;
+                    .toEpochMilli() - timeStampOfLastClick(clickStream)));
+                newClickStream.setUserModel(userModel);
+                return newClickStream;
             });
         return stringRVKStream;
     }
