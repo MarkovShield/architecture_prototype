@@ -20,6 +20,8 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.streaming.connectors.redis.RedisSink;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
+import java.time.Instant;
+import java.util.Date;
 
 public class MarkovShieldAnalyser {
 
@@ -78,7 +80,8 @@ public class MarkovShieldAnalyser {
         env.execute(FLINK_JOB_NAME);
     }
 
-    private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink(final String redisHost, final int redisPort) {
+    private static RedisSink<ClickStreamValidation> getRedisClickStreamValidationSink(final String redisHost,
+                                                                                      final int redisPort) {
         RedisMapper<ClickStreamValidation> redisMapper = new ClickStreamValidationRedisMapper();
         FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost(redisHost).setPort(redisPort).build();
         return new RedisSink<>(conf, redisMapper);
@@ -111,6 +114,7 @@ public class MarkovShieldAnalyser {
     }
 
     private static ValidatedClickStream validateSession(final ValidationClickStream clickStream) {
+        Date creationDate = Date.from(Instant.now());
         if (clickStream.lastClick().map(Click::isValidationRequired).orElse(false)) {
             double score = 0;
             UserModel userModel = clickStream.getUserModel();
@@ -130,12 +134,14 @@ public class MarkovShieldAnalyser {
             return new ValidatedClickStream(clickStream.getUserName(),
                 clickStream.getSessionUUID(),
                 clickStream.getClicks(),
-                clickStreamValidation);
+                clickStreamValidation,
+                creationDate
+            );
 
         } else {
             return new ValidatedClickStream(clickStream.getUserName(),
                 clickStream.getSessionUUID(),
-                clickStream.getClicks());
+                clickStream.getClicks(), creationDate);
         }
     }
 

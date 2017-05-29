@@ -2,18 +2,30 @@ package ch.hsr.markovshield.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 public class ValidationClickStream extends ClickStream {
 
     private UserModel userModel;
+    private Date kafkaLeftDate;
 
     @JsonCreator
     public ValidationClickStream(@JsonProperty ("userName") String userName,
                                  @JsonProperty ("sessionUUID") String sessionUUID,
                                  @JsonProperty ("clicks") List<Click> clicks,
-                                 @JsonProperty ("userModel") UserModel userModel) {
+                                 @JsonProperty ("userModel") UserModel userModel,
+                                 @JsonProperty ("kafkaLeftDate") Date kafkaLeftDate) {
+        super(userName, sessionUUID, clicks);
+        this.userModel = userModel;
+        this.kafkaLeftDate = kafkaLeftDate;
+    }
+
+    public ValidationClickStream(String userName,
+                                 String sessionUUID,
+                                 List<Click> clicks,
+                                 UserModel userModel) {
         super(userName, sessionUUID, clicks);
         this.userModel = userModel;
     }
@@ -22,6 +34,7 @@ public class ValidationClickStream extends ClickStream {
         ValidationClickStream validationClickStream = new ValidationClickStream(clickStream.getUserName(),
             clickStream.getSessionUUID(),
             clickStream.getClicks(),
+            null,
             null);
         return validationClickStream;
     }
@@ -58,7 +71,15 @@ public class ValidationClickStream extends ClickStream {
     public String toString() {
         return "ValidationClickStream{" +
             "userModel=" + userModel +
-            super.toString() +
+            ", kafkaLeftDate=" + kafkaLeftDate +
             '}';
+    }
+
+    public Date getKafkaLeftDate() {
+        return kafkaLeftDate;
+    }
+
+    public void setKafkaLeftDate(Date kafkaLeftDate) {
+        this.kafkaLeftDate = kafkaLeftDate;
     }
 }

@@ -26,7 +26,8 @@ public class ValidatedClickStreamHelper {
             return new ValidatedClickStream(newClickStream.getUserName(),
                 newClickStream.getSessionUUID(),
                 newClickStream.getClicks(),
-                acc.getClickStreamValidation());
+                acc.getClickStreamValidation(),
+                newClickStream.getCreationDate());
         } else {
             return newClickStream;
         }

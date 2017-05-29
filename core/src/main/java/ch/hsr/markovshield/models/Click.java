@@ -1,10 +1,12 @@
 package ch.hsr.markovshield.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 import java.util.Objects;
 
+@JsonIgnoreProperties (ignoreUnknown = true)
 public class Click {
 
     private final String sessionUUID;
@@ -12,6 +14,7 @@ public class Click {
     private final int urlRiskLevel;
     private final String url;
     private final Date timeStamp;
+    private Date kafkaFirstProcessedDate;
     private final boolean validationRequired;
 
     @JsonCreator
@@ -20,7 +23,24 @@ public class Click {
                  @JsonProperty ("url") String url,
                  @JsonProperty ("urlRiskLevel") int urlRiskLevel,
                  @JsonProperty ("timeStamp") Date timeStamp,
-                 @JsonProperty ("validationRequired") boolean validationRequired) {
+                 @JsonProperty ("validationRequired") boolean validationRequired,
+                 @JsonProperty ("kafkaFirstProcessedDate") Date kafkaFirstProcessedDate) {
+        this.sessionUUID = sessionUUID;
+        this.clickUUID = clickUUID;
+        this.url = url;
+        this.urlRiskLevel = urlRiskLevel;
+        this.timeStamp = timeStamp;
+        this.validationRequired = validationRequired;
+        this.kafkaFirstProcessedDate = kafkaFirstProcessedDate;
+    }
+
+
+    public Click(String sessionUUID,
+                 String clickUUID,
+                 String url,
+                 int urlRiskLevel,
+                 Date timeStamp,
+                 boolean validationRequired) {
         this.sessionUUID = sessionUUID;
         this.clickUUID = clickUUID;
         this.url = url;
@@ -41,6 +61,14 @@ public class Click {
         return timeStamp;
     }
 
+    public long getTimeDifference() {
+        if (kafkaFirstProcessedDate != null && timeStamp != null) {
+
+            return kafkaFirstProcessedDate.toInstant().toEpochMilli() - timeStamp.toInstant().toEpochMilli();
+        }
+        return 0;
+    }
+
     public boolean isValidationRequired() {
         return validationRequired;
     }
@@ -53,7 +81,9 @@ public class Click {
             ", urlRiskLevel=" + urlRiskLevel +
             ", url='" + url + '\'' +
             ", timeStamp=" + timeStamp +
+            ", kafkaFirstProcessedDate=" + kafkaFirstProcessedDate +
             ", validationRequired=" + validationRequired +
+            ", timedifference=" + getTimeDifference() +
             '}';
     }
 
@@ -85,5 +115,13 @@ public class Click {
 
     public int getUrlRiskLevel() {
         return urlRiskLevel;
+    }
+
+    public Date getKafkaFirstProcessedDate() {
+        return kafkaFirstProcessedDate;
+    }
+
+    public void setKafkaFirstProcessedDate(Date kafkaFirstProcessedDate) {
+        this.kafkaFirstProcessedDate = kafkaFirstProcessedDate;
     }
 }

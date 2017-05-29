@@ -15,6 +15,8 @@ import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.Collections;
 
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
@@ -22,6 +24,7 @@ import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
 import static com.google.common.collect.Iterables.concat;
+import static jdk.nashorn.internal.objects.NativeJava.to;
 
 public class MarkovClickStreamProcessing implements StreamProcessing {
 
@@ -40,16 +43,7 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     public static final String MARKOV_VALIDATED_CLICKSTREAMS_STORE = "MarkovValidatedClickstreamsStore";
 
     private static ClickStream getInitialClickStream(Click click, Session session) {
-        System.out.println("---------------------");
-        System.out.println("getInitialClickStream");
-        System.out.println(click);
-        System.out.println(session);
-        String newUserName;
-        if (session != null) {
-            newUserName = session.getUserName();
-        } else {
-            newUserName = USER_NOT_FOUND;
-        }
+        String newUserName = session != null ? session.getUserName() : USER_NOT_FOUND;
         return new ClickStream(newUserName, click.getSessionUUID(), Collections.singletonList(click));
     }
 
@@ -92,8 +86,13 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     }
 
     private static void outputClickstreamsForAnalysis(KStream<String, ValidationClickStream> clickStreamsWithModel) {
-        clickStreamsWithModel
-            .to(stringSerde,
+        KStream<String, ValidationClickStream> stringValidationClickStreamKStream = clickStreamsWithModel.mapValues(
+            validationClickStream -> {
+                validationClickStream.setKafkaLeftDate(Date.from(Instant.now()));
+                return validationClickStream;
+            });
+        stringValidationClickStreamKStream.print();
+        stringValidationClickStreamKStream.to(stringSerde,
                 validationClickStreamSerde,
                 MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
     }
@@ -120,10 +119,15 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     }
 
     private static KStream<String, Click> getClickStream(KStreamBuilder builder) {
-        return builder
+        KStream<String, Click> stringClickKStream = builder
             .stream(stringSerde,
                 clickSerde,
-                MARKOV_CLICK_TOPIC);
+                MARKOV_CLICK_TOPIC)
+            .mapValues(click -> {
+                click.setKafkaFirstProcessedDate(Date.from(Instant.now()));
+                return click;
+            });
+        return stringClickKStream;
     }
 
     private static GlobalKTable<String, UserModel> getUserModelTable(KStreamBuilder builder) {
