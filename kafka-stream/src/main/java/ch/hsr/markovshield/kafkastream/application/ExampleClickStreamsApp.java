@@ -43,9 +43,24 @@ public class ExampleClickStreamsApp {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
         final Properties properties = new Properties();
+
+        String commitInterval;
+        String threads;
+        if (args.length > 0) {
+            commitInterval = args[0];
+
+        } else {
+            commitInterval = "10";
+        }
+        if (args.length > 1) {
+            threads = args[1];
+        } else {
+            threads = "1";
+        }
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(StreamsConfig.ZOOKEEPER_CONNECT_CONFIG, "zookeeper:2181");
-        properties.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, "100");
+        properties.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, commitInterval);
+        properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, threads);
         properties.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         properties.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "ExampleClickStreams");
@@ -64,17 +79,21 @@ public class ExampleClickStreamsApp {
         final GlobalKTable<String, Session> sessions = getSessionTable(builder);
         final GlobalKTable<String, UserModel> userModels = getUserModelTable(builder);
 
-        KTable<String, ClickStream> clickstreams = aggregateClicks(sessions, markovClicks);
-        KStream<String, ClickStream> stringValidationClickStreamKStream = clickstreams.toStream((s, clickStream) -> clickStream
-            .getUserName());
-        stringValidationClickStreamKStream.mapValues(clickStream -> {
+        KStream<String, ClickStream> markovClickStreamAggregation = markovClicks.groupByKey(stringSerde, clickSerde)
+            .aggregate(() -> new ClickStream(USER_NOT_FOUND, null, Collections.emptyList()),
+                ExampleClickStreamsApp::aggregateClick,
+                clickStreamSerde,
+                "MarkovClickStreamAggregation").toStream();
+        KStream<String, ClickStream> clickStreamsWithSessions = addSessionToClickStream(sessions,
+            markovClickStreamAggregation);
+        clickStreamsWithSessions.mapValues(clickStream -> {
                 System.out.println("reducedClickStreams: " + String.valueOf(Instant.now()
-                    .toEpochMilli() - clickStream.timeStampOfLastClick().toInstant().toEpochMilli()));
+                    .toEpochMilli() - clickStream.getClicks().get(0).getKafkaFirstProcessedDate().toInstant().toEpochMilli()));
                 return clickStream;
             }
         );
         KStream<String, ValidationClickStream> clickStreamsWithModel = addModelToClickStreams(userModels,
-            stringValidationClickStreamKStream);
+            clickStreamsWithSessions);
         outputClickstreamsForAnalysis(clickStreamsWithModel);
         getValidatedClickstreams(builder).mapValues(clickStream -> clickStream.timeStampOfLastClick()
             .toInstant()
@@ -84,6 +103,19 @@ public class ExampleClickStreamsApp {
 
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
+    }
+
+    private static KStream<String, ClickStream> addSessionToClickStream(GlobalKTable<String, Session> sessions,
+                                                                        KStream<String, ClickStream> markovClickStreamAggregation) {
+        KStream<String, ClickStream> x = markovClickStreamAggregation.leftJoin(sessions,
+            (s, clickStream) -> clickStream.getSessionUUID(),
+            (clickStream, session) -> {
+                if (session != null) {
+                    clickStream.setUserName(session.getUserName());
+                }
+                return clickStream;
+            });
+        return x;
     }
 
     private static KStream<String, ValidatedClickStream> getValidatedClickstreams(KStreamBuilder builder) {
@@ -113,15 +145,25 @@ public class ExampleClickStreamsApp {
     }
 
 
-
     private static KTable<String, ClickStream> aggregateClicks(GlobalKTable<String, Session> sessions,
                                                                KStream<String, Click> clicks) {
 
-        
+
         return clicks.leftJoin(sessions,
             (s, click) -> click.getSessionUUID(),
             ExampleClickStreamsApp::getInitialClickStream).groupByKey(stringSerde,
             clickStreamSerde).reduce(ExampleClickStreamsApp::reduceClickStreams, "MarkovClickStreamAggregation");
+    }
+
+    private static ClickStream aggregateClick(String sessionId, Click click, ClickStream clickStream) {
+        if (clickStream.getSessionUUID() == null) {
+            clickStream.setSessionUUID(click.getSessionUUID());
+        }
+        clickStream.addToClicks(click);
+        System.out.println("reduceClickStreams: " + String.valueOf(Instant.now()
+            .toEpochMilli() - clickStream.timeStampOfLastClick().toInstant().toEpochMilli()));
+        return clickStream;
+
     }
 
     private static GlobalKTable<String, Session> getSessionTable(KStreamBuilder builder) {
