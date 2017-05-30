@@ -17,6 +17,7 @@ package ch.hsr.markovshield.utils; /**
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -25,12 +26,14 @@ import java.util.Map;
 
 public class JsonPOJOSerde<T> implements Serde<T> {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final Class<T> cls;
 
 
     public JsonPOJOSerde(Class<T> cls) {
         this.cls = cls;
+        mapper = new ObjectMapper();
+        mapper.registerModule(new AfterburnerModule());
     }
 
     @Override
