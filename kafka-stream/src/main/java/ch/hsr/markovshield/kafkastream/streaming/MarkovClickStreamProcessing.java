@@ -48,13 +48,12 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     }
 
     private static ClickStream reduceClickStreams(ClickStream clickStream, ClickStream anotherClickStream) {
-        String userName = clickStream.getUserName();
         if (isUserNameIsNotSet(clickStream, anotherClickStream)) {
-            userName = anotherClickStream.getUserName();
+            String userName = anotherClickStream.getUserName();
+            clickStream.setUserName(userName);
         }
-        return new ClickStream(userName,
-            clickStream.getSessionUUID(),
-            Lists.newLinkedList(concat(clickStream.getClicks(), anotherClickStream.getClicks())));
+        clickStream.addToClicks(anotherClickStream.getClicks());
+        return clickStream;
     }
 
     private static boolean isUserNameIsNotSet(ClickStream clickStream, ClickStream anotherClickStream) {
@@ -91,7 +90,6 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 validationClickStream.setKafkaLeftDate(Date.from(Instant.now()));
                 return validationClickStream;
             });
-        stringValidationClickStreamKStream.print();
         stringValidationClickStreamKStream.to(stringSerde,
                 validationClickStreamSerde,
                 MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);

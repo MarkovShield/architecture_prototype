@@ -3,6 +3,7 @@ package ch.hsr.markovshield.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -86,5 +87,9 @@ public class ClickStream {
     @Override
     public int hashCode() {
         return Objects.hash(userName, sessionUUID, clicks);
+    }
+
+    public void addToClicks(Collection<Click> clicks) {
+        this.clicks.addAll(clicks);
     }
 }
