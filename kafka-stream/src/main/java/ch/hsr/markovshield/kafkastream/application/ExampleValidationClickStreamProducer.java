@@ -42,7 +42,7 @@ public class ExampleValidationClickStreamProducer {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         final KafkaProducer<String, ValidationClickStream> clickProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<>(ValidationClickStream.class).serializer());
+            new JsonPOJOSerde<>(ValidationClickStream.class, JsonPOJOSerde.MARKOV_SHIELD_SMILE).serializer());
 
 
         final List<String> users = new LinkedList<String>();

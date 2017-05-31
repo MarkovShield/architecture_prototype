@@ -17,6 +17,7 @@ package ch.hsr.markovshield.utils; /**
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -25,14 +26,21 @@ import org.apache.kafka.common.serialization.Serializer;
 import java.util.Map;
 
 public class JsonPOJOSerde<T> implements Serde<T> {
-
+    public static final boolean MOD_MSHIELD_SMILE = false;
+    public static final boolean MARKOV_SHIELD_SMILE = true;
     private final ObjectMapper mapper;
     private final Class<T> cls;
 
 
-    public JsonPOJOSerde(Class<T> cls) {
+    public JsonPOJOSerde(Class<T> cls, boolean useSmile) {
+
         this.cls = cls;
-        mapper = new ObjectMapper();
+        if (useSmile) {
+            SmileFactory f = new SmileFactory();
+            mapper = new ObjectMapper(f);
+        } else {
+            mapper = new ObjectMapper();
+        }
         mapper.registerModule(new AfterburnerModule());
     }
 

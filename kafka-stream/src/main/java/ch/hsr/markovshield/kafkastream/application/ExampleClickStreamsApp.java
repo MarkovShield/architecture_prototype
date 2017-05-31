@@ -42,7 +42,8 @@ import static com.google.common.collect.Iterables.concat;
 public class ExampleClickStreamsApp {
 
     public static final Serde<String> stringSerde = Serdes.String();
-    public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class);
+    public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class,
+        JsonPOJOSerde.MOD_MSHIELD_SMILE);
 
     public static void main(final String[] args) throws IOException, InterruptedException {
         final Properties properties = new Properties();

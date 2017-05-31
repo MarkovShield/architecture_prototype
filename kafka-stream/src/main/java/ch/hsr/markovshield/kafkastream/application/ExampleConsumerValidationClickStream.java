@@ -27,7 +27,7 @@ public class ExampleConsumerValidationClickStream {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG,"Example");
         final KafkaConsumer<String, ValidationClickStream> clickConsumer = new KafkaConsumer<>(properties,
             Serdes.String().deserializer(),
-            new JsonPOJOSerde<>(ValidationClickStream.class).deserializer());
+            new JsonPOJOSerde<>(ValidationClickStream.class, JsonPOJOSerde.MARKOV_SHIELD_SMILE).deserializer());
         clickConsumer.subscribe(Collections.singletonList(MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC));
         boolean running = true;
         try {

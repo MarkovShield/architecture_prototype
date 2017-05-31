@@ -8,7 +8,6 @@ import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
-import com.google.common.collect.Lists;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.GlobalKTable;
@@ -23,21 +22,24 @@ import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANA
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
-import static com.google.common.collect.Iterables.concat;
-import static jdk.nashorn.internal.objects.NativeJava.to;
+import static ch.hsr.markovshield.utils.JsonPOJOSerde.MARKOV_SHIELD_SMILE;
+import static ch.hsr.markovshield.utils.JsonPOJOSerde.MOD_MSHIELD_SMILE;
 
 public class MarkovClickStreamProcessing implements StreamProcessing {
+
 
     public static final String USER_NOT_FOUND = "--------------------NOT FOUND---------------------------";
     public static final Serde<String> stringSerde = Serdes.String();
     public static final JsonPOJOSerde<ValidationClickStream> validationClickStreamSerde = new JsonPOJOSerde<>(
-        ValidationClickStream.class);
+        ValidationClickStream.class, MARKOV_SHIELD_SMILE);
     public static final JsonPOJOSerde<ValidatedClickStream> validatedClickStreamSerde = new JsonPOJOSerde<>(
-        ValidatedClickStream.class);
-    public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class);
-    public static final JsonPOJOSerde<Session> sessionSerde = new JsonPOJOSerde<>(Session.class);
-    public static final JsonPOJOSerde<UserModel> userModelSerde = new JsonPOJOSerde<>(UserModel.class);
-    public static final JsonPOJOSerde<ClickStream> clickStreamSerde = new JsonPOJOSerde<>(ClickStream.class);
+        ValidatedClickStream.class, MARKOV_SHIELD_SMILE);
+    public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class, MOD_MSHIELD_SMILE);
+    public static final JsonPOJOSerde<Session> sessionSerde = new JsonPOJOSerde<>(Session.class, MOD_MSHIELD_SMILE);
+    public static final JsonPOJOSerde<UserModel> userModelSerde = new JsonPOJOSerde<>(UserModel.class,
+        MARKOV_SHIELD_SMILE);
+    public static final JsonPOJOSerde<ClickStream> clickStreamSerde = new JsonPOJOSerde<>(ClickStream.class,
+        MARKOV_SHIELD_SMILE);
     public static final String MARKOV_LOGIN_STORE = "MarkovLoginStore";
     public static final String MARKOV_USER_MODEL_STORE = "MarkovUserModelStore";
     public static final String MARKOV_VALIDATED_CLICKSTREAMS_STORE = "MarkovValidatedClickstreamsStore";
@@ -91,8 +93,8 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
                 return validationClickStream;
             });
         stringValidationClickStreamKStream.to(stringSerde,
-                validationClickStreamSerde,
-                MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
+            validationClickStreamSerde,
+            MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
     }
 
     private static KStream<String, ValidationClickStream> addModelToClickStreams(GlobalKTable<String, UserModel> userModels,

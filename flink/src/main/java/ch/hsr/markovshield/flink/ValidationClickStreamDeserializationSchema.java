@@ -2,6 +2,7 @@ package ch.hsr.markovshield.flink;
 
 import ch.hsr.markovshield.models.ValidationClickStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.util.serialization.KeyedDeserializationSchema;
@@ -14,7 +15,9 @@ public class ValidationClickStreamDeserializationSchema implements KeyedDeserial
     private final TypeInformation<ValidationClickStream> forClass;
 
     public ValidationClickStreamDeserializationSchema() {
-        mapper = new ObjectMapper();
+
+        SmileFactory f = new SmileFactory();
+        mapper = new ObjectMapper(f);
         forClass = TypeExtractor.getForClass(ValidationClickStream.class);
     }
 
