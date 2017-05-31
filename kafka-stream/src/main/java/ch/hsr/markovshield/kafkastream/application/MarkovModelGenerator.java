@@ -51,7 +51,7 @@ public class MarkovModelGenerator {
 
         final KafkaProducer<String, UserModel> modelProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<>(UserModel.class).serializer());
+            new JsonPOJOSerde<>(UserModel.class, JsonPOJOSerde.MARKOV_SHIELD_SMILE).serializer());
 
         sleep(1000);
 
