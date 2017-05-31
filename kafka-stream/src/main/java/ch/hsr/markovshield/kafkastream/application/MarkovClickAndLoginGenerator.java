@@ -67,7 +67,7 @@ public class MarkovClickAndLoginGenerator {
             int sessionId = random.nextInt(1, 100000 + 1);
             logins.add(new Session(String.valueOf(sessionId), user));
 
-            IntStream.range(0, random.nextInt(100)).forEach(
+            IntStream.range(0, 100).forEach(
                 value -> {
                     String s = urls.get(random.nextInt(urls.size()));
                     clicks.add(new Click(String.valueOf(sessionId),
@@ -84,7 +84,7 @@ public class MarkovClickAndLoginGenerator {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerde.class);
-        properties.put(ProducerConfig.LINGER_MS_CONFIG,0);
+        properties.put(ProducerConfig.LINGER_MS_CONFIG, 0);
 
         final KafkaProducer<String, Session> loginProducer;
         loginProducer = new KafkaProducer<>(properties,
@@ -131,8 +131,13 @@ public class MarkovClickAndLoginGenerator {
 
 
         for (Click click : clicksBeforeLogin) {
-            Click newClick = new Click(click.getSessionUUID(), click.getClickUUID(), click.getUrl(), click.getUrlRiskLevel(), Date.from(
-                Instant.now()),click.isValidationRequired());
+            Click newClick = new Click(click.getSessionUUID(),
+                click.getClickUUID(),
+                click.getUrl(),
+                click.getUrlRiskLevel(),
+                Date.from(
+                    Instant.now()),
+                click.isValidationRequired());
             clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), newClick));
             clickProducer.flush();
         }
@@ -148,11 +153,27 @@ public class MarkovClickAndLoginGenerator {
         clicks.add(new Click(logins.get(0).getSessionUUID(), "1000", "my-secret-url", 2, Date.from(Instant.now()),
             true));
 
-        for (Click click : clicks) {
-            Click newClick = new Click(click.getSessionUUID(), click.getClickUUID(), click.getUrl(), click.getUrlRiskLevel(), Date.from(
-                Instant.now()),click.isValidationRequired());
+
+        while (clicks.size() > 0) {
+            int index;
+            if (clicks.size() != 1) {
+                index = random.nextInt(clicks.size() - 1);
+
+            } else {
+                index = 0;
+            }
+            Click click = clicks.get(index);
+            clicks.remove(index);
+            Click newClick = new Click(click.getSessionUUID(),
+                click.getClickUUID(),
+                click.getUrl(),
+                click.getUrlRiskLevel(),
+                Date.from(
+                    Instant.now()),
+                click.isValidationRequired());
             clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), newClick));
             clickProducer.flush();
+            sleep(10);
         }
 
     }
