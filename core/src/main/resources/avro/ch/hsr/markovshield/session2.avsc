@@ -1,9 +1,0 @@
-
-{"namespace": "ch.hsr.markovshield.avro",
- "type": "record",
- "name": "Session2",
- "fields": [
-     {"name": "sessionUUID", "type": "string"},
-     {"name": "userName", "type": "string"}
- ]
-}
