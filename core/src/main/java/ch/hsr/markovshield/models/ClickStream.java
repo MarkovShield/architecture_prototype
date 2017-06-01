@@ -2,6 +2,8 @@ package ch.hsr.markovshield.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -9,8 +11,8 @@ import java.util.Optional;
 
 public class ClickStream {
 
-    private final String userName;
-    private final String sessionUUID;
+    private String userName;
+    private String sessionUUID;
     private final List<Click> clicks;
 
     @JsonCreator
@@ -19,7 +21,7 @@ public class ClickStream {
                        @JsonProperty ("clicks") List<Click> clicks) {
         this.userName = userName;
         this.sessionUUID = sessionUUID;
-        this.clicks = clicks;
+        this.clicks = new ArrayList<>(clicks);
     }
 
     public String getUserName() {
@@ -28,6 +30,18 @@ public class ClickStream {
 
     public String getSessionUUID() {
         return sessionUUID;
+    }
+
+    public void addToClicks(Click click) {
+        this.clicks.add(click);
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setSessionUUID(String sessionUUID) {
+        this.sessionUUID = sessionUUID;
     }
 
     public List<Click> getClicks() {
@@ -73,5 +87,9 @@ public class ClickStream {
     @Override
     public int hashCode() {
         return Objects.hash(userName, sessionUUID, clicks);
+    }
+
+    public void addToClicks(Collection<Click> clicks) {
+        this.clicks.addAll(clicks);
     }
 }

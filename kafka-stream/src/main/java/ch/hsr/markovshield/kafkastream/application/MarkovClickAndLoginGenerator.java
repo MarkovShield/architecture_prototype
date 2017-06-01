@@ -38,23 +38,36 @@ public class MarkovClickAndLoginGenerator {
         users.add("Philip");
         users.add("Matthias");
         users.add("Ivan");
-        users.add("Kilian");
+        users.add("Anja");
+        users.add("Claudia");
+        users.add("Patric");
+        users.add("Jessica");
         final List<String> urls = new ArrayList<>();
         urls.add("index.html");
         urls.add("logout.html");
         urls.add("overview.html");
         urls.add("news.html");
+        urls.add("hansli.html");
+        urls.add("private.html");
+        urls.add("xxx.html");
+        urls.add("123.html");
+        urls.add("31231.html");
         final Map<String, Integer> urlRatings = new HashMap<>();
         urlRatings.put("index.html", UrlRating.RISK_LEVEL_LOW);
         urlRatings.put("logout.html", UrlRating.RISK_LEVEL_MEDIUM);
         urlRatings.put("overview.html", UrlRating.RISK_LEVEL_HIGH);
         urlRatings.put("news.html", UrlRating.RISK_LEVEL_LOW);
+        urlRatings.put("hansli.html", UrlRating.RISK_LEVEL_HIGH);
+        urlRatings.put("private.html", UrlRating.RISK_LEVEL_HIGH);
+        urlRatings.put("xxx.html", UrlRating.RISK_LEVEL_LOW);
+        urlRatings.put("123.html", UrlRating.RISK_LEVEL_LOW);
+        urlRatings.put("31231.html", UrlRating.RISK_LEVEL_LOW);
         ThreadLocalRandom random = ThreadLocalRandom.current();
         for (String user : users) {
             int sessionId = random.nextInt(1, 100000 + 1);
             logins.add(new Session(String.valueOf(sessionId), user));
 
-            IntStream.range(0, random.nextInt(10)).forEach(
+            IntStream.range(0, 100).forEach(
                 value -> {
                     String s = urls.get(random.nextInt(urls.size()));
                     clicks.add(new Click(String.valueOf(sessionId),
@@ -71,14 +84,15 @@ public class MarkovClickAndLoginGenerator {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerde.class);
+        properties.put(ProducerConfig.LINGER_MS_CONFIG, 0);
 
         final KafkaProducer<String, Session> loginProducer;
         loginProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<>(Session.class).serializer());
+            new JsonPOJOSerde<>(Session.class, JsonPOJOSerde.MOD_MSHIELD_SMILE).serializer());
         final KafkaProducer<String, Click> clickProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<>(Click.class).serializer());
+            new JsonPOJOSerde<>(Click.class, JsonPOJOSerde.MOD_MSHIELD_SMILE).serializer());
 
         final String loginTopic = "MarkovLogins";
         final String clickTopic = "MarkovClicks";
@@ -117,8 +131,14 @@ public class MarkovClickAndLoginGenerator {
 
 
         for (Click click : clicksBeforeLogin) {
-
-            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), click));
+            Click newClick = new Click(click.getSessionUUID(),
+                click.getClickUUID(),
+                click.getUrl(),
+                click.getUrlRiskLevel(),
+                Date.from(
+                    Instant.now()),
+                click.isValidationRequired());
+            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), newClick));
             clickProducer.flush();
         }
 
@@ -133,10 +153,27 @@ public class MarkovClickAndLoginGenerator {
         clicks.add(new Click(logins.get(0).getSessionUUID(), "1000", "my-secret-url", 2, Date.from(Instant.now()),
             true));
 
-        for (Click click : clicks) {
 
-            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), click));
+        while (clicks.size() > 0) {
+            int index;
+            if (clicks.size() != 1) {
+                index = random.nextInt(clicks.size() - 1);
+
+            } else {
+                index = 0;
+            }
+            Click click = clicks.get(index);
+            clicks.remove(index);
+            Click newClick = new Click(click.getSessionUUID(),
+                click.getClickUUID(),
+                click.getUrl(),
+                click.getUrlRiskLevel(),
+                Date.from(
+                    Instant.now()),
+                click.isValidationRequired());
+            clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), newClick));
             clickProducer.flush();
+            sleep(10);
         }
 
     }

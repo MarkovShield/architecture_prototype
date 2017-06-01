@@ -8,59 +8,54 @@ import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
-import com.google.common.collect.Lists;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KTable;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.Collections;
 
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_USER_MODEL_TOPIC;
-import static com.google.common.collect.Iterables.concat;
+import static ch.hsr.markovshield.utils.JsonPOJOSerde.MARKOV_SHIELD_SMILE;
+import static ch.hsr.markovshield.utils.JsonPOJOSerde.MOD_MSHIELD_SMILE;
 
 public class MarkovClickStreamProcessing implements StreamProcessing {
+
 
     public static final String USER_NOT_FOUND = "--------------------NOT FOUND---------------------------";
     public static final Serde<String> stringSerde = Serdes.String();
     public static final JsonPOJOSerde<ValidationClickStream> validationClickStreamSerde = new JsonPOJOSerde<>(
-        ValidationClickStream.class);
+        ValidationClickStream.class, MARKOV_SHIELD_SMILE);
     public static final JsonPOJOSerde<ValidatedClickStream> validatedClickStreamSerde = new JsonPOJOSerde<>(
-        ValidatedClickStream.class);
-    public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class);
-    public static final JsonPOJOSerde<Session> sessionSerde = new JsonPOJOSerde<>(Session.class);
-    public static final JsonPOJOSerde<UserModel> userModelSerde = new JsonPOJOSerde<>(UserModel.class);
-    public static final JsonPOJOSerde<ClickStream> clickStreamSerde = new JsonPOJOSerde<>(ClickStream.class);
+        ValidatedClickStream.class, MARKOV_SHIELD_SMILE);
+    public static final JsonPOJOSerde<Click> clickSerde = new JsonPOJOSerde<>(Click.class, MOD_MSHIELD_SMILE);
+    public static final JsonPOJOSerde<Session> sessionSerde = new JsonPOJOSerde<>(Session.class, MOD_MSHIELD_SMILE);
+    public static final JsonPOJOSerde<UserModel> userModelSerde = new JsonPOJOSerde<>(UserModel.class,
+        MARKOV_SHIELD_SMILE);
+    public static final JsonPOJOSerde<ClickStream> clickStreamSerde = new JsonPOJOSerde<>(ClickStream.class,
+        MARKOV_SHIELD_SMILE);
     public static final String MARKOV_LOGIN_STORE = "MarkovLoginStore";
     public static final String MARKOV_USER_MODEL_STORE = "MarkovUserModelStore";
     public static final String MARKOV_VALIDATED_CLICKSTREAMS_STORE = "MarkovValidatedClickstreamsStore";
 
     private static ClickStream getInitialClickStream(Click click, Session session) {
-        System.out.println("---------------------");
-        System.out.println("getInitialClickStream");
-        System.out.println(click);
-        System.out.println(session);
-        String newUserName;
-        if (session != null) {
-            newUserName = session.getUserName();
-        } else {
-            newUserName = USER_NOT_FOUND;
-        }
+        String newUserName = session != null ? session.getUserName() : USER_NOT_FOUND;
         return new ClickStream(newUserName, click.getSessionUUID(), Collections.singletonList(click));
     }
 
     private static ClickStream reduceClickStreams(ClickStream clickStream, ClickStream anotherClickStream) {
-        String userName = clickStream.getUserName();
         if (isUserNameIsNotSet(clickStream, anotherClickStream)) {
-            userName = anotherClickStream.getUserName();
+            String userName = anotherClickStream.getUserName();
+            clickStream.setUserName(userName);
         }
-        return new ClickStream(userName,
-            clickStream.getSessionUUID(),
-            Lists.newLinkedList(concat(clickStream.getClicks(), anotherClickStream.getClicks())));
+        clickStream.addToClicks(anotherClickStream.getClicks());
+        return clickStream;
     }
 
     private static boolean isUserNameIsNotSet(ClickStream clickStream, ClickStream anotherClickStream) {
@@ -92,10 +87,14 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     }
 
     private static void outputClickstreamsForAnalysis(KStream<String, ValidationClickStream> clickStreamsWithModel) {
-        clickStreamsWithModel
-            .to(stringSerde,
-                validationClickStreamSerde,
-                MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
+        KStream<String, ValidationClickStream> stringValidationClickStreamKStream = clickStreamsWithModel.mapValues(
+            validationClickStream -> {
+                validationClickStream.setKafkaLeftDate(Date.from(Instant.now()));
+                return validationClickStream;
+            });
+        stringValidationClickStreamKStream.to(stringSerde,
+            validationClickStreamSerde,
+            MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
     }
 
     private static KStream<String, ValidationClickStream> addModelToClickStreams(GlobalKTable<String, UserModel> userModels,
@@ -120,10 +119,15 @@ public class MarkovClickStreamProcessing implements StreamProcessing {
     }
 
     private static KStream<String, Click> getClickStream(KStreamBuilder builder) {
-        return builder
+        KStream<String, Click> stringClickKStream = builder
             .stream(stringSerde,
                 clickSerde,
-                MARKOV_CLICK_TOPIC);
+                MARKOV_CLICK_TOPIC)
+            .mapValues(click -> {
+                click.setKafkaFirstProcessedDate(Date.from(Instant.now()));
+                return click;
+            });
+        return stringClickKStream;
     }
 
     private static GlobalKTable<String, UserModel> getUserModelTable(KStreamBuilder builder) {

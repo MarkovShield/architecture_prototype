@@ -40,10 +40,10 @@ public class MarkovSingleClickAndLoginGenerator {
         final KafkaProducer<String, Session> loginProducer;
         loginProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<>(Session.class).serializer());
+            new JsonPOJOSerde<>(Session.class, JsonPOJOSerde.MOD_MSHIELD_SMILE).serializer());
         final KafkaProducer<String, Click> clickProducer = new KafkaProducer<>(properties,
             Serdes.String().serializer(),
-            new JsonPOJOSerde<>(Click.class).serializer());
+            new JsonPOJOSerde<>(Click.class, JsonPOJOSerde.MOD_MSHIELD_SMILE).serializer());
 
         final String loginTopic = "MarkovLogins";
         final String clickTopic = "MarkovClicks";

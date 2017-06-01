@@ -3,6 +3,7 @@ package ch.hsr.markovshield.flink;
 import ch.hsr.markovshield.models.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import org.apache.flink.streaming.util.serialization.KeyedSerializationSchema;
 
 public class UserModelSerializationSchema implements KeyedSerializationSchema<UserModel> {
@@ -12,7 +13,8 @@ public class UserModelSerializationSchema implements KeyedSerializationSchema<Us
 
     public UserModelSerializationSchema(String topic) {
         this.topic = topic;
-        mapper = new ObjectMapper();
+        SmileFactory f = new SmileFactory();
+        mapper = new ObjectMapper(f);
     }
 
     @Override

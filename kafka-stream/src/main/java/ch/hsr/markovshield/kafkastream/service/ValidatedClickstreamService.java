@@ -14,4 +14,8 @@ public interface ValidatedClickstreamService {
     List<ValidatedClickStream> getValidatedClickstreamsByUser(String user);
 
     List<ValidatedClickStream> getValidatedClickstreamAfterTimeStamp(Long timestamp);
+
+    List<ValidatedClickStream> getValidatedClickstreamBetweenTimeStamps(Long timestampFirst, Long timestampLast);
+
+    List<ValidatedClickStream> getValidatedClickstreamBeforeTimeStamp(Long timestamp);
 }
