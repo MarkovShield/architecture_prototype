@@ -50,7 +50,6 @@ public class MarkovShieldModelUpdate implements Serializable {
             .addSource(new FlinkKafkaConsumer010<>(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
                 new ValidatedClickStreamDeserializationSchema(),
                 config.getKafkaProperties()));
-
         Integer sessiontimeout = OptionHelper.getOption(commandLineArguments, SESSION_TIMEOUT_ARGUMENT_NAME)
             .map(Integer::valueOf)
             .orElse(DEFAULT_SESSION_TIME_MINUTES);

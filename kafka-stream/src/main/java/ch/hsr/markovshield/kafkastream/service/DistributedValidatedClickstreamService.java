@@ -4,7 +4,6 @@ import ch.hsr.markovshield.kafkastream.repository.DistributedKafkaStateRepositor
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,8 +43,32 @@ public class DistributedValidatedClickstreamService implements ValidatedClickstr
     @Override
     public List<ValidatedClickStream> getValidatedClickstreamAfterTimeStamp(Long timestamp) {
         return getAllValidatedClickstreams().stream()
-            .filter(clickStream -> clickStream.timeStampOfLastClick().after(Date.from(Instant.ofEpochMilli(timestamp))))
+            .filter(clickStream -> clickStream.timeStampOfLastClick()
+                .toInstant()
+                .isAfter(Instant.ofEpochMilli(timestamp)))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ValidatedClickStream> getValidatedClickstreamBetweenTimeStamps(Long timestampFirst, Long timestampLast) {
+        return getAllValidatedClickstreams().stream()
+            .filter(clickStream -> clickStream.timeStampOfLastClick()
+                .toInstant()
+                .isAfter(Instant.ofEpochMilli(timestampFirst)) && clickStream.timeStampOfLastClick()
+                .toInstant()
+                .isBefore(Instant.ofEpochMilli(timestampLast)))
+            .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<ValidatedClickStream> getValidatedClickstreamBeforeTimeStamp(Long timestamp) {
+        return getAllValidatedClickstreams().stream()
+            .filter(clickStream -> clickStream.timeStampOfLastClick()
+                .toInstant()
+                .isBefore(Instant.ofEpochMilli(timestamp)))
+            .collect(Collectors.toList());
+
     }
 
     @Override
