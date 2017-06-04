@@ -26,10 +26,16 @@ import static java.lang.Thread.sleep;
 public class MarkovClickAndLoginGenerator {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
-        produceInputs();
+        String broker;
+        if(args.length > 0){
+            broker = args[0];
+        }else{
+            broker = "localhost:9092";
+        }
+        produceInputs(broker);
     }
 
-    private static void produceInputs() throws IOException, InterruptedException {
+    private static void produceInputs(String broker) throws IOException, InterruptedException {
         final List<Session> logins = new LinkedList<>();
         final List<Click> clicks = new LinkedList<>();
 
@@ -42,6 +48,13 @@ public class MarkovClickAndLoginGenerator {
         users.add("Claudia");
         users.add("Patric");
         users.add("Jessica");
+        users.add("Kilian");
+        users.add("Philip");
+        users.add("Matthias");
+        users.add("Ivan");
+        users.add("Anja");
+        users.add("Matthias");
+        users.add("Philip");
         final List<String> urls = new ArrayList<>();
         urls.add("index.html");
         urls.add("logout.html");
@@ -81,7 +94,7 @@ public class MarkovClickAndLoginGenerator {
         }
 
         final Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, broker);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerde.class);
         properties.put(ProducerConfig.LINGER_MS_CONFIG, 0);
@@ -173,7 +186,7 @@ public class MarkovClickAndLoginGenerator {
                 click.isValidationRequired());
             clickProducer.send(new ProducerRecord<>(clickTopic, click.getSessionUUID().toString(), newClick));
             clickProducer.flush();
-            sleep(10);
+            //sleep(10);
         }
 
     }

@@ -17,12 +17,18 @@ import java.util.Properties;
 public class ExampleConsumerClick {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
-        produceInputs();
+        String broker;
+        if(args.length > 0){
+            broker = args[0];
+        }else{
+            broker = "localhost:9092";
+        }
+        produceInputs(broker);
     }
 
-    private static void produceInputs() throws InterruptedException {
+    private static void produceInputs(String broker) throws InterruptedException {
         final Properties properties = new Properties();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, broker);
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "Example");
@@ -38,7 +44,7 @@ public class ExampleConsumerClick {
                     System.out.println(record.value().getSessionUUID() + ": " + (Instant.now()
                         .toEpochMilli() - record.value().getTimeStamp()
                         .toInstant()
-                        .toEpochMilli()) + " ---- "  + record.value().isValidationRequired());
+                        .toEpochMilli()) + " ---- "  + record.value().isValidationRequired() + " - " + record.value().getClickUUID());
                 }
             }
         } finally {

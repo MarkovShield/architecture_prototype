@@ -2,7 +2,7 @@ package ch.hsr.markovshield.kafkastream.application;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.models.Click;
-import ch.hsr.markovshield.models.ValidationClickStream;
+import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Properties;
 
-public class ExampleConsumerValidationClickStream {
+public class ExampleConsumerValidatedClickStream {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
         String broker;
@@ -33,21 +33,21 @@ public class ExampleConsumerValidationClickStream {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "Example");
-        final KafkaConsumer<String, ValidationClickStream> clickConsumer = new KafkaConsumer<>(properties,
+        final KafkaConsumer<String, ValidatedClickStream> clickConsumer = new KafkaConsumer<>(properties,
             Serdes.String().deserializer(),
-            new JsonPOJOSerde<>(ValidationClickStream.class, JsonPOJOSerde.MARKOV_SHIELD_SMILE).deserializer());
-        clickConsumer.subscribe(Collections.singletonList(MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC));
+            new JsonPOJOSerde<>(ValidatedClickStream.class, JsonPOJOSerde.MARKOV_SHIELD_SMILE).deserializer());
+        clickConsumer.subscribe(Collections.singletonList(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS));
         boolean running = true;
         long sum = 0;
         int count = 0;
         try {
             while (running) {
-                ConsumerRecords<String, ValidationClickStream> records = clickConsumer.poll(1000);
+                ConsumerRecords<String, ValidatedClickStream> records = clickConsumer.poll(1000);
                 sum = 0;
                 long max = 0;
                 count = 0;
-                for (ConsumerRecord<String, ValidationClickStream> record : records) {
-                    ValidationClickStream clickStream = record.value();
+                for (ConsumerRecord<String, ValidatedClickStream> record : records) {
+                    ValidatedClickStream clickStream = record.value();
                     long diff1 = Instant.now()
                         .toEpochMilli() - clickStream
                         .timeStampOfLastClick()
