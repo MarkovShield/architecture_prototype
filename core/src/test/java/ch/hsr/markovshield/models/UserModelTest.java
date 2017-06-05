@@ -1,6 +1,7 @@
 package ch.hsr.markovshield.models;
 
 
+import ch.hsr.markovshield.ml_models.ClickStreamModel;
 import ch.hsr.markovshield.ml_models.MatrixFrequencyModel;
 import ch.hsr.markovshield.ml_models.TransitionModel;
 import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;

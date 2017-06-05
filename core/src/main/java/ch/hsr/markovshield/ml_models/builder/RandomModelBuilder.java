@@ -3,7 +3,7 @@ package ch.hsr.markovshield.ml_models.builder;
 import ch.hsr.markovshield.ml_models.ModelBuilder;
 import ch.hsr.markovshield.ml_models.RandomModel;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.ClickStreamModel;
+import ch.hsr.markovshield.ml_models.ClickStreamModel;
 
 public class RandomModelBuilder implements ModelBuilder {
 

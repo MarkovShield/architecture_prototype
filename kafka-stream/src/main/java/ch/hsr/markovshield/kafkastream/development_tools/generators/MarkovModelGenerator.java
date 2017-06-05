@@ -6,7 +6,7 @@ import ch.hsr.markovshield.ml_models.SimpleUserModelFactory;
 import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import ch.hsr.markovshield.models.UserModel;
-import ch.hsr.markovshield.models.UserModelFactory;
+import ch.hsr.markovshield.ml_models.UserModelFactory;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;

@@ -3,7 +3,6 @@ package ch.hsr.markovshield.ml_models;
 import ch.hsr.markovshield.ml_models.data_helper.FrequencyMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.ClickStreamModel;
 import ch.hsr.markovshield.models.UrlFrequencies;
 import ch.hsr.markovshield.models.UrlStore;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;

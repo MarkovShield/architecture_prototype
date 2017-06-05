@@ -10,7 +10,7 @@ import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
 import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.models.UserModel;
-import ch.hsr.markovshield.models.UserModelFactory;
+import ch.hsr.markovshield.ml_models.UserModelFactory;
 import ch.hsr.markovshield.models.ValidationClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import io.confluent.examples.streams.kafka.EmbeddedSingleNodeKafkaCluster;

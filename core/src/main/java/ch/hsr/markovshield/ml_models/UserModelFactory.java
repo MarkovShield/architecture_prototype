@@ -1,5 +1,6 @@
-package ch.hsr.markovshield.models;
+package ch.hsr.markovshield.ml_models;
 
+import ch.hsr.markovshield.models.ClickStream;
 import java.io.Serializable;
 import java.util.List;
 

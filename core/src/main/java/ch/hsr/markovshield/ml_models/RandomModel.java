@@ -1,7 +1,6 @@
 package ch.hsr.markovshield.ml_models;
 
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.ClickStreamModel;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
