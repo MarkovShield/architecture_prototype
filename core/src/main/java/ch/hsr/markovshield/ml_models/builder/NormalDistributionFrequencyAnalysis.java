@@ -5,7 +5,7 @@ import ch.hsr.markovshield.ml_models.ModelBuilder;
 import ch.hsr.markovshield.ml_models.data_helper.FrequencyMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.UrlStore;
+import ch.hsr.markovshield.ml_models.data_helper.UrlStore;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import java.util.HashMap;
 import java.util.Map;

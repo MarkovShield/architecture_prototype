@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.models;
+package ch.hsr.markovshield.ml_models.data_helper;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
