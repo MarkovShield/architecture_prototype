@@ -39,8 +39,8 @@ FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
 ### run
 #### Windows
 ```bash
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovModelGenerator
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovClickAndLoginGenerator
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
+java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
 java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 ```bash
@@ -50,8 +50,8 @@ bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager
 ```
 #### macOS/Linux
 ```bash
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovModelGenerator
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovClickAndLoginGenerator
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
+java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
 java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 ```bash

@@ -1,10 +1,8 @@
 package ch.hsr.markovshield.kafkastream.application;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
-import ch.hsr.markovshield.kafkastream.streaming.KafkaTopicCreator;
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
 import ch.hsr.markovshield.kafkastream.streaming.StreamProcessing;
-import ch.hsr.markovshield.kafkastream.streaming.StreamingApplication;
 import ch.hsr.markovshield.utils.OptionHelper;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import org.apache.commons.cli.CommandLine;
