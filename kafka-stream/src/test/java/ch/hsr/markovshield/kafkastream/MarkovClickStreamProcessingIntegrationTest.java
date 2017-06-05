@@ -2,12 +2,12 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
-import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
-import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
+import ch.hsr.markovshield.ml_models.SimpleUserModelFactory;
+import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
+import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
-import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.UserModelFactory;
@@ -114,8 +114,8 @@ public class MarkovClickStreamProcessingIntegrationTest {
             sessionSerde.serializer());
 
         IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainWithMatrix);
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
+        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainAnalysis);
 
         List<UserModel> userModels = logins.stream()
             .map(Session::getUserName)
@@ -285,8 +285,8 @@ public class MarkovClickStreamProcessingIntegrationTest {
         logins.add(login2);
 
         IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainWithMatrix);
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
+        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainAnalysis);
 
         List<UserModel> userModels = logins.stream()
             .map(Session::getUserName)

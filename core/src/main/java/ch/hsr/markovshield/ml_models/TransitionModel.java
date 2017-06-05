@@ -1,7 +1,11 @@
-package ch.hsr.markovshield.models;
+package ch.hsr.markovshield.ml_models;
 
-import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
-import ch.hsr.markovshield.ml.TransitionMatrix;
+import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
+import ch.hsr.markovshield.ml_models.data_helper.TransitionMatrix;
+import ch.hsr.markovshield.models.Click;
+import ch.hsr.markovshield.models.ClickStream;
+import ch.hsr.markovshield.models.ClickStreamModel;
+import ch.hsr.markovshield.models.UrlStore;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -82,7 +86,7 @@ public class TransitionModel implements ClickStreamModel {
             double probabilityForClick;
             if (i == clicks.size() - 1) {
                 probabilityForClick = getProbabilityForClick(clicks.get(i).getUrl(),
-                    MarkovChainWithMatrix.END_OF_CLICK_STREAM);
+                    MarkovChainAnalysis.END_OF_CLICK_STREAM);
             } else {
                 probabilityForClick = getProbabilityForClick(clicks.get(i), clicks.get(i + 1));
             }

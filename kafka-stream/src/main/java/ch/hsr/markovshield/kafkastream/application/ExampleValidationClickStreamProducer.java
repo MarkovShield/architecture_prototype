@@ -1,6 +1,6 @@
 package ch.hsr.markovshield.kafkastream.application;
 
-import ch.hsr.markovshield.ml.RandomModelBuilder;
+import ch.hsr.markovshield.ml_models.builder.RandomModelBuilder;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStreamModel;
 import ch.hsr.markovshield.models.UrlRating;

@@ -27,9 +27,9 @@ public class MarkovClickAndLoginGenerator {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
         String broker;
-        if(args.length > 0){
+        if (args.length > 0) {
             broker = args[0];
-        }else{
+        } else {
             broker = "localhost:9092";
         }
         produceInputs(broker);

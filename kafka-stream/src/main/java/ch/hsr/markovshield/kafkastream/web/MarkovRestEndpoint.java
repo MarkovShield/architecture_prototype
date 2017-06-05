@@ -100,7 +100,8 @@ public class MarkovRestEndpoint {
     @GET
     @Path ("/validatedclickstreams/between/{timestampFirst}/{timestampLast}")
     @Produces (MediaType.APPLICATION_JSON)
-    public List<ValidatedClickStream> getValidatedClickstreamBetweenTimeStamps(@PathParam ("timestampFirst") final Long timestampFirst, @PathParam ("timestampLast") final Long timestampLast) {
+    public List<ValidatedClickStream> getValidatedClickstreamBetweenTimeStamps(@PathParam ("timestampFirst") final Long timestampFirst,
+                                                                               @PathParam ("timestampLast") final Long timestampLast) {
         return validatedClickstreamService.getValidatedClickstreamBetweenTimeStamps(timestampFirst, timestampLast);
     }
 

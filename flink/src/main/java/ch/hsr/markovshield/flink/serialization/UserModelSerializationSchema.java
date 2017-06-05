@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.flink;
+package ch.hsr.markovshield.flink.serialization;
 
 import ch.hsr.markovshield.models.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;

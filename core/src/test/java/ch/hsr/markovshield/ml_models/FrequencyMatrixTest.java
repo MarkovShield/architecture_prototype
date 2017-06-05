@@ -1,6 +1,7 @@
-package ch.hsr.markovshield.ml;
+package ch.hsr.markovshield.ml_models;
 
 
+import ch.hsr.markovshield.ml_models.data_helper.FrequencyMatrix;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -11,7 +12,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class TransistionMatrixTest {
+public class FrequencyMatrixTest {
 
     private ObjectMapper mapper;
 
@@ -22,7 +23,7 @@ public class TransistionMatrixTest {
 
     @Test
     public void serializationTest() throws JsonProcessingException {
-        TransitionMatrix matrix = new TransitionMatrix(2);
+        FrequencyMatrix matrix = new FrequencyMatrix(2);
         String json = mapper.writeValueAsString(matrix);
         assertThat(json, containsString("columns"));
         assertThat(json, containsString("rows"));
@@ -31,9 +32,9 @@ public class TransistionMatrixTest {
 
     @Test
     public void serializationAnDeserializationTest() throws IOException {
-        TransitionMatrix matrix = new TransitionMatrix(2);
+        FrequencyMatrix matrix = new FrequencyMatrix(2);
         String json = mapper.writeValueAsString(matrix);
-        TransitionMatrix deserializiedMatrix = mapper.readValue(json, TransitionMatrix.class);
+        FrequencyMatrix deserializiedMatrix = mapper.readValue(json, FrequencyMatrix.class);
         assertThat(deserializiedMatrix, equalTo(matrix));
     }
 }

@@ -1,38 +1,23 @@
-package ch.hsr.markovshield.ml;
+package ch.hsr.markovshield.ml_models.builder;
 
+import ch.hsr.markovshield.ml_models.MatrixFrequencyModel;
+import ch.hsr.markovshield.ml_models.ModelBuilder;
+import ch.hsr.markovshield.ml_models.data_helper.FrequencyMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import ch.hsr.markovshield.models.UrlStore;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import java.util.HashMap;
 import java.util.Map;
 
-public class IQRFrequencyAnalysis implements ModelBuilder {
-
-
-    private static Map<String, Integer> getMappings(HashMap<String, HashMap<String, Double>> clickCountMatrix) {
-        HashMap<String, Integer> urlMapping = new HashMap<>();
-        int urlCount = 0;
-        for (String url : clickCountMatrix.keySet()) {
-            urlMapping.put(url, urlCount++);
-        }
-        urlMapping.put("endOfClickStream", urlCount);
-        return urlMapping;
-    }
+public class NormalDistributionFrequencyAnalysis implements ModelBuilder {
 
     public MatrixFrequencyModel train(Iterable<ClickStream> stream) {
         HashMap<String, HashMap<String, Double>> clickCountMatrix = new HashMap<>();
         Map<String, Integer> urlMap = new HashMap<>();
         Map<String, Integer> sessionMap = new HashMap<>();
         stream.forEach(clickStream -> {
-            for (Click click :
-                clickStream.getClicks()) {
-                if (!urlMap.containsKey(click.getUrl())) {
-                    urlMap.put(click.getUrl(), urlMap.size());
-                }
-                updateClickCount(clickCountMatrix, click);
-            }
+            frequency(clickCountMatrix, urlMap, clickStream);
             sessionMap.put(clickStream.getSessionUUID(), sessionMap.size());
         });
         double[][] clicks = new double[urlMap.size()][sessionMap.size()];
@@ -49,16 +34,48 @@ public class IQRFrequencyAnalysis implements ModelBuilder {
         return new MatrixFrequencyModel(clickProbabilityMatrix, new UrlStore(urlMap));
     }
 
+    private void frequency(HashMap<String, HashMap<String, Double>> clickCountMatrix,
+                           Map<String, Integer> urlMap,
+                           ClickStream clickStream) {
+        for (Click click :
+            clickStream.getClicks()) {
+            if (!urlMap.containsKey(click.getUrl())) {
+                urlMap.put(click.getUrl(), urlMap.size());
+            }
+            updateClickCount(clickCountMatrix, click);
+        }
+    }
+
+    private static void updateClickCount(HashMap<String, HashMap<String, Double>> clickCountMatrix, Click click) {
+        String sessionUUID = click.getSessionUUID();
+        String url = click.getUrl();
+        if (!clickCountMatrix.containsKey(url)) {
+            HashMap<String, Double> frequencyMap = new HashMap<>();
+            frequencyMap.put(sessionUUID, 1.0);
+            clickCountMatrix.put(url, frequencyMap);
+        } else {
+            HashMap<String, Double> frequencyMap = clickCountMatrix.get(url);
+            if (frequencyMap.containsKey(sessionUUID)) {
+                frequencyMap.put(sessionUUID, frequencyMap.get(sessionUUID) + 1);
+            } else {
+                frequencyMap.put(sessionUUID, 1.0);
+            }
+        }
+    }
+
     private static FrequencyMatrix calculateFrequencies(double[][] data, Map<String, Integer> urlMap) {
         FrequencyMatrix clickFrequencyMatrix = new FrequencyMatrix(urlMap.size());
         for (Map.Entry<String, Integer> entry : urlMap.entrySet()
             ) {
-            DescriptiveStatistics da = new DescriptiveStatistics(data[entry.getValue()]);
-            double firstQuartile = da.getPercentile(25);
-            double thirdQuartile = da.getPercentile(75);
-            double iqr = thirdQuartile - firstQuartile;
-            double lowerBound = firstQuartile - 1.5 * iqr;
-            double upperBound = thirdQuartile + 1.5 * iqr;
+            SummaryStatistics da = new SummaryStatistics();
+            double[] datum = data[entry.getValue()];
+            for (double v : datum) {
+                da.addValue(v);
+            }
+            double standardDeviation = da.getStandardDeviation();
+            double mean = da.getMean();
+            double lowerBound = mean - 2 * standardDeviation;
+            double upperBound = mean + 2 * standardDeviation;
             addToFrequencyMatrix(clickFrequencyMatrix,
                 entry.getKey(),
                 lowerBound,
@@ -82,23 +99,6 @@ public class IQRFrequencyAnalysis implements ModelBuilder {
     private static int getIndexByUrl(Map<String, Integer> urlMap, String url) {
         Integer integer = urlMap.get(url);
         return integer;
-    }
-
-    private static void updateClickCount(HashMap<String, HashMap<String, Double>> clickCountMatrix, Click click) {
-        String sessionUUID = click.getSessionUUID();
-        String url = click.getUrl();
-        if (!clickCountMatrix.containsKey(url)) {
-            HashMap<String, Double> frequencyMap = new HashMap<>();
-            frequencyMap.put(sessionUUID, 1.0);
-            clickCountMatrix.put(url, frequencyMap);
-        } else {
-            HashMap<String, Double> frequencyMap = clickCountMatrix.get(url);
-            if (frequencyMap.containsKey(sessionUUID)) {
-                frequencyMap.put(sessionUUID, frequencyMap.get(sessionUUID) + 1);
-            } else {
-                frequencyMap.put(sessionUUID, 1.0);
-            }
-        }
     }
 
 }

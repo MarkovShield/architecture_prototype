@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.flink;
+package ch.hsr.markovshield.flink.serialization;
 
 import ch.hsr.markovshield.models.ValidationClickStream;
 import com.fasterxml.jackson.databind.ObjectMapper;

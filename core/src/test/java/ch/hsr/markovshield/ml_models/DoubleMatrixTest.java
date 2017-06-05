@@ -1,6 +1,7 @@
-package ch.hsr.markovshield.ml;
+package ch.hsr.markovshield.ml_models;
 
 
+import ch.hsr.markovshield.ml_models.data_helper.DoubleMatrix;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;

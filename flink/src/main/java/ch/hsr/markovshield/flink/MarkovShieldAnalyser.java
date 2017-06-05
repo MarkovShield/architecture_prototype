@@ -1,6 +1,8 @@
 package ch.hsr.markovshield.flink;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
+import ch.hsr.markovshield.flink.serialization.ValidatedClickStreamSerializationSchema;
+import ch.hsr.markovshield.flink.serialization.ValidationClickStreamDeserializationSchema;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.ClickStreamValidation;

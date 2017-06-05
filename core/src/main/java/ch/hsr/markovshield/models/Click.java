@@ -14,8 +14,8 @@ public class Click {
     private final int urlRiskLevel;
     private final String url;
     private final Date timeStamp;
-    private Date kafkaFirstProcessedDate;
     private final boolean validationRequired;
+    private Date kafkaFirstProcessedDate;
 
     @JsonCreator
     public Click(@JsonProperty ("sessionUUID") String sessionUUID,
@@ -61,14 +61,6 @@ public class Click {
         return timeStamp;
     }
 
-    public long getTimeDifference() {
-        if (kafkaFirstProcessedDate != null && timeStamp != null) {
-
-            return kafkaFirstProcessedDate.toInstant().toEpochMilli() - timeStamp.toInstant().toEpochMilli();
-        }
-        return 0;
-    }
-
     public boolean isValidationRequired() {
         return validationRequired;
     }
@@ -85,6 +77,14 @@ public class Click {
             ", validationRequired=" + validationRequired +
             ", timedifference=" + getTimeDifference() +
             '}';
+    }
+
+    public long getTimeDifference() {
+        if (kafkaFirstProcessedDate != null && timeStamp != null) {
+
+            return kafkaFirstProcessedDate.toInstant().toEpochMilli() - timeStamp.toInstant().toEpochMilli();
+        }
+        return 0;
     }
 
     @Override

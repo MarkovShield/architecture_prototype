@@ -1,13 +1,15 @@
-package ch.hsr.markovshield.ml;
+package ch.hsr.markovshield.ml_models.builder;
 
+import ch.hsr.markovshield.ml_models.ModelBuilder;
+import ch.hsr.markovshield.ml_models.TransitionModel;
+import ch.hsr.markovshield.ml_models.data_helper.TransitionMatrix;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.TransitionModel;
 import ch.hsr.markovshield.models.UrlStore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MarkovChainWithMatrix implements ModelBuilder {
+public class MarkovChainAnalysis implements ModelBuilder {
 
 
     public static final String END_OF_CLICK_STREAM = "endOfClickStream";

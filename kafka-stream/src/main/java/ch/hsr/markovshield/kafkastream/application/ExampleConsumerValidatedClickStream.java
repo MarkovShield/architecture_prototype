@@ -38,14 +38,10 @@ public class ExampleConsumerValidatedClickStream {
             new JsonPOJOSerde<>(ValidatedClickStream.class, JsonPOJOSerde.MARKOV_SHIELD_SMILE).deserializer());
         clickConsumer.subscribe(Collections.singletonList(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS));
         boolean running = true;
-        long sum = 0;
-        int count = 0;
         try {
             while (running) {
                 ConsumerRecords<String, ValidatedClickStream> records = clickConsumer.poll(1000);
-                sum = 0;
-                long max = 0;
-                count = 0;
+
                 for (ConsumerRecord<String, ValidatedClickStream> record : records) {
                     ValidatedClickStream clickStream = record.value();
                     long diff1 = Instant.now()
@@ -63,15 +59,6 @@ public class ExampleConsumerValidatedClickStream {
                         .toInstant()
                         .toEpochMilli()) + " - " + lastClick
                         .getClickUUID());
-                    if (diff1 > max) {
-                        max = diff1;
-                    }
-                    sum += diff1;
-                    count++;
-                    if (count % 100 == 0) {
-                        System.out.println("--------- average-------------: " + sum / count);
-                        System.out.println("--------- max-------------: " + max);
-                    }
                 }
             }
         } finally {

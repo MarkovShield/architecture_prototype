@@ -26,18 +26,20 @@ public class DistributedValidatedClickstreamService implements ValidatedClickstr
     }
 
     @Override
-    public List<ValidatedClickStream> getAllValidatedClickstreams() {
-        return kafkaRepository.getAllValues(MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
-            "/local/validatedclickstreams");
-    }
-
-    @Override
     public List<ValidatedClickStream> getValidatedClickstreamsByUser(String user) {
         Stream<ValidatedClickStream> validatedClickStreamStream = localSessionService.getSessionByUser(user)
             .stream()
             .map(session -> getValidatedClickstream(
                 session.getSessionUUID()));
         return validatedClickStreamStream.collect(Collectors.toList());
+    }
+
+    @Override
+    public ValidatedClickStream getValidatedClickstream(String uuid) {
+        return kafkaRepository.getValue(uuid,
+            MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
+            "validatedclickstream/" + uuid,
+            ValidatedClickStream.class);
     }
 
     @Override
@@ -50,7 +52,14 @@ public class DistributedValidatedClickstreamService implements ValidatedClickstr
     }
 
     @Override
-    public List<ValidatedClickStream> getValidatedClickstreamBetweenTimeStamps(Long timestampFirst, Long timestampLast) {
+    public List<ValidatedClickStream> getAllValidatedClickstreams() {
+        return kafkaRepository.getAllValues(MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
+            "/local/validatedclickstreams");
+    }
+
+    @Override
+    public List<ValidatedClickStream> getValidatedClickstreamBetweenTimeStamps(Long timestampFirst,
+                                                                               Long timestampLast) {
         return getAllValidatedClickstreams().stream()
             .filter(clickStream -> clickStream.timeStampOfLastClick()
                 .toInstant()
@@ -69,13 +78,5 @@ public class DistributedValidatedClickstreamService implements ValidatedClickstr
                 .isBefore(Instant.ofEpochMilli(timestamp)))
             .collect(Collectors.toList());
 
-    }
-
-    @Override
-    public ValidatedClickStream getValidatedClickstream(String uuid) {
-        return kafkaRepository.getValue(uuid,
-            MarkovClickStreamProcessing.MARKOV_VALIDATED_CLICKSTREAMS_STORE,
-            "validatedclickstream/" + uuid,
-            ValidatedClickStream.class);
     }
 }

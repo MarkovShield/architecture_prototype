@@ -24,7 +24,7 @@ public class ExampleProducer {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         final KafkaProducer<String, String> clickProducer = new KafkaProducer<>(properties);
         for (int i = 0; i < 100000; i++) {
-            clickProducer.send(new ProducerRecord<String, String>("EXAMPLE_TOPIC","a",
+            clickProducer.send(new ProducerRecord<String, String>("EXAMPLE_TOPIC", "a",
                 String.valueOf(Instant.now().toEpochMilli())));
             sleep(1);
         }

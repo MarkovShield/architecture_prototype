@@ -1,7 +1,8 @@
 package ch.hsr.markovshield.models;
 
 
-import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
+import ch.hsr.markovshield.ml_models.TransitionModel;
+import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -24,8 +25,8 @@ public class TransitionModelTest {
 
     @Test
     public void testSerialization() throws JsonProcessingException {
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        TransitionModel model = markovChainWithMatrix.train(Collections.emptyList());
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
+        TransitionModel model = markovChainAnalysis.train(Collections.emptyList());
         String json = mapper.writeValueAsString(model);
         assertThat(json, containsString("timeCreated"));
         assertThat(json, containsString("urlStore"));
@@ -34,8 +35,8 @@ public class TransitionModelTest {
 
     @Test
     public void testSerializationAndDeserialization() throws IOException {
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        TransitionModel model = markovChainWithMatrix.train(Collections.emptyList());
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
+        TransitionModel model = markovChainAnalysis.train(Collections.emptyList());
         String json = mapper.writeValueAsString(model);
         TransitionModel deserializedModel = mapper.readValue(json, TransitionModel.class);
         assertThat(deserializedModel, equalTo(model));

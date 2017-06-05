@@ -1,22 +1,14 @@
 package ch.hsr.markovshield.kafkastream.application;
 
-import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
-import ch.hsr.markovshield.models.Click;
-import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.Session;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.kstream.KTable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Properties;
-
-import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
 
 public class ExampleStreamsApp {
 
@@ -44,12 +36,10 @@ public class ExampleStreamsApp {
         example_topic.to("EXAMPLE_TOPIC2");
 
 
-
         KafkaStreams streams = new KafkaStreams(builder, properties);
         streams.start();
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
     }
-
 
 }

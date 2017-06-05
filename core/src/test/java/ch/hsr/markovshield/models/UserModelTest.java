@@ -1,8 +1,10 @@
 package ch.hsr.markovshield.models;
 
 
-import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
-import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
+import ch.hsr.markovshield.ml_models.MatrixFrequencyModel;
+import ch.hsr.markovshield.ml_models.TransitionModel;
+import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
+import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -25,8 +27,8 @@ public class UserModelTest {
     public void setUp() throws Exception {
         mapper = new ObjectMapper();
         List<ClickStreamModel> models = new ArrayList<>();
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        TransitionModel transitionModel = markovChainWithMatrix.train(Collections.emptyList());
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
+        TransitionModel transitionModel = markovChainAnalysis.train(Collections.emptyList());
         MatrixFrequencyModel frequencyModel = (new IQRFrequencyAnalysis()).train(Collections.emptyList());
         models.add(transitionModel);
         models.add(frequencyModel);

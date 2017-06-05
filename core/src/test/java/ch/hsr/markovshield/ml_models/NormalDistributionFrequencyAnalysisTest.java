@@ -1,8 +1,8 @@
-package ch.hsr.markovshield.ml;
+package ch.hsr.markovshield.ml_models;
 
+import ch.hsr.markovshield.ml_models.builder.NormalDistributionFrequencyAnalysis;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.MatrixFrequencyModel;
 import junit.framework.TestCase;
 import org.junit.Test;
 import java.sql.Date;

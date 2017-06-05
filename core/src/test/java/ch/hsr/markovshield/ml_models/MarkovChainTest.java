@@ -1,8 +1,8 @@
-package ch.hsr.markovshield.ml;
+package ch.hsr.markovshield.ml_models;
 
+import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.models.TransitionModel;
 import junit.framework.TestCase;
 import org.junit.Test;
 import java.sql.Date;
@@ -52,8 +52,8 @@ public class MarkovChainTest extends TestCase {
     @Test
     public void testMarkovChainWithMatrix() {
 
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        TransitionModel train = markovChainWithMatrix.train(trainingSet);
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
+        TransitionModel train = markovChainAnalysis.train(trainingSet);
         double indexNewsProbability = train.getProbabilityForClick(
             "index.html",
             "news.html");
@@ -74,8 +74,8 @@ public class MarkovChainTest extends TestCase {
 
     @Test
     public void testMarkovChainWithClick() {
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
-        TransitionModel train = markovChainWithMatrix.train(trainingSet);
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
+        TransitionModel train = markovChainAnalysis.train(trainingSet);
         double newsIndexProbability = train.getProbabilityForClick(
             "news.html",
             "index.html");
@@ -105,9 +105,9 @@ public class MarkovChainTest extends TestCase {
 
     @Test
     public void testMarkovChainWithMatrixEmptySet() {
-        MarkovChainWithMatrix markovChainWithMatrix = new MarkovChainWithMatrix();
+        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
         Iterable<ClickStream> x = Collections.emptyList();
-        TransitionModel train = markovChainWithMatrix.train(x);
+        TransitionModel train = markovChainAnalysis.train(x);
 
         double indexNewsProbability = train.getProbabilityForClick(new Click("1", "1",
                 "index.html", 1,

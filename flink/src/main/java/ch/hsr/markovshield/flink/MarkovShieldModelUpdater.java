@@ -1,8 +1,8 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.ml.IQRFrequencyAnalysis;
-import ch.hsr.markovshield.ml.MarkovChainWithMatrix;
-import ch.hsr.markovshield.models.SimpleUserModelFactory;
+import ch.hsr.markovshield.ml_models.SimpleUserModelFactory;
+import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
+import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import ch.hsr.markovshield.models.UserModelFactory;
 import ch.hsr.markovshield.utils.OptionHelper;
 import org.apache.commons.cli.Option;
@@ -22,7 +22,7 @@ public class MarkovShieldModelUpdater {
 
     public static void main(final String[] args) throws Exception {
         userModelFactory = new SimpleUserModelFactory(new IQRFrequencyAnalysis(),
-            new MarkovChainWithMatrix());
+            new MarkovChainAnalysis());
         MarkovShieldModelUpdate markovShieldModelUpdate = new MarkovShieldModelUpdate(userModelFactory);
 
         Options options = getOptions();

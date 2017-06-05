@@ -11,9 +11,9 @@ import java.util.Optional;
 
 public class ClickStream {
 
+    private final List<Click> clicks;
     private String userName;
     private String sessionUUID;
-    private final List<Click> clicks;
 
     @JsonCreator
     public ClickStream(@JsonProperty ("userName") String userName,
@@ -28,20 +28,20 @@ public class ClickStream {
         return userName;
     }
 
-    public String getSessionUUID() {
-        return sessionUUID;
-    }
-
-    public void addToClicks(Click click) {
-        this.clicks.add(click);
-    }
-
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    public String getSessionUUID() {
+        return sessionUUID;
+    }
+
     public void setSessionUUID(String sessionUUID) {
         this.sessionUUID = sessionUUID;
+    }
+
+    public void addToClicks(Click click) {
+        this.clicks.add(click);
     }
 
     public List<Click> getClicks() {

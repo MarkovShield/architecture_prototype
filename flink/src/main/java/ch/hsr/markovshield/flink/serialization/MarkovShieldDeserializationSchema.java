@@ -1,4 +1,4 @@
-package ch.hsr.markovshield.flink;
+package ch.hsr.markovshield.flink.serialization;
 
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import org.apache.flink.api.common.typeinfo.TypeInformation;

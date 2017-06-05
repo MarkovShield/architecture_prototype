@@ -18,9 +18,9 @@ public class ExampleConsumerClick {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
         String broker;
-        if(args.length > 0){
+        if (args.length > 0) {
             broker = args[0];
-        }else{
+        } else {
             broker = "localhost:9092";
         }
         produceInputs(broker);
@@ -44,7 +44,8 @@ public class ExampleConsumerClick {
                     System.out.println(record.value().getSessionUUID() + ": " + (Instant.now()
                         .toEpochMilli() - record.value().getTimeStamp()
                         .toInstant()
-                        .toEpochMilli()) + " ---- "  + record.value().isValidationRequired() + " - " + record.value().getClickUUID());
+                        .toEpochMilli()) + " ---- " + record.value().isValidationRequired() + " - " + record.value()
+                        .getClickUUID() + "-" + record.value().getTimeStamp().toInstant());
                 }
             }
         } finally {
