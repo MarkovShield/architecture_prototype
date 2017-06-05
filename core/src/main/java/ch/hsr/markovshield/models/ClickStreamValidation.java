@@ -20,19 +20,14 @@ public class ClickStreamValidation {
                                  String clickUUID,
                                  double validationScore,
                                  MarkovRating rating) {
-        this.userName = userName;
-        this.sessionUUID = sessionUUID;
-        this.clickUUID = clickUUID;
-        this.validationScore = validationScore;
-        this.rating = rating;
-        timeCreated = Date.from(Instant.now());
+        this(userName, sessionUUID, clickUUID, validationScore, rating, Date.from(Instant.now()));
     }
 
     @JsonCreator
     public ClickStreamValidation(@JsonProperty ("userName") String userName,
                                  @JsonProperty ("sessionUUID") String sessionUUID,
                                  @JsonProperty ("clickUUID") String clickUUID,
-                                 @JsonProperty ("validationScore") int validationScore,
+                                 @JsonProperty ("validationScore") double validationScore,
                                  @JsonProperty ("rating") MarkovRating rating,
                                  @JsonProperty ("timeCreated") Date timeCreated) {
         this.userName = userName;
