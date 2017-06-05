@@ -11,10 +11,14 @@ public class UserModelSerializationSchema implements KeyedSerializationSchema<Us
     private final String topic;
     private final ObjectMapper mapper;
 
-    public UserModelSerializationSchema(String topic) {
+    public UserModelSerializationSchema(String topic, boolean useSmile) {
         this.topic = topic;
-        SmileFactory f = new SmileFactory();
-        mapper = new ObjectMapper(f);
+        if (useSmile) {
+            SmileFactory f = new SmileFactory();
+            mapper = new ObjectMapper(f);
+        } else {
+            mapper = new ObjectMapper();
+        }
     }
 
     @Override

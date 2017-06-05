@@ -9,6 +9,7 @@ import ch.hsr.markovshield.models.MarkovRating;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.ml_models.UserModelFactory;
 import ch.hsr.markovshield.models.ValidatedClickStream;
+import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import ch.hsr.markovshield.utils.OptionHelper;
 import org.apache.commons.cli.CommandLine;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -50,7 +51,7 @@ public class MarkovShieldModelUpdate implements Serializable {
 
         DataStreamSource<ValidatedClickStream> stream = env
             .addSource(new FlinkKafkaConsumer010<>(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
-                new ValidatedClickStreamDeserializationSchema(),
+                new ValidatedClickStreamDeserializationSchema(JsonPOJOSerde.MARKOV_SHIELD_SMILE),
                 config.getKafkaProperties()));
         Integer sessiontimeout = OptionHelper.getOption(commandLineArguments, SESSION_TIMEOUT_ARGUMENT_NAME)
             .map(Integer::valueOf)
@@ -75,7 +76,7 @@ public class MarkovShieldModelUpdate implements Serializable {
         FlinkKafkaProducer010<UserModel> producer = new FlinkKafkaProducer010<>(
             config.getBroker(),
             MarkovTopics.MARKOV_USER_MODEL_TOPIC,
-            new UserModelSerializationSchema(MarkovTopics.MARKOV_USER_MODEL_TOPIC));
+            new UserModelSerializationSchema(MarkovTopics.MARKOV_USER_MODEL_TOPIC, JsonPOJOSerde.MARKOV_SHIELD_SMILE));
         userModelStream.addSink(producer);
         env.execute(FLINK_JOB_NAME);
     }

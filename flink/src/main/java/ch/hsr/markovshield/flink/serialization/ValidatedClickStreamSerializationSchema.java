@@ -11,9 +11,13 @@ public class ValidatedClickStreamSerializationSchema implements KeyedSerializati
     private final ObjectMapper mapper;
     private final String topic;
 
-    public ValidatedClickStreamSerializationSchema(String topic) {
-        SmileFactory f = new SmileFactory();
-        mapper = new ObjectMapper(f);
+    public ValidatedClickStreamSerializationSchema(String topic, boolean useSmile) {
+        if (useSmile) {
+            SmileFactory f = new SmileFactory();
+            mapper = new ObjectMapper(f);
+        } else {
+            mapper = new ObjectMapper();
+        }
         this.topic = topic;
     }
 

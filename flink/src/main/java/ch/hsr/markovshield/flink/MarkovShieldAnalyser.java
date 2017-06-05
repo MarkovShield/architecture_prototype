@@ -10,6 +10,7 @@ import ch.hsr.markovshield.models.MarkovRating;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.models.ValidationClickStream;
+import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import ch.hsr.markovshield.utils.OptionHelper;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -56,7 +57,7 @@ public class MarkovShieldAnalyser {
 
         DataStreamSource<ValidationClickStream> stream = env
             .addSource(new FlinkKafkaConsumer010<>(MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC,
-                new ValidationClickStreamDeserializationSchema(),
+                new ValidationClickStreamDeserializationSchema(JsonPOJOSerde.MARKOV_SHIELD_SMILE),
                 kafkaConfigurationHelper.getKafkaProperties()));
 
         SingleOutputStreamOperator<ValidatedClickStream> validationStream = stream.map(MarkovShieldAnalyser::validateSession);
@@ -93,7 +94,7 @@ public class MarkovShieldAnalyser {
         return new FlinkKafkaProducer010<>(
             broker,
             MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
-            new ValidatedClickStreamSerializationSchema(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS));
+            new ValidatedClickStreamSerializationSchema(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS, JsonPOJOSerde.MARKOV_SHIELD_SMILE));
     }
 
     private static Options getOptions() {

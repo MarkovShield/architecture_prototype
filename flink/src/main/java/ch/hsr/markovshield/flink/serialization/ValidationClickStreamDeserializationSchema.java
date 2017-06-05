@@ -14,10 +14,13 @@ public class ValidationClickStreamDeserializationSchema implements KeyedDeserial
     private final ObjectMapper mapper;
     private final TypeInformation<ValidationClickStream> forClass;
 
-    public ValidationClickStreamDeserializationSchema() {
-
-        SmileFactory f = new SmileFactory();
-        mapper = new ObjectMapper(f);
+    public ValidationClickStreamDeserializationSchema(boolean useSmile) {
+        if (useSmile) {
+            SmileFactory f = new SmileFactory();
+            mapper = new ObjectMapper(f);
+        } else {
+            mapper = new ObjectMapper();
+        }
         forClass = TypeExtractor.getForClass(ValidationClickStream.class);
     }
 
