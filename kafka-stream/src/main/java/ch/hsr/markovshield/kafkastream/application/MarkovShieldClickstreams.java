@@ -26,13 +26,13 @@ import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_ZOOK
 public class MarkovShieldClickstreams {
 
     public static final String KAFKA_JOB_NAME = "MarkovShieldClickstreams2";
+    public static final String NUMBER_OF_THREADS_ARGUMENT = "numthreads";
+    public static final String NUMBER_OF_THREADS_DEFAULT = "1";
     private static final String DEFAULT_REST_ENDPOINT_HOSTNAME = "localhost";
     private static final int DEFAULT_REST_ENDPOINT_PORT = 7777;
     private static final String SCHEMA_REGISTRY_ARGUMENT = "schemaregistry";
     private static final String RESTHOSTNAME_ARGUMENT = "resthostname";
     private static final String RESTPORT_ARGUMENT = "restport";
-    public static final String NUMBER_OF_THREADS_ARGUMENT = "numthreads";
-    public static final String NUMBER_OF_THREADS_DEFAULT = "1";
 
     public static void main(final String[] args) throws Exception {
         Options options = getOptions();

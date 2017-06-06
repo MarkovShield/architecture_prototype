@@ -94,7 +94,8 @@ public class MarkovShieldAnalyser {
         return new FlinkKafkaProducer010<>(
             broker,
             MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
-            new ValidatedClickStreamSerializationSchema(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS, JsonPOJOSerde.MARKOV_SHIELD_SMILE));
+            new ValidatedClickStreamSerializationSchema(MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
+                JsonPOJOSerde.MARKOV_SHIELD_SMILE));
     }
 
     private static Options getOptions() {

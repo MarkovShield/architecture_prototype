@@ -1,14 +1,14 @@
 package ch.hsr.markovshield.kafkastream.application;
 
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.DistributedKafkaStateRepository;
+import ch.hsr.markovshield.kafkastream.interactive_query.repository.DistributedMetadataRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.KafkaStateRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.LocalKafkaStateRepository;
+import ch.hsr.markovshield.kafkastream.interactive_query.repository.MetadataRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.SimpleDistributedKafkaStateRepository;
-import ch.hsr.markovshield.kafkastream.interactive_query.repository.DistributedMetadataRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.service.DistributedValidatedClickstreamService;
 import ch.hsr.markovshield.kafkastream.interactive_query.service.LocalSessionService;
 import ch.hsr.markovshield.kafkastream.interactive_query.service.LocalUserModelService;
-import ch.hsr.markovshield.kafkastream.interactive_query.repository.MetadataRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.service.SessionService;
 import ch.hsr.markovshield.kafkastream.interactive_query.service.UserModelService;
 import ch.hsr.markovshield.kafkastream.interactive_query.service.ValidatedClickstreamService;

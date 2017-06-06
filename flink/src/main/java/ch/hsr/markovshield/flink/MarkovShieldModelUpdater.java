@@ -1,8 +1,8 @@
 package ch.hsr.markovshield.flink;
 
-import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
+import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.models.UserModelFactory;
 import ch.hsr.markovshield.utils.OptionHelper;
 import org.apache.commons.cli.Option;
