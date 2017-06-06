@@ -2,12 +2,12 @@ package ch.hsr.markovshield.kafkastream;
 
 import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
-import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import ch.hsr.markovshield.models.Session;
+import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.models.UrlRating;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.UserModelFactory;
@@ -119,7 +119,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
 
         List<UserModel> userModels = logins.stream()
             .map(Session::getUserName)
-            .map(s -> new UserModel(s, factory.trainUserModel(Collections.emptyList(), userId))).collect(Collectors.toList());
+            .map(s -> factory.trainUserModel(Collections.emptyList(), s)).collect(Collectors.toList());
 
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
@@ -290,7 +290,7 @@ public class MarkovClickStreamProcessingIntegrationTest {
 
         List<UserModel> userModels = logins.stream()
             .map(Session::getUserName)
-            .map(s -> new UserModel(s, factory.trainUserModel(Collections.emptyList(), userId))).collect(Collectors.toList());
+            .map(s -> factory.trainUserModel(Collections.emptyList(), s)).collect(Collectors.toList());
 
         List userModelsKeyValue = userModels.stream()
             .map(userModel -> new KeyValue(userModel.getUserId(), userModel))
