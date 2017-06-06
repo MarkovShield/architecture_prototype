@@ -18,22 +18,22 @@ import java.util.Optional;
 
 @JsonIgnoreProperties (ignoreUnknown = true)
 @JsonAutoDetect (fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public class MatrixFrequencyModel implements ClickStreamModel {
+public class FrequencyModel implements ClickStreamModel {
 
     private final FrequencyMatrix frequencyMatrix;
     private final UrlStore urlStore;
     private final Date timeCreated;
 
-    public MatrixFrequencyModel(FrequencyMatrix frequencyMatrix, UrlStore urlStore) {
+    public FrequencyModel(FrequencyMatrix frequencyMatrix, UrlStore urlStore) {
         this.frequencyMatrix = frequencyMatrix;
         this.urlStore = urlStore;
         this.timeCreated = Date.from(Instant.now());
     }
 
     @JsonCreator
-    public MatrixFrequencyModel(@JsonProperty ("frequencyMatrix") FrequencyMatrix frequencyMatrix,
-                                @JsonProperty ("urlStore") UrlStore urlStore,
-                                @JsonProperty ("timeCreated") Date timeCreated) {
+    public FrequencyModel(@JsonProperty ("frequencyMatrix") FrequencyMatrix frequencyMatrix,
+                          @JsonProperty ("urlStore") UrlStore urlStore,
+                          @JsonProperty ("timeCreated") Date timeCreated) {
         this.frequencyMatrix = frequencyMatrix;
         this.urlStore = urlStore;
         this.timeCreated = timeCreated;
@@ -41,7 +41,7 @@ public class MatrixFrequencyModel implements ClickStreamModel {
 
     @Override
     public String toString() {
-        return "MatrixFrequencyModel{" +
+        return "FrequencyModel{" +
             "frequencyMatrix=" + frequencyMatrix +
             ", urlStore=" + urlStore +
             ", timeCreated=" + timeCreated +
@@ -60,7 +60,7 @@ public class MatrixFrequencyModel implements ClickStreamModel {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        MatrixFrequencyModel that = (MatrixFrequencyModel) o;
+        FrequencyModel that = (FrequencyModel) o;
         return Objects.equals(frequencyMatrix, that.frequencyMatrix) &&
             Objects.equals(urlStore, that.urlStore) &&
             Objects.equals(timeCreated, that.timeCreated);

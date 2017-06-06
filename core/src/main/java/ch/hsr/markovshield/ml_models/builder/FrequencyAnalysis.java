@@ -1,6 +1,6 @@
 package ch.hsr.markovshield.ml_models.builder;
 
-import ch.hsr.markovshield.ml_models.MatrixFrequencyModel;
+import ch.hsr.markovshield.ml_models.FrequencyModel;
 import ch.hsr.markovshield.ml_models.ModelBuilder;
 import ch.hsr.markovshield.ml_models.data_helper.FrequencyMatrix;
 import ch.hsr.markovshield.ml_models.data_helper.UrlStore;
@@ -21,11 +21,11 @@ public abstract class FrequencyAnalysis implements ModelBuilder {
         clickProbabilityMatrix.set(sourceIndex, 1, upperBound);
     }
 
-    public MatrixFrequencyModel train(Iterable<ClickStream> stream) {
+    public FrequencyModel train(Iterable<ClickStream> stream) {
         ClickAndUrlContainer clickAndUrlContainer = calculateClicks(stream);
         FrequencyMatrix clickProbabilityMatrix = calculateFrequencies(clickAndUrlContainer.getClicks(),
             clickAndUrlContainer.getUrlMap());
-        return new MatrixFrequencyModel(clickProbabilityMatrix, new UrlStore(clickAndUrlContainer.getUrlMap()));
+        return new FrequencyModel(clickProbabilityMatrix, new UrlStore(clickAndUrlContainer.getUrlMap()));
     }
 
     protected abstract FrequencyMatrix calculateFrequencies(double[][] clicks, Map<String, Integer> urlMap);

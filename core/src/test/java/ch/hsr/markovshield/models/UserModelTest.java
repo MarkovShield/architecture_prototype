@@ -2,7 +2,7 @@ package ch.hsr.markovshield.models;
 
 
 import ch.hsr.markovshield.ml_models.ClickStreamModel;
-import ch.hsr.markovshield.ml_models.MatrixFrequencyModel;
+import ch.hsr.markovshield.ml_models.FrequencyModel;
 import ch.hsr.markovshield.ml_models.TransitionModel;
 import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
@@ -30,7 +30,7 @@ public class UserModelTest {
         List<ClickStreamModel> models = new ArrayList<>();
         MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
         TransitionModel transitionModel = markovChainAnalysis.train(Collections.emptyList());
-        MatrixFrequencyModel frequencyModel = (new IQRFrequencyAnalysis()).train(Collections.emptyList());
+        FrequencyModel frequencyModel = (new IQRFrequencyAnalysis()).train(Collections.emptyList());
         models.add(transitionModel);
         models.add(frequencyModel);
         model = new UserModel("Ivan", models);

@@ -80,7 +80,7 @@ public class PDFFrequencyAnalysisTest extends TestCase {
     @Test
     public void testMarkovChainWithMatrix() {
         PDFFrequencyAnalysis x = new PDFFrequencyAnalysis();
-        MatrixFrequencyModel train = x.train(trainingSet);
+        FrequencyModel train = x.train(trainingSet);
         double newsLowerBound = train.getFrequencyLowerBound(
             "news.html");
         double newsUpperBound = train.getFrequencyLowerBound(

@@ -83,7 +83,7 @@ public class IQRFrequencyAnalysisTest extends TestCase {
     @Test
     public void testMarkovChainWithMatrix() {
         IQRFrequencyAnalysis x = new IQRFrequencyAnalysis();
-        MatrixFrequencyModel train = x.train(trainingSet);
+        FrequencyModel train = x.train(trainingSet);
         double newsLowerBound = train.getFrequencyLowerBound(
             "news.html");
         double newsUpperBound = train.getFrequencyLowerBound(
@@ -108,7 +108,7 @@ public class IQRFrequencyAnalysisTest extends TestCase {
         clickStreamList.add(clickStream2);
         clickStreamList.add(clickStream3);
         IQRFrequencyAnalysis x = new IQRFrequencyAnalysis();
-        MatrixFrequencyModel train = x.train(clickStreamList);
+        FrequencyModel train = x.train(clickStreamList);
         System.out.println(train);
     }
 }
