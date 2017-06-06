@@ -3,9 +3,9 @@ package ch.hsr.markovshield.ml_models.builder;
 import ch.hsr.markovshield.ml_models.ModelBuilder;
 import ch.hsr.markovshield.ml_models.TransitionModel;
 import ch.hsr.markovshield.ml_models.data_helper.TransitionMatrix;
+import ch.hsr.markovshield.ml_models.data_helper.UrlStore;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.ml_models.data_helper.UrlStore;
 import java.util.HashMap;
 import java.util.Map;
 
