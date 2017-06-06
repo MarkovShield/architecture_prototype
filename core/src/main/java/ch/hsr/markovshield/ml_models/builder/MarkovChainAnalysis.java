@@ -62,14 +62,9 @@ public class MarkovChainAnalysis implements ModelBuilder {
                                                String target,
                                                double probability,
                                                Map<String, Integer> urlMap) {
-        int sourceIndex = getIndexByUrl(urlMap, source);
-        int targetIndex = getIndexByUrl(urlMap, target);
+        int sourceIndex = urlMap.get(source);
+        int targetIndex = urlMap.get(target);
         clickProbabilityMatrix.set(sourceIndex, targetIndex, probability);
-    }
-
-    private static int getIndexByUrl(Map<String, Integer> urlMap, String url) {
-        Integer integer = urlMap.get(url);
-        return integer;
     }
 
     private static void updateClickCount(HashMap<String, HashMap<String, Integer>> clickCountMatrix,
