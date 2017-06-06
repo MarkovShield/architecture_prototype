@@ -33,13 +33,13 @@ public class OptionHelper {
             .longOpt(ZOOKEEPER_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("address of the zookeeper, it's default is:" + DEFAULT_ZOOKEEPER)
+            .desc("address of the zookeeper, it's default is: " + DEFAULT_ZOOKEEPER)
             .build();
         Option bootstrap = Option.builder()
             .longOpt(BOOTSTRAP_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("address of the kafka bootstrap, it's default is:" + DEFAULT_BOOTSTRAP_SERVERS)
+            .desc("address of the kafka bootstrap, it's default is: " + DEFAULT_BOOTSTRAP_SERVERS)
             .build();
         options.addOption(help);
         options.addOption(zookeeper);

@@ -35,14 +35,14 @@ public class RandomModel implements ClickStreamModel {
 
     @Override
     public double clickStreamScore(ClickStream clickStream) {
-        int i = new Random().nextInt(100);
-        if (i >= (100 - fraudShare)) {
+        int random = new Random().nextInt(100);
+        if (random >= (100 - fraudShare)) {
             return 100;
         }
-        if (i >= (100 - fraudShare - suspiciousShare)) {
+        if (random >= (100 - fraudShare - suspiciousShare)) {
             return 75;
         } else {
-            return i;
+            return 0;
         }
     }
 }

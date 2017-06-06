@@ -20,6 +20,7 @@ public class TransitionModel implements ClickStreamModel {
     private final TransitionMatrix transitionMatrix;
     private final UrlStore urlStore;
     private final Date timeCreated;
+    private int urlRiskLevelForClick;
 
     public TransitionModel(TransitionMatrix transitionMatrix, UrlStore urlStore) {
         this.transitionMatrix = transitionMatrix;
@@ -89,7 +90,8 @@ public class TransitionModel implements ClickStreamModel {
             } else {
                 probabilityForClick = getProbabilityForClick(clicks.get(i), clicks.get(i + 1));
             }
-            transitionScore += (1 - probabilityForClick) * clicks.get(i).getUrlRiskLevel();
+            urlRiskLevelForClick = clicks.get(i).getUrlRiskLevel();
+            transitionScore += (1 - probabilityForClick) * (urlRiskLevelForClick + 1);
         }
         return transitionScore;
     }

@@ -43,19 +43,19 @@ public class MarkovShieldModelUpdater {
             .longOpt(UPDATEINTERVAL_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("time between the update of the usermodels in minutes, it's default is:" + DEFAULT_REEVALUATION_INTERVAL_MINUTES)
+            .desc("time between the update of the usermodels in minutes, it's default is: " + DEFAULT_REEVALUATION_INTERVAL_MINUTES)
             .build();
         Option slidingtime = Option.builder()
             .longOpt(LOOKBACKPERIOD_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("lookbackperiod of the usermodels in minutes, it's default is:" + DEFAULT_SLIDING_TIME_MINUTES)
+            .desc("lookbackperiod of the usermodels in minutes, it's default is: " + DEFAULT_SLIDING_TIME_MINUTES)
             .build();
         Option sessiontime = Option.builder()
             .longOpt(SESSION_TIMEOUT_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("session timeout in minutes, it's default is:" + DEFAULT_SESSION_TIME_MINUTES)
+            .desc("session timeout in minutes, it's default is: " + DEFAULT_SESSION_TIME_MINUTES)
             .build();
         options.addOption(updatetime);
         options.addOption(slidingtime);

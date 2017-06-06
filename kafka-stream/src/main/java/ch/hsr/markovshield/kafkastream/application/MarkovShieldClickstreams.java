@@ -31,6 +31,8 @@ public class MarkovShieldClickstreams {
     private static final String SCHEMA_REGISTRY_ARGUMENT = "schemaregistry";
     private static final String RESTHOSTNAME_ARGUMENT = "resthostname";
     private static final String RESTPORT_ARGUMENT = "restport";
+    public static final String NUMBER_OF_THREADS_ARGUMENT = "numthreads";
+    public static final String NUMBER_OF_THREADS_DEFAULT = "1";
 
     public static void main(final String[] args) throws Exception {
         Options options = getOptions();
@@ -90,6 +92,8 @@ public class MarkovShieldClickstreams {
             .orElse(DEFAULT_BOOTSTRAP_SERVERS);
         final String schemaRegistryUrl = OptionHelper.getOption(cmd, SCHEMA_REGISTRY_ARGUMENT)
             .orElse(DEFAULT_SCHEMA_REGISTRY_URL);
+        final String numberOfThreads = OptionHelper.getOption(cmd, NUMBER_OF_THREADS_ARGUMENT).orElse(
+            NUMBER_OF_THREADS_DEFAULT);
         final Serde<String> stringSerde = Serdes.String();
         final Properties streamsConfiguration = new Properties();
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, KAFKA_JOB_NAME);
@@ -98,11 +102,9 @@ public class MarkovShieldClickstreams {
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        //streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, OptionHelper.getOption(cmd, "commitinterval").orElse("100"));
         streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         streamsConfiguration.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG, CustomRocksDBConfig.class);
-        streamsConfiguration.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,
-            OptionHelper.getOption(cmd, "numthreads").orElse("1"));
+        streamsConfiguration.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, numberOfThreads);
         streamsConfiguration.put(StreamsConfig.APPLICATION_SERVER_CONFIG,
             restEndpoint.host() + ":" + restEndpoint.port());
         streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "kafka-store");
@@ -116,36 +118,29 @@ public class MarkovShieldClickstreams {
             .longOpt(MarkovShieldClickstreams.SCHEMA_REGISTRY_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("address of the SCHEMA_REGISTRY_ARGUMENT, it's default is:" + DEFAULT_SCHEMA_REGISTRY_URL)
+            .desc("address of the SCHEMA_REGISTRY_ARGUMENT, it's default is: " + DEFAULT_SCHEMA_REGISTRY_URL)
             .build();
         Option resthostname = Option.builder()
             .longOpt(MarkovShieldClickstreams.RESTHOSTNAME_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("port of the REST endpoint, it's default is:" + DEFAULT_REST_ENDPOINT_HOSTNAME)
+            .desc("port of the REST endpoint, it's default is: " + DEFAULT_REST_ENDPOINT_HOSTNAME)
             .build();
         Option restport = Option.builder()
             .longOpt(MarkovShieldClickstreams.RESTPORT_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("hostname of the REST endpoint, it's default is:" + DEFAULT_REST_ENDPOINT_PORT)
-            .build();
-        Option commitInterval = Option.builder()
-            .longOpt("commitinterval")
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("commitinterval")
+            .desc("hostname of the REST endpoint, it's default is: " + DEFAULT_REST_ENDPOINT_PORT)
             .build();
         Option numThreads = Option.builder()
-            .longOpt("numthreads")
+            .longOpt(NUMBER_OF_THREADS_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("numthreads")
+            .desc("the number of threads that kafka-streams will use, it's default is: " + NUMBER_OF_THREADS_DEFAULT)
             .build();
         options.addOption(schemaregistry);
         options.addOption(resthostname);
         options.addOption(restport);
-        options.addOption(commitInterval);
         options.addOption(numThreads);
         return options;
     }

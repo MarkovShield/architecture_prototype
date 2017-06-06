@@ -103,13 +103,13 @@ public class MarkovShieldAnalyser {
             .longOpt(REDIS_HOST_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("the hostname of redis, it's default is:" + DEFAULT_REDIS_HOST)
+            .desc("the hostname of redis, it's default is: " + DEFAULT_REDIS_HOST)
             .build();
         Option redisPort = Option.builder()
             .longOpt(REDIS_PORT_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("the port of redis, it's default is:" + DEFAULT_REDIS_PORT)
+            .desc("the port of redis, it's default is: " + DEFAULT_REDIS_PORT)
             .build();
         options.addOption(redisHost);
         options.addOption(redisPort);

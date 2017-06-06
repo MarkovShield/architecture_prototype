@@ -100,14 +100,19 @@ public class FrequencyModel implements ClickStreamModel {
         HashMap<String, UrlFrequencies> frequencies = getFrequencies(clickStream);
         for (Map.Entry<String, UrlFrequencies> entry : frequencies.entrySet()
             ) {
-            Integer currentFrequencies = entry.getValue().getFrequencyCounter();
+            Integer currentFrequency = entry.getValue().getFrequencyCounter();
             String currentUrl = entry.getKey();
-            if (getFrequencyLowerBound(currentUrl) < currentFrequencies || getFrequencyUpperBound(
-                currentUrl) > currentFrequencies) {
-                frequencyScore += entry.getValue().getUrlRiskLevel() + 1;
+            int urlRiskLevel = entry.getValue().getUrlRiskLevel();
+            if (isInIntervall(currentFrequency, currentUrl)) {
+                frequencyScore += urlRiskLevel + 1;
             }
         }
         return frequencyScore;
+    }
+
+    private boolean isInIntervall(Integer currentFrequency, String currentUrl) {
+        return getFrequencyLowerBound(currentUrl) < currentFrequency || getFrequencyUpperBound(
+            currentUrl) > currentFrequency;
     }
 
     public double getFrequencyUpperBound(String currentUrl) {
