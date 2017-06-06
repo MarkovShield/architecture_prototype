@@ -1,6 +1,7 @@
-package ch.hsr.markovshield.ml_models;
+package ch.hsr.markovshield.models;
 
-import ch.hsr.markovshield.models.ClickStream;
+import ch.hsr.markovshield.ml_models.ClickStreamModel;
+import ch.hsr.markovshield.ml_models.ModelBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,10 +18,10 @@ public class SimpleUserModelFactory implements UserModelFactory {
     }
 
     @Override
-    public List<ClickStreamModel> trainAllModels(Iterable<ClickStream> clickStreams) {
+    public UserModel trainUserModel(Iterable<ClickStream> clickStreams, String userId) {
         List<ClickStreamModel> clickStreamModels = allModelBuilders.stream()
             .map(modelBuilder -> modelBuilder.train(clickStreams))
             .collect(Collectors.toList());
-        return clickStreamModels;
+        return new UserModel(userId, clickStreamModels);
     }
 }

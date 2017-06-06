@@ -4,10 +4,9 @@ import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.flink.serialization.UserModelSerializationSchema;
 import ch.hsr.markovshield.flink.serialization.ValidatedClickStreamDeserializationSchema;
 import ch.hsr.markovshield.models.ClickStream;
-import ch.hsr.markovshield.ml_models.ClickStreamModel;
 import ch.hsr.markovshield.models.MarkovRating;
 import ch.hsr.markovshield.models.UserModel;
-import ch.hsr.markovshield.ml_models.UserModelFactory;
+import ch.hsr.markovshield.models.UserModelFactory;
 import ch.hsr.markovshield.models.ValidatedClickStream;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import ch.hsr.markovshield.utils.OptionHelper;
@@ -98,8 +97,7 @@ public class MarkovShieldModelUpdate implements Serializable {
             }
         }
 
-        List<ClickStreamModel> clickStreamModels = userModelFactory.trainAllModels(filteredClicks);
-        UserModel model = new UserModel(userId, clickStreamModels);
+        UserModel model = userModelFactory.trainUserModel(filteredClicks, userId);
         System.out.println(model);
         collector.collect(model);
 

@@ -2,11 +2,11 @@ package ch.hsr.markovshield.kafkastream.development_tools.generators;
 
 import ch.hsr.markovshield.constants.KafkaConnectionDefaults;
 import ch.hsr.markovshield.constants.MarkovTopics;
-import ch.hsr.markovshield.ml_models.SimpleUserModelFactory;
+import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
 import ch.hsr.markovshield.models.UserModel;
-import ch.hsr.markovshield.ml_models.UserModelFactory;
+import ch.hsr.markovshield.models.UserModelFactory;
 import ch.hsr.markovshield.utils.JsonPOJOSerde;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -40,7 +40,7 @@ public class MarkovModelGenerator {
         MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
         UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainAnalysis);
         List<UserModel> userModels = users.stream()
-            .map(user -> new UserModel(user, factory.trainAllModels(Collections.emptyList())))
+            .map(user -> factory.trainUserModel(Collections.emptyList(), user))
             .collect(Collectors.toList());
 
         final Properties properties = new Properties();
