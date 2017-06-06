@@ -1,6 +1,6 @@
 package ch.hsr.markovshield.ml_models;
 
-import ch.hsr.markovshield.ml_models.builder.NormalDistributionFrequencyAnalysis;
+import ch.hsr.markovshield.ml_models.builder.PDFFrequencyAnalysis;
 import ch.hsr.markovshield.models.Click;
 import ch.hsr.markovshield.models.ClickStream;
 import junit.framework.TestCase;
@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NormalDistributionFrequencyAnalysisTest extends TestCase {
+public class PDFFrequencyAnalysisTest extends TestCase {
 
 
     private List<ClickStream> trainingSet;
@@ -79,7 +79,7 @@ public class NormalDistributionFrequencyAnalysisTest extends TestCase {
 
     @Test
     public void testMarkovChainWithMatrix() {
-        NormalDistributionFrequencyAnalysis x = new NormalDistributionFrequencyAnalysis();
+        PDFFrequencyAnalysis x = new PDFFrequencyAnalysis();
         MatrixFrequencyModel train = x.train(trainingSet);
         double newsLowerBound = train.getFrequencyLowerBound(
             "news.html");
