@@ -11,6 +11,7 @@
         <module>core</module>
         <module>flink</module>
         <module>kafka-stream</module>
+        <module>redis-client</module>
     </modules>
     <build>
         <plugins>
