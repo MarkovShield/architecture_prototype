@@ -44,8 +44,8 @@ public class ExampleConsumerValidatedClickStream {
 
                 for (ConsumerRecord<String, ValidatedClickStream> record : records) {
                     ValidatedClickStream clickStream = record.value();
-                    long diff1 = Instant.now()
-                        .toEpochMilli() - clickStream
+                    long now = Instant.now().toEpochMilli();
+                    long diff1 = now - clickStream
                         .timeStampOfLastClick()
                         .toInstant()
                         .toEpochMilli();
@@ -53,12 +53,10 @@ public class ExampleConsumerValidatedClickStream {
                     Click lastClick = clickStream
                         .getClicks()
                         .get(clickStream.getClicks().size() - 1);
-                    System.out.println(clickStream.getSessionUUID() + ": " + diff1 + "        " + (Instant.now()
-                        .toEpochMilli() - lastClick
-                        .getKafkaFirstProcessedDate()
-                        .toInstant()
-                        .toEpochMilli()) + " - " + lastClick
-                        .getClickUUID());
+                    String clickUUID = lastClick
+                        .getClickUUID();
+                    String sessionUUID = clickStream.getSessionUUID();
+                    System.out.println(sessionUUID + " " + clickUUID + " " + now + " " + diff1);
                 }
             }
         } finally {

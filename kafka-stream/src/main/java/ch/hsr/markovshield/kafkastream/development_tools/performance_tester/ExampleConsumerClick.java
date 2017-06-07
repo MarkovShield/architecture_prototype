@@ -41,11 +41,17 @@ public class ExampleConsumerClick {
             while (running) {
                 ConsumerRecords<String, Click> records = clickConsumer.poll(1000);
                 for (ConsumerRecord<String, Click> record : records) {
-                    System.out.println(record.value().getSessionUUID() + ": " + (Instant.now()
-                        .toEpochMilli() - record.value().getTimeStamp()
+                    String sessionUUID = record.value().getSessionUUID();
+                    String clickUUID = record.value()
+                        .getClickUUID();
+                    long now = Instant.now().toEpochMilli();
+                    long timeStamp = record.value()
+                        .getTimeStamp()
                         .toInstant()
-                        .toEpochMilli()) + " ---- " + record.value().isValidationRequired() + " - " + record.value()
-                        .getClickUUID() + "-" + record.value().getTimeStamp().toInstant());
+                        .toEpochMilli();
+                    System.out.println(sessionUUID + " " + clickUUID + " " + now + ": " + (now - timeStamp) + " - " + record
+                        .value()
+                        .isValidationRequired() + " - " + timeStamp);
                 }
             }
         } finally {
