@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
 
-public class ExampleValidationClickStreamProducer {
+public class PerformanceMeasurementValidationClickStreamProducer {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
         produceInputs();
