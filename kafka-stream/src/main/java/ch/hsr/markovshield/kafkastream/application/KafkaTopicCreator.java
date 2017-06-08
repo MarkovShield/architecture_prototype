@@ -34,16 +34,20 @@ public class KafkaTopicCreator {
     }
 
     public void createTopic(String topic) {
-        createTopic(topic, DEFAULT_PARTITIONS, DEFAULT_REPLICATIONS);
+        createTopic(topic, DEFAULT_PARTITIONS, DEFAULT_REPLICATIONS, new Properties());
 
     }
 
-    public void createTopic(String topic, int partitions, int replication) {
+    public void createTopic(String topic, Properties topicConfig) {
+        createTopic(topic, DEFAULT_PARTITIONS, DEFAULT_REPLICATIONS, topicConfig);
+
+    }
+
+    public void createTopic(String topic, int partitions, int replication, Properties topicConfig) {
         if (topic.isEmpty()) {
             return;
         }
 
-        Properties topicConfig = new Properties();
         AdminUtils.createTopic(zkUtils, topic, partitions, replication, topicConfig, RackAwareMode.Enforced$.MODULE$);
     }
 

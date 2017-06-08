@@ -71,13 +71,34 @@ public class MarkovShieldClickstreams {
         KafkaConsumer consumer = new KafkaConsumer(topicCreatorProperties);
         Map map = consumer.listTopics();
         KafkaTopicCreator kafkaTopicCreator = new KafkaTopicCreator(DEFAULT_ZOOKEEPER);
+        Properties validatedClickStreamProperties = new Properties();
+        validatedClickStreamProperties.put("cleanup.policy", "compact,delete");
+        long sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000L;
+        validatedClickStreamProperties.put("retention.ms", sixMonthsInMs);
+
+        Properties userModelProperties = new Properties();
+        userModelProperties.put("cleanup.policy", "compact,delete");
+        userModelProperties.put("retention.ms", sixMonthsInMs);
+
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_STREAM_TOPIC);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_LOGIN_TOPIC);
-        createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_USER_MODEL_TOPIC);
+        createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_USER_MODEL_TOPIC, userModelProperties);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_TOPIC);
-        createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS);
+        createTopicIfNotPresent(map,
+            kafkaTopicCreator,
+            MarkovTopics.MARKOV_VALIDATED_CLICK_STREAMS,
+            validatedClickStreamProperties);
         kafkaTopicCreator.closeConnection();
+    }
+
+    private static void createTopicIfNotPresent(Map map,
+                                                KafkaTopicCreator kafkaTopicCreator,
+                                                String topic,
+                                                Properties topicConfig) {
+        if (!map.containsKey(topic)) {
+            kafkaTopicCreator.createTopic(topic, topicConfig);
+        }
     }
 
     private static void createTopicIfNotPresent(Map map, KafkaTopicCreator kafkaTopicCreator, String topic) {
