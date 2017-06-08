@@ -17,8 +17,8 @@ public class PDFFrequencyAnalysis extends FrequencyAnalysis {
             }
             double standardDeviation = da.getStandardDeviation();
             double mean = da.getMean();
-            double lowerBound = mean - 2 * standardDeviation;
-            double upperBound = mean + 2 * standardDeviation;
+            double lowerBound = mean - 3 * standardDeviation;
+            double upperBound = mean + 3 * standardDeviation;
             addToFrequencyMatrix(clickFrequencyMatrix,
                 entry.getKey(),
                 lowerBound,
