@@ -71,7 +71,6 @@ public class SimpleDistributedKafkaStateRepository implements DistributedKafkaSt
 
     public <T> T fetchValueFromOtherHost(final HostStoreInfo host, final String path, GenericType<T> classType) {
         String formattedUrl = String.format("http://%s:%d/%s/%s", host.getHost(), host.getPort(), lookupRoot, path);
-        System.out.println(formattedUrl);
         return client.target(formattedUrl)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .get(classType);

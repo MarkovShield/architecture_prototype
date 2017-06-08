@@ -4,6 +4,7 @@ import ch.hsr.markovshield.constants.KafkaConnectionDefaults;
 import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
 import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
+import ch.hsr.markovshield.ml_models.builder.RandomModelBuilder;
 import ch.hsr.markovshield.models.SimpleUserModelFactory;
 import ch.hsr.markovshield.models.UserModel;
 import ch.hsr.markovshield.models.UserModelFactory;
@@ -38,7 +39,7 @@ public class MarkovModelGenerator {
 
         IQRFrequencyAnalysis iqrFrequencyAnalysis = new IQRFrequencyAnalysis();
         MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
-        UserModelFactory factory = new SimpleUserModelFactory(iqrFrequencyAnalysis, markovChainAnalysis);
+        UserModelFactory factory = new SimpleUserModelFactory(new RandomModelBuilder(20, 10));
         List<UserModel> userModels = users.stream()
             .map(user -> factory.trainUserModel(Collections.emptyList(), user))
             .collect(Collectors.toList());

@@ -30,11 +30,11 @@ import java.util.stream.Collectors;
  * Looks up StreamsMetadata from KafkaStreams and converts the results
  * into Beans that can be JSON serialized via Jersey.
  */
-public class DistributedMetadataRepository implements MetadataRepository {
+public class LocalMetadataRepository implements MetadataRepository {
 
     private final KafkaStreams streams;
 
-    public DistributedMetadataRepository(final KafkaStreams streams) {
+    public LocalMetadataRepository(final KafkaStreams streams) {
         this.streams = streams;
     }
 

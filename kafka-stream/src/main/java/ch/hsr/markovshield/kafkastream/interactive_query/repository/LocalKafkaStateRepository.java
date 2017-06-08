@@ -18,10 +18,10 @@ public class LocalKafkaStateRepository implements KafkaStateRepository {
     }
 
     public <T> List<T> getAllValues(final String storeName) {
-        final ReadOnlyKeyValueStore<String, T> userModels =
+        final ReadOnlyKeyValueStore<String, T> store =
             streams.store(storeName, QueryableStoreTypes.<String, T>keyValueStore());
         List<T> allValues = new ArrayList<>();
-        KeyValueIterator<String, T> all = userModels.all();
+        KeyValueIterator<String, T> all = store.all();
         for (KeyValueIterator<String, T> it = all; it.hasNext(); ) {
             KeyValue<String, T> x = it.next();
             allValues.add(x.value);
@@ -32,11 +32,9 @@ public class LocalKafkaStateRepository implements KafkaStateRepository {
     public <T> T getValue(final String key,
                           final String storeName) {
 
-        final ReadOnlyKeyValueStore<String, T> userModels =
+        final ReadOnlyKeyValueStore<String, T> store =
             streams.store(storeName, QueryableStoreTypes.<String, T>keyValueStore());
-        final T value = userModels.get(key);
-        System.out.println(key);
-        System.out.println(value);
+        final T value = store.get(key);
         if (value == null) {
             throw new NotFoundException(String.format("Unable to find value in %s for key %s", storeName, key));
         }

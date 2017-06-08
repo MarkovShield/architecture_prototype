@@ -1,9 +1,9 @@
 package ch.hsr.markovshield.kafkastream.application;
 
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.DistributedKafkaStateRepository;
-import ch.hsr.markovshield.kafkastream.interactive_query.repository.DistributedMetadataRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.KafkaStateRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.LocalKafkaStateRepository;
+import ch.hsr.markovshield.kafkastream.interactive_query.repository.LocalMetadataRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.MetadataRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.repository.SimpleDistributedKafkaStateRepository;
 import ch.hsr.markovshield.kafkastream.interactive_query.service.DistributedValidatedClickstreamService;
@@ -53,7 +53,7 @@ public class StreamingApplication {
 
     static MarkovRestEndpoint startRestProxy(final KafkaStreams streams, final HostInfo hostInfo) throws Exception {
 
-        MetadataRepository metadataRepository = new DistributedMetadataRepository(streams);
+        MetadataRepository metadataRepository = new LocalMetadataRepository(streams);
         KafkaStateRepository localStateRepository = new LocalKafkaStateRepository(streams);
         SessionService sessionService = new LocalSessionService(localStateRepository);
         UserModelService userModelService = new LocalUserModelService(localStateRepository);
