@@ -102,7 +102,6 @@ public class MarkovShieldModelUpdate implements Serializable {
         }
 
         UserModel model = userModelFactory.trainUserModel(filteredClicks, userId);
-        System.out.println(model);
         collector.collect(model);
 
     }
