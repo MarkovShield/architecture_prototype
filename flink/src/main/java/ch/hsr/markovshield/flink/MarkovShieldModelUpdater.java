@@ -11,7 +11,7 @@ import org.apache.commons.cli.Options;
 public class MarkovShieldModelUpdater {
 
     public static final int DEFAULT_REEVALUATION_INTERVAL_MINUTES = 1440;
-    public static final int DEFAULT_SLIDING_TIME_MINUTES = 260000;
+    public static final int DEFAULT_SLIDING_TIME_MINUTES = 259200;
     public static final String FLINK_JOB_NAME = "MarkovShieldModelUpdater";
     public static final String KAFKA_JOB_NAME = "MarkovShieldModelUpdater";
     static final String LOOKBACKPERIOD_ARGUMENT_NAME = "lookbackperiod";
