@@ -92,7 +92,7 @@ public class MarkovShieldModelUpdate implements Serializable {
         for (ValidatedClickStream validatedClickStream : iterable) {
             count++;
         }
-        System.out.println("recreate usermodel for " + userId + "with " + count);
+        System.out.println("recreate usermodel for " + userId + "with " + count + " clickStreams");
         List<ClickStream> filteredClicks = new ArrayList<>();
         for (ValidatedClickStream clickStream : iterable) {
             MarkovRating rating = clickStream.getClickStreamValidation().getRating();
