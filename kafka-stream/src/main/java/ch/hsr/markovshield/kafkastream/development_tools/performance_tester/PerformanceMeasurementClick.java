@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Properties;
 
-public class PerformanceMeasurementClick{
+public class PerformanceMeasurementClick {
 
     public static void main(final String[] args) throws IOException, InterruptedException {
         String broker;
@@ -59,6 +59,5 @@ public class PerformanceMeasurementClick{
         }
 
     }
-
 
 }
