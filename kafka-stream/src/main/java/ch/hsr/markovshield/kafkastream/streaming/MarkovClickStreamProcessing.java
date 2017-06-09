@@ -18,6 +18,7 @@ import java.sql.Date;
 import java.time.Instant;
 import java.util.Collections;
 
+import static ch.hsr.markovshield.constants.MarkovConstants.USER_NOT_FOUND;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_CLICK_TOPIC;
 import static ch.hsr.markovshield.constants.MarkovTopics.MARKOV_LOGIN_TOPIC;
@@ -28,7 +29,6 @@ import static ch.hsr.markovshield.utils.JsonPOJOSerde.MOD_MSHIELD_SMILE;
 public class MarkovClickStreamProcessing implements StreamProcessing {
 
 
-    public static final String USER_NOT_FOUND = "--------------------NOT FOUND---------------------------";
     public static final Serde<String> stringSerde = Serdes.String();
     public static final JsonPOJOSerde<ValidationClickStream> validationClickStreamSerde = new JsonPOJOSerde<>(
         ValidationClickStream.class, MARKOV_SHIELD_SMILE);

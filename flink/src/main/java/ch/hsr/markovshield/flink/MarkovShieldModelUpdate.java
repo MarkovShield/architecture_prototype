@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ch.hsr.markovshield.constants.MarkovConstants.USER_NOT_FOUND;
 import static ch.hsr.markovshield.flink.MarkovShieldModelUpdater.DEFAULT_REEVALUATION_INTERVAL_MINUTES;
 import static ch.hsr.markovshield.flink.MarkovShieldModelUpdater.DEFAULT_SESSION_TIME_MINUTES;
 import static ch.hsr.markovshield.flink.MarkovShieldModelUpdater.DEFAULT_SLIDING_TIME_MINUTES;
@@ -84,6 +85,9 @@ public class MarkovShieldModelUpdate implements Serializable {
                                    TimeWindow timeWindow,
                                    Iterable<ValidatedClickStream> iterable,
                                    Collector<UserModel> collector) {
+        if (userId.equals(USER_NOT_FOUND)) {
+            return;
+        }
         int count = 0;
         for (ValidatedClickStream validatedClickStream : iterable) {
             count++;
