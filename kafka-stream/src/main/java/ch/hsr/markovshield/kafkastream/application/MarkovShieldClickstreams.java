@@ -4,10 +4,10 @@ import ch.hsr.markovshield.constants.MarkovTopics;
 import ch.hsr.markovshield.kafkastream.streaming.MarkovClickStreamProcessing;
 import ch.hsr.markovshield.kafkastream.streaming.StreamProcessing;
 import ch.hsr.markovshield.utils.OptionHelper;
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -18,20 +18,22 @@ import org.apache.kafka.streams.state.HostInfo;
 import java.util.Map;
 import java.util.Properties;
 
+import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.BOOTSTRAP_ARGUMENT_NAME;
 import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_BOOTSTRAP_SERVERS;
-import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_SCHEMA_REGISTRY_URL;
-import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_ZOOKEEPER;
+
 
 public class MarkovShieldClickstreams {
 
-    public static final String KAFKA_JOB_NAME = "MarkovShieldClickstreams2";
+    public static final String KAFKA_JOB_NAME = "MarkovShieldClickstreams";
     public static final String NUMBER_OF_THREADS_ARGUMENT = "numthreads";
     public static final String NUMBER_OF_THREADS_DEFAULT = "1";
     private static final String DEFAULT_REST_ENDPOINT_HOSTNAME = "localhost";
     private static final int DEFAULT_REST_ENDPOINT_PORT = 7777;
-    private static final String SCHEMA_REGISTRY_ARGUMENT = "schemaregistry";
     private static final String RESTHOSTNAME_ARGUMENT = "resthostname";
     private static final String RESTPORT_ARGUMENT = "restport";
+    private static final String ZOOKEEPER_ARGUMENT_NAME = "zookeeper";
+    private static final String DEFAULT_ZOOKEEPER = "zookeeper:2181";
+
 
     public static void main(final String[] args) throws Exception {
         Options options = getOptions();
@@ -49,7 +51,7 @@ public class MarkovShieldClickstreams {
     private static void executeClickStream(CommandLine commandLineArguments) throws Exception {
         final HostInfo restEndpoint = parseHostInformation(commandLineArguments);
         final Properties streamsConfiguration = getStreamConfiguration(restEndpoint, commandLineArguments);
-        setUpKafka(streamsConfiguration);
+        setUpKafka(streamsConfiguration, commandLineArguments);
         StreamProcessing streamProcessing = new MarkovClickStreamProcessing();
         KStreamBuilder streamBuilder = streamProcessing.getStreamBuilder();
         StreamingApplication streamingApplication = new StreamingApplication(streamsConfiguration, streamBuilder);
@@ -64,21 +66,26 @@ public class MarkovShieldClickstreams {
         return new HostInfo(restEndpointHostname, restEndpointPort);
     }
 
-    private static void setUpKafka(Properties streamsConfiguration) {
-        Properties topicCreatorProperties = (Properties) streamsConfiguration.clone();
+    private static void setUpKafka(Properties streamsConfiguration,
+                                   CommandLine commandLineArguments) {
+        Properties topicCreatorProperties = new Properties();
+        topicCreatorProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+            streamsConfiguration.getProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
         topicCreatorProperties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         topicCreatorProperties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         KafkaConsumer consumer = new KafkaConsumer(topicCreatorProperties);
         Map map = consumer.listTopics();
-        KafkaTopicCreator kafkaTopicCreator = new KafkaTopicCreator(DEFAULT_ZOOKEEPER);
+        KafkaTopicCreator kafkaTopicCreator = new KafkaTopicCreator(OptionHelper.getOption(
+            commandLineArguments,
+            ZOOKEEPER_ARGUMENT_NAME).orElse(DEFAULT_ZOOKEEPER));
         Properties validatedClickStreamProperties = new Properties();
         validatedClickStreamProperties.put("cleanup.policy", "compact,delete");
         long sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000L;
-        validatedClickStreamProperties.put("retention.ms", sixMonthsInMs);
+        validatedClickStreamProperties.put("retention.ms", String.valueOf(sixMonthsInMs));
 
         Properties userModelProperties = new Properties();
         userModelProperties.put("cleanup.policy", "compact,delete");
-        userModelProperties.put("retention.ms", sixMonthsInMs);
+        userModelProperties.put("retention.ms", String.valueOf(sixMonthsInMs));
 
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_STREAM_ANALYSIS_TOPIC);
         createTopicIfNotPresent(map, kafkaTopicCreator, MarkovTopics.MARKOV_CLICK_STREAM_TOPIC);
@@ -108,17 +115,14 @@ public class MarkovShieldClickstreams {
     }
 
     private static Properties getStreamConfiguration(HostInfo restEndpoint, CommandLine cmd) {
-        final String bootstrapServers = OptionHelper.getOption(cmd, OptionHelper.BOOTSTRAP_ARGUMENT_NAME)
+        final String bootstrapServers = OptionHelper.getOption(cmd, BOOTSTRAP_ARGUMENT_NAME)
             .orElse(DEFAULT_BOOTSTRAP_SERVERS);
-        final String schemaRegistryUrl = OptionHelper.getOption(cmd, SCHEMA_REGISTRY_ARGUMENT)
-            .orElse(DEFAULT_SCHEMA_REGISTRY_URL);
         final String numberOfThreads = OptionHelper.getOption(cmd, NUMBER_OF_THREADS_ARGUMENT).orElse(
             NUMBER_OF_THREADS_DEFAULT);
         final Serde<String> stringSerde = Serdes.String();
         final Properties streamsConfiguration = new Properties();
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, KAFKA_JOB_NAME);
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        streamsConfiguration.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
         streamsConfiguration.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         streamsConfiguration.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, stringSerde.getClass().getName());
         streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
@@ -133,23 +137,23 @@ public class MarkovShieldClickstreams {
 
     private static Options getOptions() {
         Options options = OptionHelper.getBasicKafkaOptions();
-        Option schemaregistry = Option.builder()
-            .longOpt(MarkovShieldClickstreams.SCHEMA_REGISTRY_ARGUMENT)
+        Option zookeeper = Option.builder()
+            .longOpt(ZOOKEEPER_ARGUMENT_NAME)
             .hasArg()
             .numberOfArgs(1)
-            .desc("address of the SCHEMA_REGISTRY_ARGUMENT, it's default is: " + DEFAULT_SCHEMA_REGISTRY_URL)
+            .desc("address of the zookeeper, it's default is: " + DEFAULT_ZOOKEEPER)
             .build();
         Option resthostname = Option.builder()
             .longOpt(MarkovShieldClickstreams.RESTHOSTNAME_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("port of the REST endpoint, it's default is: " + DEFAULT_REST_ENDPOINT_HOSTNAME)
+            .desc("hostname of the REST endpoint, it's default is: " + DEFAULT_REST_ENDPOINT_HOSTNAME)
             .build();
         Option restport = Option.builder()
             .longOpt(MarkovShieldClickstreams.RESTPORT_ARGUMENT)
             .hasArg()
             .numberOfArgs(1)
-            .desc("hostname of the REST endpoint, it's default is: " + DEFAULT_REST_ENDPOINT_PORT)
+            .desc("port of the REST endpoint, it's default is: " + DEFAULT_REST_ENDPOINT_PORT)
             .build();
         Option numThreads = Option.builder()
             .longOpt(NUMBER_OF_THREADS_ARGUMENT)
@@ -157,7 +161,7 @@ public class MarkovShieldClickstreams {
             .numberOfArgs(1)
             .desc("the number of threads that kafka-streams will use, it's default is: " + NUMBER_OF_THREADS_DEFAULT)
             .build();
-        options.addOption(schemaregistry);
+        options.addOption(zookeeper);
         options.addOption(resthostname);
         options.addOption(restport);
         options.addOption(numThreads);

@@ -12,5 +12,4 @@ CMD sleep 10 && java -cp kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar \
   --bootstrap $BOOTSTRAP \
   --resthostname $RESTHOSTNAME \
   --restport $RESTPORT \
-  --schemaregistry $SCHEMAREGISTRY \
   --zookeeper $ZOOKEEPER

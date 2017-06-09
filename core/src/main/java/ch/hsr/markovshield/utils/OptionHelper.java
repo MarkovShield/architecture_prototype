@@ -10,13 +10,11 @@ import org.apache.commons.cli.ParseException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.BOOTSTRAP_ARGUMENT_NAME;
 import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_BOOTSTRAP_SERVERS;
-import static ch.hsr.markovshield.constants.KafkaConnectionDefaults.DEFAULT_ZOOKEEPER;
 
 public class OptionHelper {
 
-    public static final String BOOTSTRAP_ARGUMENT_NAME = "bootstrap";
-    public static final String ZOOKEEPER_ARGUMENT_NAME = "zookeeper";
 
     public static Optional<String> getOption(final CommandLine commandLine, final String option) {
         if (commandLine.hasOption(option)) {
@@ -29,12 +27,7 @@ public class OptionHelper {
     public static Options getBasicKafkaOptions() {
         Options options = new Options();
         Option help = Option.builder("h").longOpt("help").desc("print this message").build();
-        Option zookeeper = Option.builder()
-            .longOpt(ZOOKEEPER_ARGUMENT_NAME)
-            .hasArg()
-            .numberOfArgs(1)
-            .desc("address of the zookeeper, it's default is: " + DEFAULT_ZOOKEEPER)
-            .build();
+
         Option bootstrap = Option.builder()
             .longOpt(BOOTSTRAP_ARGUMENT_NAME)
             .hasArg()
@@ -42,7 +35,6 @@ public class OptionHelper {
             .desc("address of the kafka bootstrap, it's default is: " + DEFAULT_BOOTSTRAP_SERVERS)
             .build();
         options.addOption(help);
-        options.addOption(zookeeper);
         options.addOption(bootstrap);
         return options;
     }

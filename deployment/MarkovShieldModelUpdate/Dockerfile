@@ -12,7 +12,6 @@ CMD sleep 60 && flink run \
   --jobmanager $JOBMANAGER \
   flink-1.0-SNAPSHOT-jar-with-dependencies.jar \
   --bootstrap $BOOTSTRAP \
-  --zookeeper $ZOOKEEPER \
   --updateinterval $UPDATEINTERVAL \
   --lookbackperiod $LOOKBACKPERIOD \
   --sessiontimeout $SESSIONTIMEOUT \

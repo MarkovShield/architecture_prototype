@@ -12,6 +12,5 @@ CMD sleep 10 && flink run \
   --jobmanager $JOBMANAGER \
   flink-1.0-SNAPSHOT-jar-with-dependencies.jar \
   --bootstrap $BOOTSTRAP \
-  --zookeeper $ZOOKEEPER \
   --redishost $REDISHOST \
   --redisport $REDISPORT
