@@ -30,6 +30,7 @@ public class DoubleMatrix implements Serializable {
     }
 
     public double get(int col, int row) {
+        boundCheck(col, row);
         return data[getIndex(col, row, columns)];
     }
 
@@ -37,7 +38,14 @@ public class DoubleMatrix implements Serializable {
         return row * width + col;
     }
 
+    private void boundCheck(int col, int row) {
+        if (row >= rows || col >= columns) {
+            throw new IllegalArgumentException("Invalid access to doublematrix");
+        }
+    }
+
     public void set(int col, int row, double value) {
+        boundCheck(col, row);
         data[getIndex(col, row, columns)] = value;
     }
 

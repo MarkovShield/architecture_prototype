@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.Assert.assertThat;
 
 public class FrequencyMatrixTest {
@@ -36,5 +37,24 @@ public class FrequencyMatrixTest {
         String json = mapper.writeValueAsString(matrix);
         FrequencyMatrix deserializiedMatrix = mapper.readValue(json, FrequencyMatrix.class);
         assertThat(deserializiedMatrix, equalTo(matrix));
+    }
+
+    @Test
+    public void testSave() throws Exception {
+        FrequencyMatrix matrix = new FrequencyMatrix(2);
+        matrix.set(1, 1, 2);
+        assertThat(matrix.get(1, 1), closeTo(2, 0.001));
+    }
+
+    @Test (expected = UnsupportedOperationException.class)
+    public void invalidSave() throws Exception {
+        FrequencyMatrix matrix = new FrequencyMatrix(2);
+        matrix.set(1, 2, 2);
+    }
+
+    @Test (expected = UnsupportedOperationException.class)
+    public void invalidGet() throws Exception {
+        FrequencyMatrix matrix = new FrequencyMatrix(2);
+        matrix.get(1, 2);
     }
 }

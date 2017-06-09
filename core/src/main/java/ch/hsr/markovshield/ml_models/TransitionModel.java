@@ -20,7 +20,6 @@ public class TransitionModel implements ClickStreamModel {
     private final TransitionMatrix transitionMatrix;
     private final UrlStore urlStore;
     private final Date timeCreated;
-    private int urlRiskLevelForClick;
 
     public TransitionModel(TransitionMatrix transitionMatrix, UrlStore urlStore) {
         this.transitionMatrix = transitionMatrix;
@@ -82,15 +81,18 @@ public class TransitionModel implements ClickStreamModel {
     public double clickStreamScore(ClickStream clickStream) {
         double transitionScore = 0;
         List<Click> clicks = clickStream.getClicks();
-        for (int i = 0; i < clicks.size(); i++) {
+        for (int i = 1; i <= clicks.size(); i++) {
             double probabilityForClick;
-            if (i == clicks.size() - 1) {
-                probabilityForClick = getProbabilityForClick(clicks.get(i).getUrl(),
+            int urlRiskLevelForClick;
+            if (i == clicks.size()) {
+                probabilityForClick = getProbabilityForClick(clicks.get(i - 1).getUrl(),
                     MarkovChainAnalysis.END_OF_CLICK_STREAM);
+                urlRiskLevelForClick = clicks.get(i - 1).getUrlRiskLevel();
+
             } else {
-                probabilityForClick = getProbabilityForClick(clicks.get(i), clicks.get(i + 1));
+                probabilityForClick = getProbabilityForClick(clicks.get(i - 1), clicks.get(i));
+                urlRiskLevelForClick = clicks.get(i).getUrlRiskLevel();
             }
-            urlRiskLevelForClick = clicks.get(i).getUrlRiskLevel();
             transitionScore += (1 - probabilityForClick) * (urlRiskLevelForClick + 1);
         }
         return transitionScore;

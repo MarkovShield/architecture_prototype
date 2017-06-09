@@ -40,6 +40,5 @@ public class TransitionModelTest {
         String json = mapper.writeValueAsString(model);
         TransitionModel deserializedModel = mapper.readValue(json, TransitionModel.class);
         assertThat(deserializedModel, equalTo(model));
-
     }
 }

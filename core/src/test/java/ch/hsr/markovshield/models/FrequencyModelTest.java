@@ -3,55 +3,44 @@ package ch.hsr.markovshield.models;
 
 import ch.hsr.markovshield.ml_models.ClickStreamModel;
 import ch.hsr.markovshield.ml_models.FrequencyModel;
-import ch.hsr.markovshield.ml_models.TransitionModel;
-import ch.hsr.markovshield.ml_models.builder.IQRFrequencyAnalysis;
-import ch.hsr.markovshield.ml_models.builder.MarkovChainAnalysis;
+import ch.hsr.markovshield.ml_models.ModelBuilder;
+import ch.hsr.markovshield.ml_models.builder.PDFFrequencyAnalysis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class UserModelTest {
+public class FrequencyModelTest {
 
     private ObjectMapper mapper;
-    private UserModel model;
 
     @Before
     public void setUp() throws Exception {
         mapper = new ObjectMapper();
-        List<ClickStreamModel> models = new ArrayList<>();
-        MarkovChainAnalysis markovChainAnalysis = new MarkovChainAnalysis();
-        TransitionModel transitionModel = markovChainAnalysis.train(Collections.emptyList());
-        FrequencyModel frequencyModel = (new IQRFrequencyAnalysis()).train(Collections.emptyList());
-        models.add(transitionModel);
-        models.add(frequencyModel);
-        model = new UserModel("Ivan", models);
     }
 
     @Test
     public void testSerialization() throws JsonProcessingException {
-
+        ModelBuilder pdfFrequencyAnalysis = new PDFFrequencyAnalysis();
+        ClickStreamModel model = pdfFrequencyAnalysis.train(Collections.emptyList());
         String json = mapper.writeValueAsString(model);
         assertThat(json, containsString("timeCreated"));
-        assertThat(json, containsString("clickStreamModels"));
+        assertThat(json, containsString("urlStore"));
+        assertThat(json, containsString("frequencyMatrix"));
     }
 
     @Test
     public void testSerializationAndDeserialization() throws IOException {
-
+        ModelBuilder pdfFrequencyAnalysis = new PDFFrequencyAnalysis();
+        ClickStreamModel model = pdfFrequencyAnalysis.train(Collections.emptyList());
         String json = mapper.writeValueAsString(model);
-
-        UserModel deserializedModel = mapper.readValue(json, UserModel.class);
+        FrequencyModel deserializedModel = mapper.readValue(json, FrequencyModel.class);
         assertThat(deserializedModel, equalTo(model));
-
     }
-
 }

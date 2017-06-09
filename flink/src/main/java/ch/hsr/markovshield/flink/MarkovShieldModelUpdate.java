@@ -23,6 +23,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.util.Collector;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,7 +93,8 @@ public class MarkovShieldModelUpdate implements Serializable {
         for (ValidatedClickStream validatedClickStream : iterable) {
             count++;
         }
-        System.out.println("recreate usermodel for " + userId + "with " + count + " clickStreams");
+        System.out.println("recreate usermodel for " + userId + " with " + count + " clickStreams at " + Instant.now()
+            .toString());
         List<ClickStream> filteredClicks = new ArrayList<>();
         for (ValidatedClickStream clickStream : iterable) {
             MarkovRating rating = clickStream.getClickStreamValidation().getRating();
