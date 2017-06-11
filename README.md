@@ -1,7 +1,7 @@
 ![MarkovShield](https://bitbucket.org/markovshield/mod_mshield/raw/develop/resources/markovshield_logo.png)
 
 # MarkovShield Engine
-This is the reporitoy of the MarkovShield Engine, the backend of MarkovShield. If you would like to try out MarkovShield, please have a look at the [https://github.com/MarkovShield/install](https://github.com/MarkovShield/install) repository. The following documentation is only needed, if you would like to run the MarkovShield Engine jobs the manual way.
+This is the repositoy of the MarkovShield Engine, the backend of MarkovShield. If you would like to try out MarkovShield, please have a look at the [https://github.com/MarkovShield/install](https://github.com/MarkovShield/install) repository. The following documentation is only needed, if you would like to run the MarkovShield Engine jobs the manual way.
 
 ## Content
 * [MarkovShield Engine](#markdown-header-markovshield-engine)
@@ -22,14 +22,15 @@ This is the reporitoy of the MarkovShield Engine, the backend of MarkovShield. I
 		* [Consume messages](#markdown-header-consume-messages)
 		* [Produce message](#markdown-header-produce-message)
 		* [Delete all docker images](#markdown-header-delete-all-docker-images)
+	* [Publish images](#markdown-header-publish-images)
 	* [Old commands](#markdown-header-old-commands)
 		* [Build AVRO](#markdown-header-build-avro)
-	* [Publish images](#markdown-header-publish-images)
+
 
 ## Prerequisites
 
 ### Host file entries
-If you run any of the down here provided commands ourside of the provided MarkovShield Engine job containers, ensure you have the following host entries set in your local hostfile:
+If you run any of the down here provided commands outside of the provided MarkovShield Engine job containers, ensure you have the following host entries set in your local hostfile:
 ```bash
 127.0.0.1 zookeeper
 127.0.0.1 broker
@@ -37,6 +38,7 @@ If you run any of the down here provided commands ourside of the provided Markov
 
 ### Dependency packages
 To run the commands down here you will need the following packages installes on your system:
+
 *  `maven`
 *  `flink`
 *  `java-jdk`
@@ -71,6 +73,7 @@ bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager
 **Hint**: Perhaps you need to change the path of the `flink` application depending on your setup.
 
 #### Additonal commands
+The following commands can be used to generate some sample data:
 ```bash
 java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
 java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
@@ -90,6 +93,7 @@ flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager job
 **Hint**: Perhaps you need to change the path of the `flink` application depending on your setup.
 
 #### Additonal commands
+The following commands can be used to generate some sample data:
 ```bash
 java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
 java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
@@ -130,6 +134,9 @@ This command is only meant to be used for breaking changes:
 FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
 ```
 
+## Publish images
+To build the MarkovShield Docker images and publish them to a registry (e.g. the Docker Hub), change the `HUBPREFIX` inside the `Makefile` to your Docker Hub username/organisation name and hit `make publish`.
+
 ## Old commands
 
 ### Build AVRO
@@ -137,6 +144,3 @@ Download [http://mirror.synyx.de/apache/avro/avro-1.8.1/java/avro-tools-1.8.1.ja
 ```bash
 java -cp avro-tools-1.8.1.jar org.apache.avro.tool.Main compile schema TypeReuseTest.avsc CompoundSubTypeExtended.avsc DirWithOtherAvscFiles OutputDir
 ```
-
-## Publish images
-To build the MarkovShield Docker images and publish them to a registry (e.g. the Docker Hub), change the `HUBPREFIX` inside the `Makefile` to your Docker Hub username/organisation name and hit `make publish`.
