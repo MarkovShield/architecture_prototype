@@ -1,0 +1,63 @@
+<project>
+    <parent>
+        <groupId>markovshield</groupId>
+        <artifactId>architecture_prototype</artifactId>
+        <version>2.0</version>
+    </parent>
+    <artifactId>flink</artifactId>
+    <packaging>jar</packaging>
+    <version>2.0</version>
+    <properties>
+        <flink-streaming.version>1.2.0</flink-streaming.version>
+
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>markovshield</groupId>
+            <artifactId>core</artifactId>
+            <version>2.0</version>
+        </dependency>
+
+
+        <!-- FLINK DEPENDENCIES-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java_2.10</artifactId>
+            <version>${flink-streaming.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka-0.10_2.10</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-redis_2.10</artifactId>
+            <version>1.1.5</version>
+        </dependency>
+
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>ch.hsr.markovshield.flink.MarkovShieldAnalyser</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <modelVersion>4.0.0</modelVersion>
+
+</project>

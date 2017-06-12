@@ -1,3 +1,8 @@
 target
 .idea/
 *.iml
+deployment/zk-data
+deployment/zk-txt-logs
+deployment/kafka-data
+kafka-store
+*.jar
