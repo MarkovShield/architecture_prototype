@@ -34,6 +34,7 @@ If you run any of the down here provided commands outside of the provided Markov
 ```bash
 127.0.0.1 zookeeper
 127.0.0.1 broker
+127.0.0.1 jobmanager
 ```
 
 ### Dependency packages
