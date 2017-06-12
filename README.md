@@ -61,41 +61,41 @@ Here are the commands listed which are needed to run the MarkovShield Engine.
 ### Windows
 Start the Kafka Stream application:
 ```bash
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
+java -cp kafka-stream\target\kafka-stream-2.0-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 
 Afterwards start the Apache Flink jobs, which are needed to analyse a clickstream and update the user models:
 ```bash
-bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\<USER>\Documents\architecture_prototype\flink\target\flink-1.0-SNAPSHOT-jar-with-dependencies.jar
-bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager jobmanager:6123 C:\Users\<USER>\Documents\architecture_prototype\flink\target\flink-1.0-SNAPSHOT-jar-with-dependencies.jar
+bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 C:\Users\<USER>\Documents\architecture_prototype\flink\target\flink-2.0-jar-with-dependencies.jar
+bin\flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager jobmanager:6123 C:\Users\<USER>\Documents\architecture_prototype\flink\target\flink-2.0-jar-with-dependencies.jar
 ```
 **Hint**: Perhaps you need to change the path of the `flink` application depending on your setup.
 
 #### Additonal commands
 The following commands can be used to generate some sample data:
 ```bash
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
-java -cp kafka-stream\target\kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
+java -cp kafka-stream\target\kafka-stream-2.0-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
+java -cp kafka-stream\target\kafka-stream-2.0-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
 ```
 
 ### macOS/Linux
 Start the Kafka Stream application:
 ```bash
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
+java -cp kafka-stream/target/kafka-stream-2.0-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.application.MarkovShieldClickstreams
 ```
 
 Afterwards start the Apache Flink jobs, which are needed to analyse a clickstream and update the user models:
 ```bash
-flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 flink/target/flink-1.0-SNAPSHOT-jar-with-dependencies.jar
-flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager jobmanager:6123 flink/target/flink-1.0-SNAPSHOT-jar-with-dependencies.jar
+flink run -c ch.hsr.markovshield.flink.MarkovShieldAnalyser --jobmanager jobmanager:6123 flink/target/flink-2.0-jar-with-dependencies.jar
+flink run -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater --jobmanager jobmanager:6123 flink/target/flink-2.0-jar-with-dependencies.jar
 ```
 **Hint**: Perhaps you need to change the path of the `flink` application depending on your setup.
 
 #### Additonal commands
 The following commands can be used to generate some sample data:
 ```bash
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
-java -cp kafka-stream/target/kafka-stream-1.0-SNAPSHOT-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
+java -cp kafka-stream/target/kafka-stream-2.0-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovModelGenerator
+java -cp kafka-stream/target/kafka-stream-2.0-jar-with-dependencies.jar ch.hsr.markovshield.kafkastream.development_tools.generators.MarkovClickAndLoginGenerator
 ```
 
 ## Usefull commands
