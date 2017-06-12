@@ -127,7 +127,7 @@ If you want to produce a sample click entry into a Kafka topic (e.g. `MarkovClic
 echo '61631#{"sessionUUID":"61631","clickUUID":"1000","url":"my-secret-url","urlRiskLevel":2,"timeStamp":1495602498740,"validationRequired":true}' | kafka-console-producer --broker-list localhost:9092 --topic MarkovClicks --property "parse.key=true" --property "key.separator=#";
 ```
 
-### Delete all docker images
+### Delete all docker containers
 This command is only meant to be used for breaking changes:
 ```bash
 FOR /f "tokens=*" %i IN ('docker ps -a -q') DO docker rm %i
