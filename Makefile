@@ -19,9 +19,9 @@ build:
 	mvn clean package
 
 copy-jars:
-	cp flink/target/flink-2.0-jar-with-dependencies.jar deployment/MarkovShieldAnalyser
-	cp flink/target/flink-2.0-jar-with-dependencies.jar deployment/MarkovShieldModelUpdate
-	cp kafka-stream/target/kafka-stream-2.0-jar-with-dependencies.jar deployment/MarkovShieldClickstreams
+	cp flink/target/flink-2.1-SNAPSHOT-jar-with-dependencies.jar deployment/MarkovShieldAnalyser
+	cp flink/target/flink-2.1-SNAPSHOT-jar-with-dependencies.jar deployment/MarkovShieldModelUpdate
+	cp kafka-stream/target/kafka-stream-2.1-SNAPSHOT-jar-with-dependencies.jar deployment/MarkovShieldClickstreams
 
 local-images: build copy-jars
 	docker build -f deployment/MarkovShieldAnalyser/Dockerfile -t mshield-flink-analyser .
@@ -41,9 +41,9 @@ publish: build copy-jars
 
 clean:
 	mvn clean
-	rm -rf deployment/MarkovShieldAnalyser/flink-2.0-jar-with-dependencies.jar
-	rm -rf deployment/MarkovShieldModelUpdate/flink-2.0-jar-with-dependencies.jar
-	rm -rf deployment/MarkovShieldClickstreams/kafka-stream-2.0-jar-with-dependencies.jar
+	rm -rf deployment/MarkovShieldAnalyser/flink-2.1-SNAPSHOT-jar-with-dependencies.jar
+	rm -rf deployment/MarkovShieldModelUpdate/flink-2.1-SNAPSHOT-jar-with-dependencies.jar
+	rm -rf deployment/MarkovShieldClickstreams/kafka-stream-2.1-SNAPSHOT-jar-with-dependencies.jar
 
 
 .PHONY: build copy-jars local-images publish clean

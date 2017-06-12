@@ -4,13 +4,13 @@ MAINTAINER Philip Schmid
 
 # Copy files to right place
 WORKDIR /opt
-COPY deployment/MarkovShieldModelUpdate/flink-2.0-jar-with-dependencies.jar /opt/
+COPY deployment/MarkovShieldModelUpdate/flink-2.1-SNAPSHOT-jar-with-dependencies.jar /opt/
 
 # Start the apache service
 CMD sleep 60 && flink run \
   -c ch.hsr.markovshield.flink.MarkovShieldModelUpdater \
   --jobmanager $JOBMANAGER \
-  flink-2.0-jar-with-dependencies.jar \
+  flink-2.1-SNAPSHOT-jar-with-dependencies.jar \
   --bootstrap $BOOTSTRAP \
   --updateinterval $UPDATEINTERVAL \
   --lookbackperiod $LOOKBACKPERIOD \
