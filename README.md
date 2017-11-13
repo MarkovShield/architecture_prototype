@@ -1,4 +1,7 @@
 # MarkovShield Engine
+
+[![Build Status](https://travis-ci.org/MarkovShield/architecture_prototype.svg?branch=develop)](https://travis-ci.org/MarkovShield/architecture_prototype)
+
 This is the repositoy of the MarkovShield Engine, the backend of MarkovShield. If you would like to try out MarkovShield, please have a look at the [https://github.com/MarkovShield/install](https://github.com/MarkovShield/install) repository. The following documentation is only needed, if you would like to run the MarkovShield Engine jobs the manual way.
 
 ## Content
@@ -36,7 +39,7 @@ If you run any of the down here provided commands outside of the provided Markov
 ```
 
 ### Dependency packages
-To run the commands down here you will need the following packages installes on your system:
+To run the commands down here you will need the following packages installed on your system:
 
 *  `maven`
 *  `flink`
